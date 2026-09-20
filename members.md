@@ -8,7 +8,7 @@ Captured from the Constitutional Convention record, founded by Edward Saperia at
 
 | Name | Notes |
 |---|---|
-| Anchit Som | you |
+| Anchit Som | |
 | Clara Yeo | |
 | Disha Shanbhag | |
 | Fernanda Munhoz | |
