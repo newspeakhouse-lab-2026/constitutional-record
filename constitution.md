@@ -175,7 +175,7 @@ The location and form of a communication may indicate whether it forms part of a
 
 **3.1 Nature of the Role.** The Agent is a clerical role responsible for the Laboratory's record-keeping and its internal and external communications. The Agent does not direct, decide for, or represent the Laboratory. Until accredited, the Laboratory's collective rights under the Charter are dormant.
 
-**3.2 Selection.** The Agent and the Deputy Agent are each elected by separate anonymous ranked-choice vote for a two-month term. Re-election is permitted.
+**3.2 Selection**. All constitutional roles are elected by separate anonymous ranked choice vote the mechanism is that all fellows rank candidates from 1-3 the numbers are added up and the fellow with the highest score is elected. The vote is a secret ballot Agents and Deputy Agents are elected for a two-month term. Re-election is permitted.
 
 **3.3 Agent and Deputy.** The Agent holds primary responsibility for all duties under this section. The Deputy assumes those duties only when the Agent is unable to fulfil them or the role is vacant.
 
