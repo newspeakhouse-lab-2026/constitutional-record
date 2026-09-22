@@ -283,3 +283,25 @@ Laboratory members should keep a common record of proposed amendments as they ar
 ## 6. Expedited Constitutional amendments for a limited time after the Constitutional Convention
 
 Recognising that Laboratory members wish to refine and amend the Constitution following the Constitutional Convention, any amendment to the Constitution shall, for the purposes of the amendment process, be treated as an Ordinary Rule for a period of two weeks immediately following the Constitution Convention. Such period of time shall end at 23:59 (UK time) on Sunday, 4 October 2026.
+
+To ease the transition the Fellowship will appoint the following interim roles: Agent, Convener, Treasurer and Record Keeper. 
+
+The interim selection process shall be as follows:
+
+Candidates interested in the roles shall indicate their interest clearly on the Roles Election channel by posting with the following text:
+
+I would like to fill role (Specify role) 
+
+In the same message they are also entitled to add some supporting text to explain their candidacy. [Informally please keep this short]
+
+Any Laboratory member who expresses interest by 22:00 on Tuesday the 22nd of September will be registered as a candidate.
+
+Voting will then open using a  Borda count on Opavote:
+
+Each voter may rank up to three candidates. A first preference receives three points, a second preference two points, and a third preference one point. Unranked candidates receive no points. The candidate receiving the highest total score is elected.
+
+This vote will take place on open source 
+
+Polls will close at 15:00 on the Wednesday 23nd of September with interim role holders elected according to the result. They will remain in place from that point until the period defined in 6. Expedited Constitutional amendments (Ending 23:59 (UK time) on Sunday, 4 October 2026.) The interim role holders will fill the roles with all the usual powers delegated to holders of those roles.
+
+If an election under our usual processes occurs prior to the end of this timeline the powers will transfer from the interim role holders to the regular role holders. In the event that this has not occurred a two thirds majority of all Laboratory members may extend this interim period superseding any other usual constitutional rules.
