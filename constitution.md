@@ -298,9 +298,9 @@ Any Laboratory member who expresses interest by 22:00 on Tuesday the 22nd of Sep
 
 Voting will then open using a  Borda count on Opavote:
 
-Each voter may rank up to three candidates. A first preference receives three points, a second preference two points, and a third preference one point. Unranked candidates receive no points. The candidate receiving the highest total score is elected.
+Each voter may rank up to three candidates. A first preference receives three points, a second preference two points, and a third preference one point. The candidate receiving the highest total score is elected.
 
-This vote will take place on open source 
+This vote will take place on opavote
 
 Polls will close at 15:00 on the Wednesday 23nd of September with interim role holders elected according to the result. They will remain in place from that point until the period defined in 6. Expedited Constitutional amendments (Ending 23:59 (UK time) on Sunday, 4 October 2026.) The interim role holders will fill the roles with all the usual powers delegated to holders of those roles.
 
