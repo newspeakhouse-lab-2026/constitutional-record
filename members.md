@@ -6,22 +6,24 @@ Captured from the Constitutional Convention record, founded by Edward Saperia at
 
 ## Current members (14)
 
-| Name | Notes |
+| Name | Role Held |
 |---|---|
-| Anchit Som | |
-| Clara Yeo | |
-| Disha Shanbhag | |
+| Anchit Som | Interim Record Keeper|
+| Clara Yeo | Interim Convener |
+| Disha Shanbhag | Interim Treasurer |
 | Fernanda Munhoz | |
 | Joel Naoki CHRISTOPH | |
 | Madison Karas | |
 | Mario Morvan | |
 | Nathaniel Cooke | |
 | Niba | |
-| Noam Herberg | |
+| Noam Herberg | Interim Agent |
 | Rhianwen Rowlands | |
 | Tess Buckley | |
 | William Wong | |
-| Yiannis Ravanis | |
+| Yiannis Ravanis | Interim Record Keeper |
+
+Interim Roles have been assigned to provide coverage before the ranked choice voting takes place as described in section 6 in the constitution. 
 
 
 ## Invitees
