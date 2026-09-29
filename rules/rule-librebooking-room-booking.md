@@ -1,4 +1,4 @@
-# Rule: Interim room booking system
+# Rule: Using LibreBooking for the room booking system
 
 This follows the experiment on the booking system. It formalises LibreBooking as our official booking tool and covers only the interim arrangement for using it. The booking policy itself (who gets priority, how much notice is needed, how rooms are shared fairly, what happens at peak times) will be decided separately, as its own proposal.
 
