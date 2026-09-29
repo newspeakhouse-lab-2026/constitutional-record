@@ -23,7 +23,7 @@ Captured from the Constitutional Convention record, founded by Edward Saperia at
 | William Wong | |
 | Yiannis Ravanis | Interim Record Keeper |
 
-Interim Roles have been assigned to provide coverage before the ranked choice voting takes place as described in section 6 in the constitution. 
+Interim Roles have been assigned to provide coverage before the ranked choice voting takes place as described in the constitution. 
 
 
 ## Invitees

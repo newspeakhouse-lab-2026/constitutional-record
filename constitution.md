@@ -26,9 +26,7 @@ A rule is valid if and only if it was adopted through the procedure required for
 
 ### The Constitutional Record
 
-The Constitutional Record is a private git repository in GitHub. Every decision required by this Constitution to enter the Record is recorded by commit. No member may lose a right under this Constitution because they cannot use GitHub or the Laboratory's communication channel. The Convener must provide a reasonably equivalent route and ensure anything submitted through it is communicated and recorded as the Constitution otherwise requires. The repository is readable by all members from the last day of the Convention.
-
-The Interim Constitution shall only be accessible to Laboratory members and Faculty. The private Constitutional Record preserves the internal record of the procedures, decisions and amendments by which that published Constitution is created and changed. A public, up-to-date Constitution is made available to the Newspeak House community by the Record Keeper.
+The Constitutional Record is a Public git repository in GitHub available https://github.com/newspeakhouse-lab-2026/constitutional-record.git . Every decision required by this Constitution to enter the Record is recorded by commit. No member may lose a right under this Constitution because they cannot use GitHub or the Laboratory's communication channel. The Convener must provide a reasonably equivalent route and ensure anything submitted through it is communicated and recorded as the Constitution otherwise requires. The repository is readable by all members from the last day of the Convention.
 
 ### Amendment records
 
@@ -220,7 +218,7 @@ Expenditure must not be divided into smaller transactions for the purpose of avo
 
 Role selection shall, where possible, strike a balance between members' preferences, skill development opportunities, and existing experience.
 
-Additional Roles can be created as necessary using the Ordinary Rules Process and registered in a `roles.md` file in the repository and follow Role Policy as defined outside the constitution.
+All Roles both constitutional and those established by policy shall be recorded in the `roles.md` file in the repository this is to be maintained by the Record Keepers. The current role holders permanent or interim shall be recorded in this document and it will serve as an record of role holders including to external observers. A role is held if and only if the role holder was appointed through legitimate proceedures set out in this constitution a repository edit or commit does not itself create authority.
 
 ---
 
