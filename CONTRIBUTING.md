@@ -90,6 +90,8 @@ Every amendment follows the same arc. The deliberation periods and thresholds di
 
 Section 1 permits any member to run an AI agent, provided it is **documented and communicated to the rest of the membership**, and requires that an agent acting on Laboratory infrastructure be **clearly identifiable as that member's agent**. It holds no membership, no vote and no standing, and its actions are your responsibility.
 
+**This is not the Agent.** The Agent is a constitutional office under Section 3 — a member, elected by anonymous ranked-choice vote for a two-month term, through whom the Laboratory acts as a body. Section 1 does allow the Laboratory to augment that office with a computational system, but only by Ordinary resolution and only on open-source models with no external logging and no individual holding admin access alone. Nothing like that exists. An agent you run is your tool, under your name, and speaks for nobody but you.
+
 So the division is fixed:
 
 **An agent can** read the Record, search for conflicts, classify a proposal and write the reasoning, draft an instrument and its rationale, check a draft against the Constitution's requirements, compute thresholds and windows, create branches, commit, and open pull requests under your name.
