@@ -29,7 +29,7 @@ Ask these before settling on Layer 2:
 - **Does money move in or out on an ongoing basis?** Layer 3.
 - **Does it bind future decisions**, or only this one?
 - **Would it survive the thing that prompted it?** A durable frame is Layer 3; a number inside that frame is Layer 2.
-- **Does it rely on authority the Charter reserves to the College?** Then it is void at any layer. Check §8 before classification.
+- **Does it rely on authority the Charter reserves to the College?** Then it is void at any layer. Check Charter §8 before classification.
 
 ## Splitting, which is usually the right answer
 

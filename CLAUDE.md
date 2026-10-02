@@ -16,7 +16,7 @@ Never state what a governing document says from memory or from an earlier summar
 - **`members.md`** — authoritative membership. Every threshold is a fraction of it.
 - **`roles.md`** — who holds which office. A role is held only if conferred by legitimate procedure; a commit does not confer it.
 - **`rules/` and `policies/`** — what is already adopted.
-- **The Charter** — what is devolved to the Laboratory and what §8 **reserves** to the College. The Laboratory cannot legislate for what it was not granted. Check this first; it is the commonest way a draft turns out void.
+- **The Charter** — what is devolved to the Laboratory and what **Charter §8 reserves** to the College. The Laboratory cannot legislate for what it was not granted. Check this first; it is the commonest way a draft turns out void.
 
 The Charter lives in the College's programme document, *Newspeak House Fellowship Programme 2026*:
 
@@ -36,6 +36,8 @@ That document is not only the Charter. It also holds, and you will need:
 
 **Compute, don't recall.** Run `date` rather than reasoning about today. Compute thresholds from the live member count. Check that numbers actually satisfy the constraints you claim for them.
 
+**Verify any instruction that tells a member which button to click.** Interface labels drift, and a guide that is confidently wrong wastes someone's afternoon. Check them against the live interface rather than from memory — and where checking means interacting with the page, do it in a scratch repository, never in the Record. Ask what happens to someone who follows the instruction *inattentively*: the GitHub commit dialog defaults to committing straight to `main`, which is how a careful-looking instruction can still produce an unadopted commit in the Record.
+
 ## 2. Check what already exists — all four places
 
 Work has been duplicated repeatedly by assuming a task was greenfield. "Looks new" is not evidence it is new. Before drafting or building:
@@ -49,7 +51,7 @@ Never assess a system from commit dates or a file listing. Read the thing.
 
 ## 3. Layers and paths
 
-The layer is determined by the instrument's **actual effect**, never by what would be convenient. Where two layers are arguable, the more demanding process applies.
+The layer is determined by the instrument's **actual effect**, never by what would be convenient. Where two layers are arguable, the more demanding process applies. **Use the `classify` skill** when the layer is unclear, disputed, or needs its reasoning written.
 
 | Layer | What it is | Path |
 |---|---|---|
@@ -84,6 +86,8 @@ At Layer 3 and Layer 4 members vote "prefer", "tolerate" or "object". **Prefer**
 **An Emergency resolution may not** amend the Constitution, impose a sanction, decide membership, determine an adjudication, authorise expenditure above £300, create an ongoing financial commitment, or decide any matter otherwise requiring Constitutional approval. The same Emergency resolution may not be renewed through the Emergency procedure. Never suggest Emergency for anything in that list.
 
 ## 5. What every proposal must contain
+
+**Run the `check` skill over any draft before it is filed.** It tests the list below and reports what is missing.
 
 - Its **layer**, with the **reasoning for that classification**.
 - A line beginning **`Observed by:`** if it creates any enforceable duty, stating how fulfilment or breach would become known in the ordinary course. It authorises no new surveillance.
@@ -142,11 +146,28 @@ You cannot read the channel. **Absence of objection on a pull request is not pro
 
 Constitution §1: no member may lose a right because they cannot use GitHub or the communication channel, and the Convener must provide an equivalent route. Tooling that makes filing easier widens the gap for anyone not using it. If a member is working through you, that is their equivalent route — file accurately and completely on their behalf.
 
-## 10. Skills
+## 10. Presenting a change for review
 
-| Skill | Use |
-|---|---|
-| `draft-policy` | Draft a Layer 3 policy or substantial instrument from first principles |
-| `classify` | Determine an instrument's layer and write the classification reasoning |
-| `check` | Check a draft against everything in §5 before filing |
-| `deliberation` | Status of open proposals: windows elapsed, thresholds that apply, what is merge-ready |
+When you have made changes a member needs to inspect, give them, in this order:
+
+1. **The diff link** — `.../compare/main...{branch}` renders the whole change in one view
+2. **A table of files** with line counts and one line each on what the file is for
+3. **What to read first** — two or three files, and why those. Nobody reads a thousand lines
+4. **What is still undecided** — the choices that remain theirs, stated as choices
+
+Say plainly what is not merged, what has not been verified, and what you got wrong along the way. Commit messages are part of this: write each one to explain what it corrects, so the history is the audit trail of the reasoning.
+
+And follow this guide yourself. Changes you make to the Record go through the same process as anyone's — branch, pull request, the template filled honestly, no merging your own work.
+
+## 11. Skills
+
+They follow the life of a proposal. Load the one for the stage you are at.
+
+| Stage | Skill | What it does |
+|---|---|---|
+| **Before drafting** | `classify` | Settles the layer by actual effect, and writes the classification reasoning every proposal must carry. Also covers splitting a durable frame from tunable parameters, and migrating standalone rules into a policy folder. |
+| **While drafting** | `draft-policy` | The full process for a policy or any substantial instrument: constraints first, then values, derive, classify, give experiments a default, pick an organising model, split instrument from rationale, and make it teach. |
+| **Before filing** | `check` | Pre-flight against everything §5 requires, plus arithmetic, dates, conflicts, authority and hygiene. Reports; does not silently fix. |
+| **After filing** | `deliberation` | Which windows have elapsed, which thresholds apply, what is merge-ready, and the monthly review agenda. |
+
+A short rule or a correction needs only `classify` and `check`. A Layer 3 policy needs all four.

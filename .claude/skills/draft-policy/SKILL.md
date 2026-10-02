@@ -13,7 +13,7 @@ The Laboratory is a research programme. An instrument that governs but teaches n
 
 Before drafting anything, list them:
 
-- What the **Charter** grants for this area, and what §8 **reserves**. The Laboratory cannot legislate for what it was not granted.
+- What the **Charter** grants for this area, and what **Charter §8 reserves**. The Laboratory cannot legislate for what it was not granted.
 - The College's **task brief** for the area, including its **Questions**. The brief usually contains a hard constraint nobody has noticed, and the Questions are a completeness test. Briefs, the Advice material and the House Manual are all in the programme document linked from `CLAUDE.md` §1.
 - **Hard numbers with consequences attached** — thresholds, deadlines, floors the College has set.
 - **Operational facts** about how the house actually works.

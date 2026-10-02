@@ -49,7 +49,7 @@ gh repo list newspeakhouse-lab-2026        # private repos too — live systems 
 
 ## 5. Authority
 
-- [ ] Claims no power the Charter reserves to the College (§8: the Hall's programme, the Access Register, the fabric of the building, the College's legal and financial obligations, Fellowship admission, Faculty appointment, the Dean's office)
+- [ ] Claims no power the Charter reserves to the College (Charter §8: the Hall's programme, the Access Register, the fabric of the building, the College's legal and financial obligations, Fellowship admission, Faculty appointment, the Dean's office)
 - [ ] Where the instrument depends on an operational fact about the house, that fact has been **confirmed with a person**, not inferred from a document
 
 ## 6. Hygiene
