@@ -67,7 +67,7 @@ With **14 members** (`members.md`, 2026-09-20). Fractions of all members **round
 
 | Procedure | Requirement |
 |---|---|
-| Tier A (Ordinary) | 48h in the governance channel; passes absent a stated objection |
+| Tier A (Ordinary) | 48h **visible in the governance channel**; passes absent a stated objection |
 | Tier B (Ordinary) | Stated period under 7 days; passes absent a stated objection |
 | Tier C (Ordinary) | ≥7 days; simple majority of those voting; **quorum 7** |
 | Layer 3 Policy | 1 endorsement + preference-mapping step + 7 days; **8 affirmative** (majority of all) |
@@ -134,7 +134,9 @@ gh pr view {n} --json createdAt              # has the deliberation window elaps
 
 Note the divergence between text and practice: §2 Tier A says a member proposes "by opening a GitHub issue", but every rule filed so far (#4, #5, #8) went straight to a pull request with no issue. Both routes satisfy the substance; say so rather than telling anyone they filed incorrectly.
 
-Deliberation also happens in the governance channel, which you cannot read. **Absence of objection on a pull request is not proof of lazy consensus.** Say so rather than concluding a proposal has passed.
+**The deliberation window runs in the governance channel, not here.** §2 requires a Tier A proposal to be "visible in the governance channel on the chosen communication channel for 48 hours". A pull request that was never posted to the channel has not started its clock, however complete it is. Always remind the member to post it there, with a link and the tier, and never treat the pull request's age as the window.
+
+You cannot read the channel. **Absence of objection on a pull request is not proof of lazy consensus.** Say so rather than concluding a proposal has passed.
 
 ## 9. Accessibility
 

@@ -23,7 +23,7 @@ Key concepts:
 - **Merge** — when a pull request is accepted, the branch's changes are added to `main`. This is the moment a decision enters the record.
 - **Main** — the official branch. What's on `main` is the law. Everything should reach it through a pull request.
 
-You do not need to install anything. Everything described in this guide happens through GitHub's website. Members comfortable with the command line can also use `git` locally — creating branches, committing files, and pushing changes. AI agents authorised under the Constitution's computational tools clause can interact with the repository the same way; see `CLAUDE.md`.
+**You do not need to install anything.** Everything in this guide can be done through GitHub's website. Members comfortable with the command line can use `git` and the GitHub CLI instead, and AI agents authorised under the Constitution's computational tools clause work the same way — see *Working with an AI agent* below, and `CLAUDE.md`.
 
 **If GitHub is a barrier, it must not cost you anything.** Section 1 provides that no member may lose a right under the Constitution because they cannot use GitHub or the Laboratory's communication channel, and the Convener must provide a reasonably equivalent route and ensure anything submitted through it is communicated and recorded as the Constitution otherwise requires. Ask the Convener. This guide exists to reduce how often that is needed, not to replace it.
 
@@ -66,6 +66,42 @@ Any instrument may be filed as a time-limited experiment using the `exp-` prefix
 
 Put reasoning in a companion `rationale.md`, not in the instrument. Reasoning left inside an instrument becomes binding, and a future reader will cite your argument as law.
 
+## The process, end to end
+
+Every amendment follows the same arc. The deliberation periods and thresholds differ by layer; the steps do not.
+
+| | Step | Who | Where |
+|---|---|---|---|
+| 0 | Set up, once | You | Your machine, or nothing at all if you use the website |
+| 1 | Decide what you are proposing, and at which layer | You — an agent may advise, you decide | — |
+| 2 | *Optional:* open an issue, if you have no text yet | You or your agent | GitHub |
+| 3 | **Post the proposal to the governance channel** | **You, personally** | Governance channel |
+| 4 | Draft the instrument, and a `rationale.md` beside it | Your agent drafts; you own it | Your machine or GitHub |
+| 5 | Check it against what the Constitution requires | Your agent | — |
+| 6 | Branch, commit, open the pull request | You or your agent | GitHub |
+| 7 | Deliberate | You. An agent may draft your words; it may never post a position | Channel, pull request, meetings |
+| 8 | Endorsements, where the layer needs them | Other members. Never an agent | Pull request or channel |
+| 9 | Vote | Members. **Never an agent** | As the Constitution specifies — not GitHub |
+| 10 | Record the outcome on the pull request | You, or a Record Keeper | Pull request |
+| 11 | Verify the process and merge | A Record Keeper, ideally not the author | GitHub |
+| 12 | Announce the result | The merging Record Keeper | Governance channel |
+
+> **Step 3 is the one people miss.** Section 2 provides that a Tier A proposal "is visible in the governance channel on the chosen communication channel for 48 hours." **The deliberation window runs there, not here.** A perfect pull request that was never posted to the channel has not started its clock, and nothing can pass by lazy consensus. Post it, link the pull request, and say which tier you are using.
+
+### Working with an AI agent
+
+Section 1 permits any member to run an AI agent, provided it is **documented and communicated to the rest of the membership**, and requires that an agent acting on Laboratory infrastructure be **clearly identifiable as that member's agent**. It holds no membership, no vote and no standing, and its actions are your responsibility.
+
+So the division is fixed:
+
+**An agent can** read the Record, search for conflicts, classify a proposal and write the reasoning, draft an instrument and its rationale, check a draft against the Constitution's requirements, compute thresholds and windows, create branches, commit, and open pull requests under your name.
+
+**Only you can** post to the governance channel, endorse, vote, raise an objection or state a consent position, and — as a Record Keeper — verify and merge. An agent may draft any of those for you to send. It must not send them. Consent that an agent can manufacture is not consent.
+
+To work this way you need `git`, the [GitHub CLI](https://cli.github.com) authenticated with `gh auth login`, and a clone of this repository. An agent tool does **not** authenticate GitHub for you — that is a separate step, and PRs cannot be opened without it. `CLAUDE.md` in this repository is read automatically by agent tools that look for it; it is plain prose and carries no tool-specific commands, so it works with whatever you use.
+
+When an agent has helped prepare a proposal, say so in the pull request and name yourself as the member responsible.
+
 ## How an amendment works
 
 Every amendment — a new rule, a policy change, or a constitutional edit — follows the same path through GitHub. The deliberation periods and approval thresholds differ by layer, as the Constitution defines. The mechanics are the same.
@@ -80,17 +116,30 @@ A proposal is classified by its **actual effect**, not by the label you choose. 
 
 ### 2. Create a branch and draft the text
 
-On GitHub's website:
+**Through the website**, with nothing installed:
 
-1. Navigate to the folder where your instrument belongs (e.g. `rules/`)
-2. Click **"+"**, then **Create new file** — or open an existing file and click the pencil icon to edit
-3. Name the file and write your proposal
-4. Click **Commit changes…** (green button, top right)
-5. Select **Create a new branch for this commit and start a pull request**
-6. Name your branch (e.g. `rule-quiet-hours`)
-7. Click **Propose changes**
+1. Open the folder where your instrument belongs (e.g. `rules/`), or the file you want to change
+2. Create a new file — or use the edit (pencil) icon on an existing one
+3. Name the file and write the text
+4. Commit, and when GitHub offers the choice, **create a new branch** rather than committing to `main`
+5. Name the branch (e.g. `rule-quiet-hours`) and continue through to opening the pull request
 
-For constitutional amendments, edit `constitution.md` directly on a new branch.
+GitHub relabels its buttons from time to time, so treat the names above as approximate. The shape of the flow is stable: **edit a file, commit to a new branch, open a pull request.** If what you see does not match, follow the equivalent.
+
+**From the command line**, or through an agent:
+
+```bash
+git clone https://github.com/newspeakhouse-lab-2026/constitutional-record
+cd constitutional-record
+git checkout -b rule-quiet-hours
+# write rules/rule-quiet-hours.md
+git add rules/rule-quiet-hours.md
+git commit -m "Propose ordinary rule: quiet hours"
+git push -u origin rule-quiet-hours
+gh pr create          # fills in the pull request template
+```
+
+For constitutional amendments, edit `constitution.md` on a new branch. Two endorsing reviews on the pull request start the seven-day clock.
 
 ### 3. Fill in the pull request template
 
@@ -102,7 +151,7 @@ You don't need everything immediately — the amendment record and the vote evid
 
 The pull request is visible to all members and to the public. Discussion happens in the pull request, in the governance channel, and in meetings as needed.
 
-The deliberation period runs as the Constitution specifies for the layer. During it the proposal can be revised — the proposer or any member can push further commits to the branch. **A material change restarts any minimum deliberation period.** A correction that does not change the meaning does not.
+**The deliberation window runs in the governance channel** — Section 2 requires a Tier A proposal to be visible there for 48 hours — so post it there with a link to the pull request and say which tier you are using. The pull request is where the text and the evidence live; the channel is where the clock runs. During it the proposal can be revised — the proposer or any member can push further commits to the branch. **A material change restarts any minimum deliberation period.** A correction that does not change the meaning does not.
 
 An objection is never a bare "no": it is stated with its reason and a suggested route forward. A single stated objection moves an Ordinary proposal **up** a tier. It can never move down.
 
