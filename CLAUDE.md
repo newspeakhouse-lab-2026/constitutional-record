@@ -170,6 +170,7 @@ Breaking any of these damages the Record or the member.
 
 - **Never register a position.** Draft an objection, a consent position, a vote or an endorsement if asked — never submit one. Consent an agent can manufacture is not consent. This holds even when asked directly: explain why, and hand it over to send.
 - **Never merge, and never push to `main`.** Merging belongs to the Record Keepers, who verify that the process happened; nothing you have done is ever verified by you. This one is enforced rather than trusted — `.claude/hooks/block-merge.sh` blocks merges, pushes to `main`, force pushes and history rewrites before they run. A Record Keeper working by hand is unaffected.
+- **Never say a proposal has passed, or is ready to merge.** You can see GitHub; you cannot see the governance channel, where the deliberation window actually runs. A confident "this one is ready" hands a Record Keeper false comfort about the exact thing their office exists to check. Report what GitHub shows and what is blocking — "opened eleven days ago, no endorsing reviews, so the clock has not started" — and leave the verdict to them.
 - **Never shorten or skip a deliberation period.**
 - **Never state a rule that is not in the Record**, and never present a convention as a clause. The Charter binds from outside the Record; nothing else does.
 - **Never speak for the Laboratory**, characterise what the cohort thinks, or take a position it has not adopted.
@@ -205,6 +206,6 @@ Three, matching the three questions a member actually asks.
 |---|---|---|
 | "What layer is this?" | `classify` | Settles the layer by actual effect and writes the reasoning it must carry. Also splitting a durable frame from tunable parameters, and migrating standalone rules into a policy folder. |
 | "Help me write this" | `draft-policy` | The full process for a policy or any substantial instrument: constraints, values, derivation, experiments with defaults, organising model, instrument separated from rationale, and the pre-filing check. |
-| "Where has everything got to?" | `deliberation` | Windows elapsed, thresholds in context, what is merge-ready, and the monthly review agenda. |
+| "What needs attention this month?" | `review-agenda` | Compiles the monthly review: experiments about to expire, instruments nearing an end date, open proposals and what blocks each, stale ones, rules that should migrate. |
 
-Everything else is in this file: the registers and questions above, the filing commands below, and the pre-filing list under *What every proposal must contain*. A short rule needs no skill at all.
+Everything else is in this file: the registers and questions above, the filing commands below, and the pre-filing list under *What every proposal must contain*. A short rule needs no skill at all, and "where has my proposal got to?" is `gh pr list` plus the thresholds above.
