@@ -1,0 +1,111 @@
+name: "Proposal"
+description: Propose a rule, a policy, or a constitutional amendment — before you have drafted the text, or alongside it.
+title: "Proposal: "
+labels: ["proposal"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **An issue cannot adopt anything.** Only a merged pull request puts text in the Record (Section 1). Use this to propose something and deliberate on it — then open a pull request carrying the text, whose template asks for everything the Constitution requires.
+
+        If you already have the text, you can skip straight to a pull request.
+
+  - type: dropdown
+    id: layer
+    attributes:
+      label: Layer
+      description: "Classified by the proposal's **actual effect**, not by which process is convenient. Where two layers are reasonably arguable, the more demanding one applies."
+      options:
+        - "Layer 2 — Ordinary: a rule or parameter within an existing frame"
+        - "Layer 3 — Policy: creates or redesigns governance for an area; an office; an ongoing financial flow"
+        - "Layer 4 — Constitutional: alters rights, thresholds, procedures, or the allocation of authority"
+        - "Not sure — help me classify it"
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you are proposing
+      description: The change you want. If you have the text, put it here; if not, describe the change and what problem it solves.
+    validations:
+      required: true
+
+  - type: textarea
+    id: classification
+    attributes:
+      label: Why that layer — or what makes it unclear
+      description: "Required by Section 2. Not the label, the reasoning: name the effect that determines the layer, and say why the layer above is not required. If you picked *Not sure*, say what makes it ambiguous and someone will help."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: stage
+    attributes:
+      label: Where this has got to
+      options:
+        - "An idea — no text drafted yet"
+        - "Text drafted, pull request coming"
+        - "Pull request already open (link it below)"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: tier
+    attributes:
+      label: Deliberation tier — Layer 2 only
+      description: "A proposal may enter at any tier. One stated objection moves it up a tier; it never moves down."
+      options:
+        - "Tier A — 48 hours, passes absent a stated objection"
+        - "Tier B — a stated period under 7 days, passes absent a stated objection"
+        - "Tier C — 7 days or more, simple majority of those voting, quorum half of all members"
+        - "Not applicable — Layer 3 or 4"
+    validations:
+      required: false
+
+  - type: textarea
+    id: conflicts
+    attributes:
+      label: Anything this conflicts with or replaces
+      description: "If you already know. The pull request will ask you to search properly: `grep -ri \"{keyword}\" constitution.md policies/ rules/`, open pull requests, open issues, `git branch -a`, and `gh repo list newspeakhouse-lab-2026` — private repos run live systems."
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: is_experiment
+    attributes:
+      label: Time-limited experiment?
+      description: "Any proposal at any layer may be an experiment. The `exp-` prefix changes the expiry, not the threshold or the process."
+      options:
+        - label: "This is a time-limited experiment — file it with an `exp-` prefix"
+          required: false
+
+  - type: textarea
+    id: experiment
+    attributes:
+      label: Experiment details
+      description: "Only if you ticked the box. **Hypothesis** — stated so it could turn out false. **Success criteria** — and which is decisive if they disagree. **End date** — leave a monthly review before it, so the cohort extends deliberately rather than by accident. **What operates on expiry** — an experiment whose expiry breaks the instrument containing it is not an experiment, it is a dependency."
+      placeholder: |
+        Hypothesis:
+        Success criteria:
+        End date:
+        What operates on expiry:
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ### What you will need by the time you open the pull request
+
+        You do not need these now. They are what the pull request template will ask for, so you know what is coming.
+
+        | | |
+        |---|---|
+        | **Every layer** | The layer **and its reasoning**. An `Observed by:` line if it creates any enforceable duty — how breach would reasonably become known, authorising no new surveillance. Conflicts searched across the Record, open pull requests, branches and the organisation's other repositories. The file at the path its layer requires. |
+        | **Layer 2** | Its tier, and whether a policy folder exists for the area — `policies/{area}/rule-*.md` if so, `rules/rule-*.md` if not or if it crosses areas. |
+        | **Layer 3** | One endorsing member. A preference-mapping step you run. The source of authority in the Charter, and anything adjacent that Charter §8 reserves to the College. Which numbers live in a separate Layer 2 rule so they can change in 48 hours, and which invariants may only change by amending the policy. Adoption needs a **majority of all members**. |
+        | **Layer 4** | A pull request against `constitution.md`. **Two endorsing reviews** start the seven-day clock. Every other clause that relies on the one you are changing. The assumptions the amendment rests on. Adoption needs **two-thirds of all members**. |
+
+        Reasoning belongs in a companion `rationale.md`, not in the instrument — reasoning left inside an instrument becomes binding. See [CONTRIBUTING.md](../blob/main/CONTRIBUTING.md) and, if you work with an AI agent, [CLAUDE.md](../blob/main/CLAUDE.md).

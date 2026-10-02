@@ -35,7 +35,7 @@ A time-limited experiment takes the `exp-` prefix at whatever layer it belongs t
 
 ## Proposing something
 
-Open an issue using the form for your layer, then put the text on a branch and open a pull request. The form asks for the reasoning behind your layer classification, which the Constitution requires. Full walkthrough in [CONTRIBUTING.md](CONTRIBUTING.md) — no command line needed.
+Put the text on a branch and open a pull request — that is the proposal of record, and its template asks for everything the Constitution requires, including the reasoning behind your layer classification. If you want to propose something before drafting the text, open an issue with the Proposal form first. Full walkthrough in [CONTRIBUTING.md](CONTRIBUTING.md) — no command line needed.
 
 Deliberation happens here, in the governance channel, and in meetings. Voting happens as the Constitution specifies for the layer; **GitHub is not the voting platform.** A Record Keeper merges once the process has been verified, which is a clerical act and not a second vote.
 

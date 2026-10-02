@@ -54,7 +54,7 @@ disputes/
 CLAUDE.md                            Instructions for members' AI agents
 CONTRIBUTING.md                      This guide
 .github/
-  ISSUE_TEMPLATE/                    One issue form per layer, plus experiments
+  ISSUE_TEMPLATE/                    The Proposal form
   pull_request_template.md           The checks every pull request should pass
 ```
 
@@ -74,7 +74,7 @@ Every amendment — a new rule, a policy change, or a constitutional edit — fo
 
 **An issue cannot adopt anything.** It holds discussion, not text, and Section 1 requires that a rule's exact adopted text appear in the Record. Only a merged pull request does that.
 
-So the pull request is the proposal of record, and its template asks for everything the Constitution requires. **Open an issue first only when it helps** — when you want to propose a rule before drafting its wording, or deliberate on whether a rule should exist before arguing about its text. Go to **Issues → New issue** and pick the form for your layer. If you already have the text, go straight to a pull request.
+So the pull request is the proposal of record, and its template asks for everything the Constitution requires. **Open an issue first only when it helps** — when you want to propose a rule before drafting its wording, or deliberate on whether a rule should exist before arguing about its text. Go to **Issues → New issue** and use the Proposal form: it asks three things (the layer, what you are proposing, and why that layer) and then tells you what the pull request will need. If you already have the text, go straight to a pull request.
 
 A proposal is classified by its **actual effect**, not by the label you choose. Where two layers are reasonably arguable, the more demanding process applies.
 
