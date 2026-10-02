@@ -16,11 +16,11 @@ Compute from the current `members.md` every time. Fractions of all members **rou
 | Tier C | 7 days or more | Simple majority of those voting; quorum 7 |
 | Layer 3 Policy | 7 days + 1 endorsement + preference mapping | 8 affirmative |
 | Layer 4 | 7 days + 2 endorsing reviews | 10 affirmative |
-| Emergency | 12h | Majority of those voting; quorum 7; expires in 7 days |
-| Adjudication remedy | 7 days' notice | Two-thirds of other members voting; quorum half of all others |
+| Emergency | 12h | Majority of those voting; quorum 7; expires in 7 days unless confirmed |
+| Adjudication remedy | 7 days' notice | Two-thirds of other members voting; quorum 7 (half of the other 13) |
 | Removal | 7 days' notice | 9 affirmative (two-thirds of all but the respondent) |
 
-"Those who vote" counts Preference and Objection only. Toleration and Abstention count toward quorum, not the majority denominator. One stated objection moves an Ordinary proposal **up** a tier; it never moves down. A material change restarts the minimum period; a correction that does not change meaning does not.
+"Those who vote" counts Preference and Objection only. Toleration and Abstention count toward quorum, not the majority denominator. One stated objection moves an Ordinary proposal **up** a tier; it never moves down. An Emergency resolution may not amend the Constitution, impose a sanction, decide membership, determine an adjudication, authorise expenditure above £300, or create an ongoing financial commitment. A material change restarts the minimum period; a correction that does not change meaning does not.
 
 ## Status report
 
@@ -40,7 +40,7 @@ For each open proposal report: its layer, when it opened, the window that applie
 A proposal is ready to merge when its window has elapsed, its threshold is met, and verification has happened. Flag, but never perform:
 
 - Only **Record Keepers** merge.
-- **The author never merges their own proposal.** Where the author is a Record Keeper, the other Record Keeper merges.
+- **Recommended: the author does not merge their own proposal.** The Constitution says "either may merge" and does not expressly forbid it, but verification means little when the verifier is the author. Flag it as practice, not as a rule.
 - Record Keepers verify that the process occurred and the outcome is recorded correctly. They are custodians, not gatekeepers: they check process, not whether they agree.
 
 ## Monthly review agenda

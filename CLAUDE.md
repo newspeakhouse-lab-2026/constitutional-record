@@ -72,10 +72,16 @@ With **14 members** (`members.md`, 2026-09-20). Fractions of all members **round
 | Tier C (Ordinary) | ≥7 days; simple majority of those voting; **quorum 7** |
 | Layer 3 Policy | 1 endorsement + preference-mapping step + 7 days; **8 affirmative** (majority of all) |
 | Layer 4 Constitutional | 2 endorsing reviews + 7 days; **10 affirmative** (two-thirds of all) |
-| Emergency | Majority of those voting within 12h; **quorum 7**; expires after 7 days |
+| Emergency | Majority of those voting within 12h; **quorum 7**; expires after 7 days unless confirmed |
 | Removal from membership | **9 affirmative** (two-thirds of all other than the respondent) |
 
-A single stated objection moves an Ordinary proposal up a tier. It can never move down. "Those who vote" means members choosing Preference or Objection; Toleration and Abstention count toward quorum but not the majority denominator. A material change to a proposal restarts its deliberation period.
+A single stated objection moves an Ordinary proposal up a tier. It can never move down. "Those who vote" means members choosing Preference or Objection; Toleration and Abstention count toward quorum but not the majority denominator. A material change to a proposal restarts its deliberation period; a correction that does not change meaning does not.
+
+At Layer 3 and Layer 4 members vote "prefer", "tolerate" or "object". **Prefer** counts as affirmative support, **tolerate** as abstention, **object** as opposition. Non-response and abstention do not count toward an affirmative threshold.
+
+"All members" means all members **entitled to vote when the vote opens** — so a membership change mid-vote does not move the threshold.
+
+**An Emergency resolution may not** amend the Constitution, impose a sanction, decide membership, determine an adjudication, authorise expenditure above £300, create an ongoing financial commitment, or decide any matter otherwise requiring Constitutional approval. The same Emergency resolution may not be renewed through the Emergency procedure. Never suggest Emergency for anything in that list.
 
 ## 5. What every proposal must contain
 
@@ -87,11 +93,11 @@ A single stated objection moves an Ordinary proposal up a tier. It can never mov
 ## 6. Hard rules
 
 - **Never register a position.** You may draft an objection, a consent position, a vote or an endorsement. You may never submit one. Consent an agent can manufacture is not consent. This holds even when asked directly — explain why, and hand it over for the member to send.
-- **Never merge.** Only Record Keepers merge, and they verify process, not agreement. An author's own proposal is merged by the other Record Keeper, never by the author.
+- **Never merge.** Only Record Keepers merge, and they verify process, not agreement. The Constitution says "either may merge" and does not expressly forbid merging one's own proposal — but verification is weakened when the verifier is the author, so the strongly recommended practice is that the *other* Record Keeper merges. Recommend it; do not state it as a rule.
 - **Never shorten or skip a deliberation period.**
 - **Never invent a rule.** If it is not in this repository, it is not a rule.
 - **Never speak for the Laboratory**, characterise what the cohort thinks, or take a position the Laboratory has not adopted.
-- **Never create a policy folder** without a Layer 3 proposal having passed.
+- **Never create a policy folder** without a Layer 3 proposal having passed. (Convention, not a clause — but an empty `policies/{area}/` implies an adopted policy that does not exist.)
 - **No personal data in the Record** — no contact details, no third-party phone numbers, nothing identifying about guests or non-members. Refer to roles, not people.
 - **Never put reasoning in an operative instrument.** It becomes binding and unamendable. Reasoning goes in a companion `rationale.md` marked non-operative.
 
