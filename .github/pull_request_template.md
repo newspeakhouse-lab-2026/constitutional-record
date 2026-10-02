@@ -61,14 +61,17 @@ programme, the Access Register, the building's fabric, the College's legal,
 financial and safety obligations, Fellowship admission, Faculty appointment,
 the Dean's office. -->
 
-### Experiment — delete if not one
+### Experiment
 
-<!-- An experiment takes its own layer's process; the prefix changes the expiry,
-not the threshold. -->
+- [ ] **This is a time-limited experiment** — filed with an `exp-` prefix
 
-- **Hypothesis:**
-- **Success criteria:**
-- **End date:** <!-- leave a monthly review before it, so the cohort can extend deliberately -->
+<!-- Any proposal at any layer may be an experiment. The prefix changes the
+expiry, not the threshold or the process. Complete the four below only if the
+box is ticked; delete them otherwise. -->
+
+- **Hypothesis:** <!-- stated so it could turn out false -->
+- **Success criteria:** <!-- and which one is decisive if they disagree -->
+- **End date:** <!-- leave a monthly review before it, so the cohort extends deliberately -->
 - **What operates on expiry:** <!-- REQUIRED. An experiment whose expiry breaks the instrument containing it is not an experiment, it is a dependency. -->
 
 ### Endorsements

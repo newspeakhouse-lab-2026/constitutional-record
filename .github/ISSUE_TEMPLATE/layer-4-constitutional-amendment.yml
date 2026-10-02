@@ -62,3 +62,23 @@ body:
       description: Two endorsing reviews are needed to start the clock.
     validations:
       required: true
+  - type: checkboxes
+    id: is_experiment
+    attributes:
+      label: Time-limited experiment?
+      description: "Any proposal may be filed as an experiment, at its own layer. The `exp-` prefix changes the expiry, not the threshold or the process."
+      options:
+        - label: "This is a time-limited experiment — file it with an `exp-` prefix"
+          required: false
+  - type: textarea
+    id: experiment
+    attributes:
+      label: Experiment details
+      description: "Only if you ticked the box above. Needs all four: **Hypothesis** — what you expect, stated so it could turn out false. **Success criteria** — how the monthly review will tell, and which criterion is decisive if they disagree. **End date** — leave a monthly review before it, so the cohort extends deliberately rather than by accident. **What operates on expiry** — required: an experiment whose expiry breaks the instrument containing it is not an experiment, it is a dependency."
+      placeholder: |
+        Hypothesis:
+        Success criteria:
+        End date:
+        What operates on expiry:
+    validations:
+      required: false
