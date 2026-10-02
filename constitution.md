@@ -26,9 +26,7 @@ A rule is valid if and only if it was adopted through the procedure required for
 
 ### The Constitutional Record
 
-The Constitutional Record is a private git repository in GitHub. Every decision required by this Constitution to enter the Record is recorded by commit. No member may lose a right under this Constitution because they cannot use GitHub or the Laboratory's communication channel. The Convener must provide a reasonably equivalent route and ensure anything submitted through it is communicated and recorded as the Constitution otherwise requires. The repository is readable by all members from the last day of the Convention.
-
-The Interim Constitution shall only be accessible to Laboratory members and Faculty. The private Constitutional Record preserves the internal record of the procedures, decisions and amendments by which that published Constitution is created and changed. A public, up-to-date Constitution is made available to the Newspeak House community by the Record Keeper.
+The Constitutional Record is a Public git repository in GitHub available https://github.com/newspeakhouse-lab-2026/constitutional-record.git . Every decision required by this Constitution to enter the Record is recorded by commit. No member may lose a right under this Constitution because they cannot use GitHub or the Laboratory's communication channel. The Convener must provide a reasonably equivalent route and ensure anything submitted through it is communicated and recorded as the Constitution otherwise requires. The repository is readable by all members from the last day of the Convention.
 
 ### Amendment records
 
@@ -220,7 +218,7 @@ Expenditure must not be divided into smaller transactions for the purpose of avo
 
 Role selection shall, where possible, strike a balance between members' preferences, skill development opportunities, and existing experience.
 
-Additional Roles can be created as necessary using the Ordinary Rules Process and registered in a `roles.md` file in the repository and follow Role Policy as defined outside the constitution.
+All Roles both constitutional and those established by policy shall be recorded in the `roles.md` file in the repository this is to be maintained by the Record Keepers. The current role holders permanent or interim shall be recorded in this document and it will serve as an record of role holders including to external observers. A role is held if and only if the role holder was appointed through legitimate proceedures set out in this constitution a repository edit or commit does not itself create authority.
 
 ---
 
@@ -283,3 +281,25 @@ Laboratory members should keep a common record of proposed amendments as they ar
 ## 6. Expedited Constitutional amendments for a limited time after the Constitutional Convention
 
 Recognising that Laboratory members wish to refine and amend the Constitution following the Constitutional Convention, any amendment to the Constitution shall, for the purposes of the amendment process, be treated as an Ordinary Rule for a period of two weeks immediately following the Constitution Convention. Such period of time shall end at 23:59 (UK time) on Sunday, 4 October 2026.
+
+To ease the transition the Fellowship will appoint the following interim roles: Agent, Convener, Treasurer and Record Keeper. 
+
+The interim selection process shall be as follows:
+
+Candidates interested in the roles shall indicate their interest clearly on the Roles Election channel by posting with the following text:
+
+I would like to fill role (Specify role) 
+
+In the same message they are also entitled to add some supporting text to explain their candidacy. [Informally please keep this short]
+
+Any Laboratory member who expresses interest by 22:00 on Tuesday the 22nd of September will be registered as a candidate.
+
+Voting will then open using a  Borda count on Opavote:
+
+Each voter may rank up to three candidates. A first preference receives three points, a second preference two points, and a third preference one point. The candidate receiving the highest total score is elected.
+
+This vote will take place on opavote
+
+Polls will close at 15:00 on the Wednesday 23nd of September with interim role holders elected according to the result. They will remain in place from that point until the period defined in 6. Expedited Constitutional amendments (Ending 23:59 (UK time) on Sunday, 4 October 2026.) The interim role holders will fill the roles with all the usual powers delegated to holders of those roles.
+
+If an election under our usual processes occurs prior to the end of this timeline the powers will transfer from the interim role holders to the regular role holders. In the event that this has not occurred a two thirds majority of all Laboratory members may extend this interim period superseding any other usual constitutional rules.
