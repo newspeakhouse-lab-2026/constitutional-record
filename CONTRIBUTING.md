@@ -66,6 +66,16 @@ Any instrument may be filed as a time-limited experiment using the `exp-` prefix
 
 Put reasoning in a companion `rationale.md`, not in the instrument. Reasoning left inside an instrument becomes binding, and a future reader will cite your argument as law.
 
+## Words used here
+
+| | |
+|---|---|
+| **Instrument** | The operative text itself — a rule, a policy, a constitutional amendment, a dispute decision. The thing that becomes binding, as distinct from the *proposal* asking for it, the *discussion* around it, or the `rationale.md` beside it. The Charter uses the word in §4. |
+| **Layer** | How much weight a decision carries, and therefore what procedure adopts it. Determined by actual effect, not by the proposer's label. |
+| **Tier** | Within Layer 2 only: how long deliberation runs. A (48 hours), B (under seven days), C (seven or more, with a vote). |
+| **Lazy consensus** | Passing because nobody objected within the window, rather than by a vote. Tiers A and B only. |
+| **The Record** | This repository. A rule exists only if its exact adopted text is here. |
+
 ## The process, end to end
 
 Every amendment follows the same arc. The deliberation periods and thresholds differ by layer; the steps do not.
@@ -87,6 +97,19 @@ Every amendment follows the same arc. The deliberation periods and thresholds di
 | 13 | Announce the result | The merging Record Keeper | Governance channel |
 
 Step 7 is the one people miss, and it is the only step with no trace on GitHub.
+
+### What starts the clock
+
+It differs by layer, and the Constitution is explicit for only two of them.
+
+| | What starts deliberation |
+|---|---|
+| **Tier A** | The 48 hours **is** the period the proposal is visible in the governance channel (Constitution §2). Post it there, or nothing is running. |
+| **Tier B and C** | The stated period. **The Constitution does not say what triggers it.** |
+| **Layer 3 Policy** | Seven days, after an endorsing member and the preference-mapping step. The trigger is not stated. |
+| **Layer 4** | **"Two endorsing reviews start the 7-day deliberation clock"** — explicit, and those are reviews on the pull request. This clock runs on GitHub. |
+
+Where the Constitution is silent, the safe practice is the same as Tier A: post it to the channel with the link and the tier, and say when the window closes. Then nobody can dispute later when it began. **But do not assume every clock runs in the channel — a Layer 4 amendment sitting without two endorsing reviews has not started at all**, however long it has been open, and however much it has been discussed.
 
 ### Working with an AI agent
 
@@ -156,7 +179,7 @@ You don't need everything immediately — the amendment record and the vote evid
 
 The pull request is visible to all members and to the public. Discussion happens in the pull request, in the governance channel, and in meetings as needed.
 
-**The deliberation window runs in the governance channel** — Section 2 requires a Tier A proposal to be visible there for 48 hours — so post it there with a link to the pull request and say which tier you are using. The pull request is where the text and the evidence live; the channel is where the clock runs. During it the proposal can be revised — the proposer or any member can push further commits to the branch. **A material change restarts any minimum deliberation period.** A correction that does not change the meaning does not.
+For Tier A the window **is** the proposal's visibility in the governance channel (Constitution §2), so post it there with the link and the tier. For Layer 4 the clock starts when two endorsing reviews land on the pull request. See *What starts the clock* above — it is not the same rule for every layer. During it the proposal can be revised — the proposer or any member can push further commits to the branch. **A material change restarts any minimum deliberation period.** A correction that does not change the meaning does not.
 
 An objection is never a bare "no": it is stated with its reason and a suggested route forward. A single stated objection moves an Ordinary proposal **up** a tier. It can never move down.
 
