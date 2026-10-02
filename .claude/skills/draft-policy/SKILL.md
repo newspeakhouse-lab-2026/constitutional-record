@@ -5,7 +5,7 @@ description: Draft a Layer 3 policy or other substantial instrument from first p
 
 # Draft a policy
 
-`CLAUDE.md` covers layers, thresholds, filing and the hard rules. This is about the craft.
+`AGENTS.md` covers layers, thresholds, filing and the hard rules. This is about the craft.
 
 The Laboratory is a research programme. An instrument that governs but teaches nothing has done half its job.
 
@@ -14,7 +14,7 @@ The Laboratory is a research programme. An instrument that governs but teaches n
 Before drafting anything, list them:
 
 - What the **Charter** grants for this area, and what **Charter §8 reserves**. The Laboratory cannot legislate for what it was not granted.
-- The College's **task brief** for the area, including its **Questions**. The brief usually contains a hard constraint nobody has noticed, and the Questions are a completeness test. Briefs, the Advice material and the House Manual are all in the programme document linked from `CLAUDE.md` under *Read before acting*.
+- The College's **task brief** for the area, including its **Questions**. The brief usually contains a hard constraint nobody has noticed, and the Questions are a completeness test. Briefs, the Advice material and the House Manual are all in the programme document linked from `AGENTS.md` under *Read before acting*.
 - **Hard numbers with consequences attached** — thresholds, deadlines, floors the College has set.
 - **Operational facts** about how the house actually works.
 - Limits on the Laboratory's **legal capacity** — the Charter creates no legal rights, and the College keeps its own financial and safety obligations.
@@ -75,7 +75,7 @@ A recommended convention for instruments, which a future proposal-process policy
 
 ## Phase 9 — Check, then prepare for the room
 
-Work the pre-filing list in `CLAUDE.md` under *What every proposal must contain*. Report what is missing; never fix it silently — the member needs to know what their proposal lacked.
+Work the pre-filing list in `AGENTS.md` under *What every proposal must contain*. Report what is missing; never fix it silently — the member needs to know what their proposal lacked.
 
 Then predict the objections it will draw, name what needs a decision from the Dean, the Treasurer or the cohort, and say which numbers are provisional and what should inform them.
 

@@ -7,7 +7,7 @@ description: Compile the agenda for a monthly review — expiring experiments, s
 
 The Convener convenes a retrospective each month. This compiles what belongs on it.
 
-It is **compilation, not judgement.** You list what exists and what its own text says about itself. You do not report whether anything has passed, and you do not pronounce anything ready to merge — see the hard rules in `CLAUDE.md`. Deliberation happens in a channel you cannot read.
+It is **compilation, not judgement.** You list what exists and what its own text says about itself. You do not report whether anything has passed, and you do not pronounce anything ready to merge — see the hard rules in `AGENTS.md`. Deliberation happens in a channel you cannot read.
 
 Start by establishing today's date with `date`. Several items below are relative to it.
 

@@ -23,7 +23,7 @@ Key concepts:
 - **Merge** — when a pull request is accepted, the branch's changes are added to `main`. This is the moment a decision enters the record.
 - **Main** — the official branch. What's on `main` is the law. Everything should reach it through a pull request.
 
-**You do not need to install anything.** Everything in this guide can be done through GitHub's website. Members comfortable with the command line can use `git` and the GitHub CLI instead, and AI agents authorised under the Constitution's computational tools clause work the same way — see *Working with an AI agent* below, and `CLAUDE.md`.
+**You do not need to install anything.** Everything in this guide can be done through GitHub's website. Members comfortable with the command line can use `git` and the GitHub CLI instead, and AI agents authorised under the Constitution's computational tools clause work the same way — see *Working with an AI agent* below, and `AGENTS.md`.
 
 **If GitHub is a barrier, it must not cost you anything.** Section 1 provides that no member may lose a right under the Constitution because they cannot use GitHub or the Laboratory's communication channel, and the Convener must provide a reasonably equivalent route and ensure anything submitted through it is communicated and recorded as the Constitution otherwise requires. Ask the Convener. This guide exists to reduce how often that is needed, not to replace it.
 
@@ -51,7 +51,8 @@ rules/
   rule-{name}.md                     Layer 2 — Standalone rules, no policy area or crossing several
 disputes/
   dispute-{date}-{name}.md           Adjudication precedent
-CLAUDE.md                            Instructions for members' AI agents
+AGENTS.md                            Instructions for members' AI agents
+CLAUDE.md                            One line, pointing at AGENTS.md
 CONTRIBUTING.md                      This guide
 .github/
   ISSUE_TEMPLATE/                    The Proposal form
@@ -123,7 +124,7 @@ So the division is fixed:
 
 **Only you can** post to the governance channel, endorse, vote, raise an objection or state a consent position, and — as a Record Keeper — verify and merge. An agent may draft any of those for you to send. It must not send them. Consent that an agent can manufacture is not consent.
 
-To work this way you need `git`, the [GitHub CLI](https://cli.github.com) authenticated with `gh auth login`, and a clone of this repository. An agent tool does **not** authenticate GitHub for you — that is a separate step, and PRs cannot be opened without it. `CLAUDE.md` in this repository is read automatically by agent tools that look for it; it is plain prose and carries no tool-specific commands, so it works with whatever you use.
+To work this way you need `git`, the [GitHub CLI](https://cli.github.com) authenticated with `gh auth login`, and a clone of this repository. An agent tool does **not** authenticate GitHub for you — that is a separate step, and PRs cannot be opened without it. `AGENTS.md` in this repository is read automatically by agent tools that look for it; it is plain prose and carries no tool-specific commands, so it works with whatever you use.
 
 When an agent has helped prepare a proposal, say so in the pull request and name yourself as the member responsible.
 
@@ -251,4 +252,4 @@ Configuring branch protection implements an existing constitutional requirement 
 | See what's being proposed | Open pull requests, open issues, **and** `git branch -a` — drafts live in branches |
 | See the full history of a rule | Open the file → **History** |
 | See all current rules | Browse the repo on `main` |
-| Check thresholds and windows | `CLAUDE.md` — or ask your agent |
+| Check thresholds and windows | `AGENTS.md` — or ask your agent |
