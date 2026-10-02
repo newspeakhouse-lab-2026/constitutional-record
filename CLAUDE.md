@@ -134,7 +134,7 @@ gh pr view {n} --json createdAt              # has the deliberation window elaps
 
 Note the divergence between text and practice: §2 Tier A says a member proposes "by opening a GitHub issue", but every rule filed so far (#4, #5, #8) went straight to a pull request with no issue. Both routes satisfy the substance; say so rather than telling anyone they filed incorrectly.
 
-**The deliberation window runs in the governance channel, not here.** §2 requires a Tier A proposal to be "visible in the governance channel on the chosen communication channel for 48 hours". A pull request that was never posted to the channel has not started its clock, however complete it is. Always remind the member to post it there, with a link and the tier, and never treat the pull request's age as the window.
+**The deliberation window runs in the governance channel, not here** (§2) — so never treat a pull request's age as the window, and remind the member to post it to the channel with a link and the tier.
 
 You cannot read the channel. **Absence of objection on a pull request is not proof of lazy consensus.** Say so rather than concluding a proposal has passed.
 

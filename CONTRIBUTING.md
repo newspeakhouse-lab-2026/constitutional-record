@@ -75,7 +75,7 @@ Every amendment follows the same arc. The deliberation periods and thresholds di
 | 0 | Set up, once | You | Your machine, or nothing at all if you use the website |
 | 1 | Decide what you are proposing, and at which layer | You — an agent may advise, you decide | — |
 | 2 | *Optional:* open an issue, if you have no text yet | You or your agent | GitHub |
-| 3 | **Post the proposal to the governance channel** | **You, personally** | Governance channel |
+| 3 | **Post the proposal to the governance channel** — this is what starts the deliberation clock | **You, personally** | Governance channel |
 | 4 | Draft the instrument, and a `rationale.md` beside it | Your agent drafts; you own it | Your machine or GitHub |
 | 5 | Check it against what the Constitution requires | Your agent | — |
 | 6 | Branch, commit, open the pull request | You or your agent | GitHub |
@@ -85,8 +85,6 @@ Every amendment follows the same arc. The deliberation periods and thresholds di
 | 10 | Record the outcome on the pull request | You, or a Record Keeper | Pull request |
 | 11 | Verify the process and merge | A Record Keeper, ideally not the author | GitHub |
 | 12 | Announce the result | The merging Record Keeper | Governance channel |
-
-> **Step 3 is the one people miss.** Section 2 provides that a Tier A proposal "is visible in the governance channel on the chosen communication channel for 48 hours." **The deliberation window runs there, not here.** A perfect pull request that was never posted to the channel has not started its clock, and nothing can pass by lazy consensus. Post it, link the pull request, and say which tier you are using.
 
 ### Working with an AI agent
 
@@ -118,13 +116,16 @@ A proposal is classified by its **actual effect**, not by the label you choose. 
 
 **Through the website**, with nothing installed:
 
-1. Open the folder where your instrument belongs (e.g. `rules/`), or the file you want to change
-2. Create a new file — or use the edit (pencil) icon on an existing one
-3. Name the file and write the text
-4. Commit, and when GitHub offers the choice, **create a new branch** rather than committing to `main`
-5. Name the branch (e.g. `rule-quiet-hours`) and continue through to opening the pull request
+1. Open the folder where your instrument belongs (e.g. `rules/`) and choose **Add file → Create new file** — or open an existing file and use the edit (pencil) icon
+2. Name it in the **Name your file…** box, and write the text
+3. Click **Commit changes…**, the green button at the top right
+4. **In the dialog, change the branch option.** It opens on *"Commit directly to the `main` branch"* — see the warning below
+5. Choose **"Create a new branch for this commit and start a pull request"**. A branch name appears, auto-filled as something like `yourname-patch-1`; rename it to something meaningful, e.g. `rule-quiet-hours`
+6. The dialog's title and button both change to **Propose changes**. Click it
 
-GitHub relabels its buttons from time to time, so treat the names above as approximate. The shape of the flow is stable: **edit a file, commit to a new branch, open a pull request.** If what you see does not match, follow the equivalent.
+> **Step 4 is a trap.** The dialog opens with *"Commit directly to the `main` branch"* already selected. Accept that default and your text lands in the Record immediately — no branch, no pull request, no deliberation, no vote. Branch protection is not configured (see below), so nothing stops it. It would not make your rule valid, since validity comes from the procedure and not from the commit, but it does put unadopted text in the Record and someone has to revert it.
+
+GitHub relabels its buttons from time to time. The shape of the flow is stable: edit a file, commit to a **new branch**, open a pull request.
 
 **From the command line**, or through an agent:
 
@@ -208,7 +209,7 @@ Section 1 provides that GitHub branch protection enforces approval requirements 
 | Per-path approval requirements | **Not configured** |
 | Issue forms and pull request template | Configured |
 
-Until branch protection is set up, these hold as **norms the Constitution already imposes**, not as technical guarantees. Follow them anyway: pushing a rule straight to `main` does not make it a rule. Validity comes from the procedure, and Section 1 is explicit that a repository edit or commit does not itself create authority.
+Until branch protection is set up, these hold as **norms the Constitution already imposes**, not as technical guarantees — and note that the website's commit dialog *defaults* to committing straight to `main`, so the easiest path through the interface is the one that bypasses the process. Follow them anyway: pushing a rule straight to `main` does not make it a rule. Validity comes from the procedure, and Section 1 is explicit that a repository edit or commit does not itself create authority.
 
 Configuring branch protection implements an existing constitutional requirement rather than creating a new one, and falls to the Record Keepers. Two cautions: set it after any merge-ready proposals have been merged, and make sure restricting merge rights cannot lock the repository if the Record Keeper role falls vacant.
 
