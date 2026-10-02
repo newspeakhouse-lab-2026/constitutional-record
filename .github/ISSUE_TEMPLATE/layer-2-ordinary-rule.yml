@@ -6,6 +6,10 @@ body:
   - type: markdown
     attributes:
       value: |
+        **An issue cannot adopt anything.** Only a merged pull request puts text in the Record. Use this when you want to propose something before drafting its text, or to deliberate before committing to wording — then open a pull request carrying the text. If you already have the text, you can skip straight to a pull request; its template asks for everything here.
+  - type: markdown
+    attributes:
+      value: |
         Ordinary Rules cover day-to-day running, the library, communication channels, events, and routine expenses.
 
         **If your proposal creates or redesigns governance for an area, creates an office, or starts an ongoing financial flow, it is a Layer 3 Policy, not this.** Where two layers are arguable, the more demanding process applies.

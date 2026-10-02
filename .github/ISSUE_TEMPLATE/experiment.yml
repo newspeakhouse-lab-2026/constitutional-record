@@ -6,6 +6,10 @@ body:
   - type: markdown
     attributes:
       value: |
+        **An issue cannot adopt anything.** Only a merged pull request puts text in the Record. Use this when you want to propose something before drafting its text, or to deliberate before committing to wording — then open a pull request carrying the text. If you already have the text, you can skip straight to a pull request; its template asks for everything here.
+  - type: markdown
+    attributes:
+      value: |
         An experiment follows the adoption process for **its own layer** — being an experiment does not make it cheaper. At monthly review it is evaluated; adoption or extension needs that layer's procedure, and otherwise **it expires automatically**.
   - type: textarea
     id: hypothesis

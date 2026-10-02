@@ -3,3 +3,6 @@ contact_links:
   - name: Read the Constitution first
     url: https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/constitution.md
     about: The authority. A proposal is classified by its actual effect, not by the label its proposer chooses.
+  - name: How to propose, deliberate and record a decision
+    url: https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/CONTRIBUTING.md
+    about: An issue cannot adopt anything — only a merged pull request does. Start here if you are unsure which you need.

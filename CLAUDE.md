@@ -116,17 +116,23 @@ If there is a conflict, say so and offer the choice: amend the existing instrume
 
 ## 8. Filing
 
+**The pull request is the proposal of record.** An issue holds no text, and §1 requires a rule's exact adopted text to appear in the Record — so only a merged pull request adopts anything. An issue is optional and useful for proposing before the text exists. Never tell a member an issue alone has adopted something.
+
+The pull request template carries every requirement in §5 above, so a pull request opened with no prior issue is complete.
+
 ```bash
 # Where does a Layer 2 rule go?
 ls policies/                      # policy folder for the area?
 #  yes → policies/{area}/rule-{name}.md
 #  no, or crosses areas → rules/rule-{name}.md
 
-gh issue create                   # choose the template for the layer
 git checkout -b {short-name}
-gh pr create --title "..." --body "Resolves #N"
-gh issue view {n} --json createdAt # has the deliberation window elapsed?
+gh pr create --title "..." --body "..."      # the proposal of record
+gh issue create                              # optional, when text does not exist yet
+gh pr view {n} --json createdAt              # has the deliberation window elapsed?
 ```
+
+Note the divergence between text and practice: §2 Tier A says a member proposes "by opening a GitHub issue", but every rule filed so far (#4, #5, #8) went straight to a pull request with no issue. Both routes satisfy the substance; say so rather than telling anyone they filed incorrectly.
 
 Deliberation also happens in the governance channel, which you cannot read. **Absence of objection on a pull request is not proof of lazy consensus.** Say so rather than concluding a proposal has passed.
 

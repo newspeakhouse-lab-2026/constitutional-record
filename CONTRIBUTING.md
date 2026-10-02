@@ -70,9 +70,11 @@ Put reasoning in a companion `rationale.md`, not in the instrument. Reasoning le
 
 Every amendment — a new rule, a policy change, or a constitutional edit — follows the same path through GitHub. The deliberation periods and approval thresholds differ by layer, as the Constitution defines. The mechanics are the same.
 
-### 1. Open an issue
+### 1. Decide whether you need an issue
 
-Go to **Issues → New issue** and choose the form for your layer: Layer 2 Ordinary Rule, Layer 3 Policy, Layer 4 Constitutional Amendment, or Experiment. The form asks for what the Constitution requires — including **the reasoning for your layer classification**, which is not optional. Blank issues remain available if a form does not fit.
+**An issue cannot adopt anything.** It holds discussion, not text, and Section 1 requires that a rule's exact adopted text appear in the Record. Only a merged pull request does that.
+
+So the pull request is the proposal of record, and its template asks for everything the Constitution requires. **Open an issue first only when it helps** — when you want to propose a rule before drafting its wording, or deliberate on whether a rule should exist before arguing about its text. Go to **Issues → New issue** and pick the form for your layer. If you already have the text, go straight to a pull request.
 
 A proposal is classified by its **actual effect**, not by the label you choose. Where two layers are reasonably arguable, the more demanding process applies.
 
@@ -92,7 +94,9 @@ For constitutional amendments, edit `constitution.md` directly on a new branch.
 
 ### 3. Fill in the pull request template
 
-The pull request will be pre-filled with a checklist. Link your issue with `Resolves #N`. You don't need everything immediately — vote evidence and the decision method are added after deliberation.
+The pull request is pre-filled with everything the Constitution requires: the layer **and the reasoning for it**, the tier, the `Observed by:` line if the proposal creates any duty, the conflicts you searched, the source of authority for a Policy or an amendment, and the experiment fields if it is one. Link an issue with `Resolves #N` if you opened one.
+
+You don't need everything immediately — the amendment record and the vote evidence are completed after deliberation, before merge.
 
 ### 4. Discussion and deliberation
 
@@ -163,7 +167,7 @@ Configuring branch protection implements an existing constitutional requirement 
 
 | Action | How |
 |---|---|
-| Propose a new rule | **Issues → New issue** → pick your layer's form, then create a branch with the file |
+| Propose a new rule | Create a branch with the file → **Propose changes**. An issue first is optional, for proposing before the text exists |
 | Amend an existing rule | Open file → pencil icon → **Commit changes** → new branch → **Propose changes** |
 | Discuss a proposal | Comment on the pull request |
 | Record a vote result | Comment on the pull request with the evidence in step 6 |
