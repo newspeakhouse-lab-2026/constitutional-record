@@ -1,0 +1,53 @@
+name: "Experiment (any layer)"
+description: A time-limited trial, filed with an `exp-` prefix at whatever layer it belongs to.
+title: "Experiment: "
+labels: ["experiment", "proposal"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        An experiment follows the adoption process for **its own layer** — being an experiment does not make it cheaper. At monthly review it is evaluated; adoption or extension needs that layer's procedure, and otherwise **it expires automatically**.
+  - type: textarea
+    id: hypothesis
+    attributes:
+      label: Hypothesis
+      description: What you expect to happen, stated so it could turn out false.
+    validations:
+      required: true
+  - type: textarea
+    id: success_criteria
+    attributes:
+      label: Success criteria
+      description: How the monthly review will tell whether it worked. Say which criterion is decisive if they disagree.
+    validations:
+      required: true
+  - type: input
+    id: end_date
+    attributes:
+      label: End date
+      description: "YYYY-MM-DD. Leave time for a monthly review to fall before it, so the cohort can extend it deliberately rather than by accident."
+    validations:
+      required: true
+  - type: textarea
+    id: fallback
+    attributes:
+      label: What operates when this expires
+      description: "Required. An experiment whose expiry breaks the instrument containing it is not an experiment, it is a dependency. State the default that takes over."
+    validations:
+      required: true
+  - type: dropdown
+    id: layer
+    attributes:
+      label: Layer
+      options:
+        - "Layer 2 — Ordinary"
+        - "Layer 3 — Policy"
+        - "Layer 4 — Constitutional"
+    validations:
+      required: true
+  - type: textarea
+    id: classification
+    attributes:
+      label: Why this layer
+    validations:
+      required: true

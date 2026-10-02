@@ -1,0 +1,60 @@
+name: "Layer 4 — Constitutional Amendment"
+description: Alters rights, thresholds, procedures, or the allocation of authority.
+title: "Amendment: "
+labels: ["layer-4", "proposal"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        An amendment needs **two endorsing reviews** to start a **seven-day** deliberation clock, and **affirmative support from two-thirds of all members (10 of 14)**. Non-response and abstention do not count toward the threshold.
+
+        Open a pull request against `constitution.md` as well as this issue.
+  - type: textarea
+    id: current
+    attributes:
+      label: The clause as it stands
+      description: Quote the existing text exactly, with its section number.
+    validations:
+      required: true
+  - type: textarea
+    id: proposed
+    attributes:
+      label: The clause as proposed
+      description: The exact replacement text. Check punctuation and numbering against the surrounding clauses — this becomes the constitution.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why
+      description: The problem with the clause as it stands.
+    validations:
+      required: true
+  - type: textarea
+    id: classification
+    attributes:
+      label: Why this requires a Constitutional amendment
+      description: Required. Why this cannot be achieved by Policy or Ordinary Rule.
+    validations:
+      required: true
+  - type: textarea
+    id: knock_on
+    attributes:
+      label: Other clauses affected
+      description: Search the whole constitution for anything that relies on the clause you are changing. Thresholds, procedures and role definitions cross-reference heavily.
+    validations:
+      required: true
+  - type: textarea
+    id: assumptions
+    attributes:
+      label: Assumptions this rests on
+      description: Recorded with the amendment, as §1 requires.
+    validations:
+      required: true
+  - type: input
+    id: endorsers
+    attributes:
+      label: Endorsing members
+      description: Two endorsing reviews are needed to start the clock.
+    validations:
+      required: true

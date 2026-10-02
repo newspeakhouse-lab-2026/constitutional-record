@@ -1,0 +1,74 @@
+name: "Layer 3 — Policy"
+description: Creates or redesigns governance for an area — a new mechanism, an office, or an ongoing financial flow.
+title: "Policy: "
+labels: ["layer-3", "proposal"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A Policy creates or redesigns governance for an area. It needs **one endorsement from another member**, a **preference-mapping step** run by the proposer, **seven days** of deliberation, and **affirmative support from a majority of all members (8 of 14)**. Non-response, toleration and abstention do not count toward that threshold.
+
+        Keep the instrument operative and put the reasoning in a companion `rationale.md` marked non-operative. Reasoning left inside an instrument becomes binding.
+  - type: input
+    id: area
+    attributes:
+      label: Area
+      description: "The policy folder this governs — becomes `policies/{area}/policy.md`."
+      placeholder: "spaces"
+    validations:
+      required: true
+  - type: textarea
+    id: summary
+    attributes:
+      label: What this policy does
+    validations:
+      required: true
+  - type: textarea
+    id: classification
+    attributes:
+      label: Why this is Layer 3
+      description: Required. Why it is a governance system for an area rather than an Ordinary Rule, and why it does not require a Constitutional amendment.
+    validations:
+      required: true
+  - type: textarea
+    id: authority
+    attributes:
+      label: Source of authority
+      description: What in the Charter or Constitution grants the Laboratory power over this area. Name anything adjacent that the Charter reserves to the College.
+    validations:
+      required: true
+  - type: input
+    id: endorser
+    attributes:
+      label: Endorsing member
+      description: One other member must endorse before deliberation opens.
+    validations:
+      required: true
+  - type: textarea
+    id: preference_mapping
+    attributes:
+      label: Preference-mapping step
+      description: How you will run it, or what it produced if already done.
+    validations:
+      required: true
+  - type: textarea
+    id: parameters
+    attributes:
+      label: Tunable parameters
+      description: Which numbers live in a Layer 2 rule so they can change in 48 hours rather than needing another policy resolution. Which invariants may only change by amending the policy.
+    validations:
+      required: true
+  - type: textarea
+    id: observed_by
+    attributes:
+      label: "Observed by:"
+      description: "How fulfilment or breach of the duties this creates would reasonably become known. Authorises no new surveillance."
+    validations:
+      required: true
+  - type: textarea
+    id: conflicts
+    attributes:
+      label: Conflicts, and instruments superseded
+      description: "What you found searching `rules/`, `policies/`, open pull requests, issues, branches, and the organisation's other repositories. Name anything this replaces."
+    validations:
+      required: true
