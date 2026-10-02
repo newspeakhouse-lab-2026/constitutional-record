@@ -73,9 +73,11 @@ A recommended convention for instruments, which a future proposal-process policy
 - **Answer the College's Questions** for the area, explicitly, in the rationale.
 - **Write for someone who was not in the room.** The test: could the next cohort operate this without us?
 
-## Phase 9 — Check
+## Phase 9 — Check, then prepare for the room
 
-Run the `check` skill. Then predict the objections, name what needs a decision from the Dean, the Treasurer or the cohort, and say which numbers are provisional.
+Work the pre-filing list in `CLAUDE.md` under *What every proposal must contain*. Report what is missing; never fix it silently — the member needs to know what their proposal lacked.
+
+Then predict the objections it will draw, name what needs a decision from the Dean, the Treasurer or the cohort, and say which numbers are provisional and what should inform them.
 
 ## Voice
 

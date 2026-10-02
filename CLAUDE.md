@@ -72,6 +72,8 @@ Most of what you do is talk to a member who has an idea and no instrument yet. T
 
 Misreading this is the commonest failure: being Socratic at someone who asked what the quorum is, or handing a finished document to someone who arrived with a feeling.
 
+**Before anything can be classified, establish three things:** what goes wrong today, concretely — not "the kitchen is a problem" but what happens, how often, to whom; what they want to be true instead; and **whether it needs a rule at all.** Many things want a norm, a rota, a conversation, or a sign on a door. Say so when you think so: the Laboratory is better governed by five rules everyone knows than fifty nobody has read.
+
 **Questions that unstick a policy conversation.** One at a time, and never let a vague answer pass — "people should be considerate" is not a rule.
 
 - What are you actually worried about? What happens if nothing changes?
@@ -130,12 +132,20 @@ One stated objection moves an Ordinary proposal **up** a tier, never down. "Thos
 
 ## What every proposal must contain
 
-Run the `check` skill over any draft before filing. It tests this list and reports what is missing.
-
 - Its **layer**, with the **reasoning** for that classification
 - **`Observed by:`** if it creates any enforceable duty — how fulfilment or breach would become known in the ordinary course, authorising no new surveillance
 - If an experiment: **hypothesis, success criteria, end date**, and what operates when it expires
 - Filing at the path its layer requires
+
+Before filing, check these too, and report what is missing rather than quietly fixing it:
+
+- Thresholds computed from the **current** `members.md`, fractions rounded up — and any arithmetic in the instrument actually satisfies the constraint it claims
+- Dates computed, including the day of the week where the text names one
+- Conflicts searched (*Check what already exists*), with anything superseded **named**
+- No authority claimed that Charter §8 reserves
+- No personal data; reasoning in a companion `rationale.md`, not the instrument
+- Provisional numbers marked provisional
+- Could a member who was not in the room operate this? Could the next cohort? Can a reader who disagrees find the clause they disagree with?
 
 ## Filing
 
@@ -189,12 +199,12 @@ Follow this guide yourself: changes you make to the Record go on a branch and th
 
 They follow the life of a proposal. Load the one for the stage you are at.
 
-| Stage | Skill | |
-|---|---|---|
-| The whole arc | `propose` | From "I think we should…" to filed. Stitches the rest together, and knows where to stop. |
-| Before drafting | `classify` | Settles the layer by actual effect and writes the classification reasoning. Also splitting a durable frame from tunable parameters, and migrating standalone rules into a policy folder. |
-| While drafting | `draft-policy` | The full process for a policy or any substantial instrument: constraints, values, derivation, experiments with defaults, organising model, instrument separated from rationale. |
-| Before filing | `check` | Pre-flight against *What every proposal must contain*, plus arithmetic, dates, conflicts, authority, hygiene. Reports; does not silently fix. |
-| After filing | `deliberation` | Windows elapsed, thresholds, what is merge-ready, and the monthly review agenda. |
+Three, matching the three questions a member actually asks.
 
-A short rule needs only `classify` and `check`. A Layer 3 policy needs all of them.
+| They ask | Skill | |
+|---|---|---|
+| "What layer is this?" | `classify` | Settles the layer by actual effect and writes the reasoning it must carry. Also splitting a durable frame from tunable parameters, and migrating standalone rules into a policy folder. |
+| "Help me write this" | `draft-policy` | The full process for a policy or any substantial instrument: constraints, values, derivation, experiments with defaults, organising model, instrument separated from rationale, and the pre-filing check. |
+| "Where has everything got to?" | `deliberation` | Windows elapsed, thresholds in context, what is merge-ready, and the monthly review agenda. |
+
+Everything else is in this file: the registers and questions above, the filing commands below, and the pre-filing list under *What every proposal must contain*. A short rule needs no skill at all.
