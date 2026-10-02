@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        **An issue cannot adopt anything.** Only a merged pull request puts text in the Record (Section 1). Use this to propose something and deliberate on it — then open a pull request carrying the text, whose template asks for everything the Constitution requires.
+        **An issue cannot adopt anything.** Only a merged pull request puts text in the Record (Constitution §1). Use this to propose something and deliberate on it — then open a pull request carrying the text, whose template asks for everything the Constitution requires.
 
         If you already have the text, you can skip straight to a pull request.
 

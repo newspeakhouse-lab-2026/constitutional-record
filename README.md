@@ -26,10 +26,10 @@ A time-limited experiment takes the `exp-` prefix at whatever layer it belongs t
 |---|---|
 | `constitution.md` | The Constitution. The authority. |
 | `members.md` | Authoritative membership. Every threshold is a fraction of this. |
-| `roles.md` | Current role holders, maintained by the Record Keepers. |
+| `roles.md` | Current role holders, maintained by the Record Keepers. **Not yet created.** |
 | `rules/` | Standalone Ordinary Rules. |
-| `policies/` | One folder per governed area. |
-| `disputes/` | Adjudication decisions. |
+| `policies/` | One folder per governed area. **None yet** — the first Policy resolution creates one. |
+| `disputes/` | Adjudication decisions. **None yet.** |
 | `CONTRIBUTING.md` | **How to propose, deliberate and record a decision.** Start here. |
 | `CLAUDE.md` | Instructions for members' AI agents working in this repository. |
 
@@ -44,7 +44,7 @@ If GitHub is a barrier for you, it must not cost you a right: the Convener provi
 ## Current state
 
 - **14 members.** Majority of all members is 8; two-thirds is 10; quorum is 7.
-- **Interim role holders** were elected after the Constitutional Convention under §6 and are recorded in `roles.md`. Ordinary elections follow the process in §3.
+- **Interim role holders** were elected after the Constitutional Convention under Constitution §6. They are **not yet recorded in `roles.md`**, which does not exist; the Record Keepers maintain it once created. Ordinary elections follow Constitution §3.
 - **This Constitution expires at 23:59 UK time on Monday 30 November 2026** unless re-ratified or replaced by two-thirds of all members. A re-ratification or replacement proposal must have obtained its endorsements and entered its seven-day deliberation period **no later than Monday 23 November 2026.** If it lapses, functions revert to the College.
 
 ## Notes on this repository
@@ -53,4 +53,4 @@ The repository is **public**. Anything committed here — files, commit messages
 
 The authoritative history may not be rewritten to erase an adopted decision; errors are corrected by a new commit and superseded material is archived rather than deleted. Material may be removed where retaining it would disclose personal or confidential information or create a serious risk of harm, with the removal and its reason recorded.
 
-**Branch protection is not yet configured.** §1 requires it, so until it is set up the rules it would enforce — no direct pushes to `main`, no rewritten history, merge restricted to Record Keepers — hold as norms rather than technical guarantees. See CONTRIBUTING.md for what is and is not in place.
+**Branch protection is not yet configured.** Constitution §1 requires it, so until it is set up the rules it would enforce — no direct pushes to `main`, no rewritten history, merge restricted to Record Keepers — hold as norms rather than technical guarantees. See CONTRIBUTING.md for what is and is not in place.

@@ -72,29 +72,31 @@ Every amendment follows the same arc. The deliberation periods and thresholds di
 
 | | Step | Who | Where |
 |---|---|---|---|
-| 0 | Set up, once | You | Your machine, or nothing at all if you use the website |
-| 1 | Decide what you are proposing, and at which layer | You — an agent may advise, you decide | — |
-| 2 | *Optional:* open an issue, if you have no text yet | You or your agent | GitHub |
-| 3 | **Post the proposal to the governance channel** — this is what starts the deliberation clock | **You, personally** | Governance channel |
+| 1 | Set up, once — or not at all, if you use the website | You | Your machine |
+| 2 | Decide what you are proposing, and at which layer | You. An agent may advise; you decide | — |
+| 3 | *Optional:* open an issue, if you have no text yet | You or your agent | GitHub |
 | 4 | Draft the instrument, and a `rationale.md` beside it | Your agent drafts; you own it | Your machine or GitHub |
 | 5 | Check it against what the Constitution requires | Your agent | — |
 | 6 | Branch, commit, open the pull request | You or your agent | GitHub |
-| 7 | Deliberate | You. An agent may draft your words; it may never post a position | Channel, pull request, meetings |
-| 8 | Endorsements, where the layer needs them | Other members. Never an agent | Pull request or channel |
-| 9 | Vote | Members. **Never an agent** | As the Constitution specifies — not GitHub |
-| 10 | Record the outcome on the pull request | You, or a Record Keeper | Pull request |
-| 11 | Verify the process and merge | A Record Keeper, ideally not the author | GitHub |
-| 12 | Announce the result | The merging Record Keeper | Governance channel |
+| 7 | **Post it to the governance channel**, with the link and the tier — **this starts the deliberation clock** | **You, personally** | Governance channel |
+| 8 | Deliberate | You. An agent may draft your words; it may never post a position | Channel, pull request, meetings |
+| 9 | Endorsements, where the layer needs them | Other members. Never an agent | Pull request or channel |
+| 10 | Vote | Members. **Never an agent** | As the Constitution specifies — not GitHub |
+| 11 | Record the outcome on the pull request | You, or a Record Keeper | Pull request |
+| 12 | Verify the process and merge | A Record Keeper, ideally not the author | GitHub |
+| 13 | Announce the result | The merging Record Keeper | Governance channel |
+
+Step 7 is the one people miss, and it is the only step with no trace on GitHub.
 
 ### Working with an AI agent
 
-Section 1 permits any member to run an AI agent, provided it is **documented and communicated to the rest of the membership**, and requires that an agent acting on Laboratory infrastructure be **clearly identifiable as that member's agent**. It holds no membership, no vote and no standing, and its actions are your responsibility.
+Constitution §1 permits any member to run an AI agent, provided it is **documented and communicated to the rest of the membership**, and requires that an agent acting on Laboratory infrastructure be **clearly identifiable as that member's agent**. It holds no membership, no vote and no standing, and its actions are your responsibility.
 
-**This is not the Agent.** The Agent is a constitutional office under Section 3 — a member, elected by anonymous ranked-choice vote for a two-month term, through whom the Laboratory acts as a body. Section 1 does allow the Laboratory to augment that office with a computational system, but only by Ordinary resolution and only on open-source models with no external logging and no individual holding admin access alone. Nothing like that exists. An agent you run is your tool, under your name, and speaks for nobody but you.
+**This is not the Agent.** The Agent is a constitutional office under Constitution §3 — a member, elected by anonymous ranked-choice vote for a two-month term, through whom the Laboratory acts as a body. Constitution §1 does allow the Laboratory to augment that office with a computational system, but only by Ordinary resolution and only on open-source models with no external logging and no individual holding admin access alone. Nothing like that exists. An agent you run is your tool, under your name, and speaks for nobody but you.
 
 So the division is fixed:
 
-**An agent can** read the Record, search for conflicts, classify a proposal and write the reasoning, draft an instrument and its rationale, check a draft against the Constitution's requirements, compute thresholds and windows, create branches, commit, and open pull requests under your name.
+**An agent can** read the Record, search for conflicts, classify a proposal and write the reasoning, draft an instrument and its rationale, check a draft against the Constitution's requirements, compute thresholds, create branches, commit, and open pull requests under your name. It cannot tell you whether a deliberation window has elapsed — that runs in the governance channel, which it cannot read.
 
 **Only you can** post to the governance channel, endorse, vote, raise an objection or state a consent position, and — as a Record Keeper — verify and merge. An agent may draft any of those for you to send. It must not send them. Consent that an agent can manufacture is not consent.
 
@@ -102,19 +104,19 @@ To work this way you need `git`, the [GitHub CLI](https://cli.github.com) authen
 
 When an agent has helped prepare a proposal, say so in the pull request and name yourself as the member responsible.
 
-## How an amendment works
+## Doing it
 
-Every amendment — a new rule, a policy change, or a constitutional edit — follows the same path through GitHub. The deliberation periods and approval thresholds differ by layer, as the Constitution defines. The mechanics are the same.
+The table above is the summary. This is the detail, for the steps that have any.
 
-### 1. Decide whether you need an issue
+### Deciding whether you need an issue
 
-**An issue cannot adopt anything.** It holds discussion, not text, and Section 1 requires that a rule's exact adopted text appear in the Record. Only a merged pull request does that.
+**An issue cannot adopt anything.** It holds discussion, not text, and Constitution §1 requires that a rule's exact adopted text appear in the Record. Only a merged pull request does that.
 
 So the pull request is the proposal of record, and its template asks for everything the Constitution requires. **Open an issue first only when it helps** — when you want to propose a rule before drafting its wording, or deliberate on whether a rule should exist before arguing about its text. Go to **Issues → New issue** and use the Proposal form: it asks three things (the layer, what you are proposing, and why that layer) and then tells you what the pull request will need. If you already have the text, go straight to a pull request.
 
 A proposal is classified by its **actual effect**, not by the label you choose. Where two layers are reasonably arguable, the more demanding process applies.
 
-### 2. Create a branch and draft the text
+### Creating a branch and drafting the text
 
 **Through the website**, with nothing installed:
 
@@ -125,7 +127,7 @@ A proposal is classified by its **actual effect**, not by the label you choose. 
 5. Choose **"Create a new branch for this commit and start a pull request"**. A branch name appears, auto-filled as something like `yourname-patch-1`; rename it to something meaningful, e.g. `rule-quiet-hours`
 6. The dialog's title and button both change to **Propose changes**. Click it
 
-> **Step 4 is a trap.** The dialog opens with *"Commit directly to the `main` branch"* already selected. Accept that default and your text lands in the Record immediately — no branch, no pull request, no deliberation, no vote. Branch protection is not configured (see below), so nothing stops it. It would not make your rule valid, since validity comes from the procedure and not from the commit, but it does put unadopted text in the Record and someone has to revert it.
+> **The branch option is a trap.** The dialog opens with *"Commit directly to the `main` branch"* already selected. Accept that default and your text lands in the Record immediately — no branch, no pull request, no deliberation, no vote. Branch protection is not configured (see below), so nothing stops it. It would not make your rule valid, since validity comes from the procedure and not from the commit, but it does put unadopted text in the Record and someone has to revert it.
 
 GitHub relabels its buttons from time to time. The shape of the flow is stable: edit a file, commit to a **new branch**, open a pull request.
 
@@ -144,13 +146,13 @@ gh pr create          # fills in the pull request template
 
 For constitutional amendments, edit `constitution.md` on a new branch. Two endorsing reviews on the pull request start the seven-day clock.
 
-### 3. Fill in the pull request template
+### Filling in the pull request template
 
 The pull request is pre-filled with everything the Constitution requires: the layer **and the reasoning for it**, the tier, the `Observed by:` line if the proposal creates any duty, the conflicts you searched, the source of authority for a Policy or an amendment, and the experiment fields if it is one. Link an issue with `Resolves #N` if you opened one.
 
 You don't need everything immediately — the amendment record and the vote evidence are completed after deliberation, before merge.
 
-### 4. Discussion and deliberation
+### Discussion and deliberation
 
 The pull request is visible to all members and to the public. Discussion happens in the pull request, in the governance channel, and in meetings as needed.
 
@@ -158,11 +160,11 @@ The pull request is visible to all members and to the public. Discussion happens
 
 An objection is never a bare "no": it is stated with its reason and a suggested route forward. A single stated objection moves an Ordinary proposal **up** a tier. It can never move down.
 
-### 5. Vote
+### Voting
 
 Voting happens as the Constitution specifies for the layer — in the governance channel, by show of hands, by anonymous poll, however the Laboratory decides. **GitHub is not the voting platform.**
 
-### 6. Record the result
+### Recording the result
 
 Once the vote concludes, the proposer or a Record Keeper updates the pull request with:
 
@@ -174,7 +176,7 @@ Once the vote concludes, the proposer or a Record Keeper updates the pull reques
 
 These are the amendment record fields Section 1 requires. Add them as a comment or in the pull request description.
 
-### 7. Merge
+### Merging
 
 A Record Keeper checks that the evidence is complete and matches the outcome, then merges. The proposal is now part of the official record on `main`.
 
@@ -226,4 +228,4 @@ Configuring branch protection implements an existing constitutional requirement 
 | See what's being proposed | Open pull requests, open issues, **and** `git branch -a` — drafts live in branches |
 | See the full history of a rule | Open the file → **History** |
 | See all current rules | Browse the repo on `main` |
-| Check thresholds and windows | `CLAUDE.md`, or ask your agent for the `deliberation` skill |
+| Check thresholds and windows | `CLAUDE.md` — or ask your agent |
