@@ -88,8 +88,7 @@
     <div><h1>State of the Record</h1>
       <p class="what">What the 2026 Newspeak House Governance Laboratory has decided, is deciding, and is running out of time to decide.</p></div>
     <nav>
-      <a href="https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/CONTRIBUTING.md">Member guide</a>
-      <a href="https://github.com/newspeakhouse-lab-2026/constitutional-record/pulls">Proposals</a>
+      <a href="https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/CONTRIBUTING.md">Contributing guide</a>
       <a class="btn" id="newprop" href="#">Start a proposal</a>
       <span class="stamp" id="stamp">reading…</span>
     </nav>
@@ -106,7 +105,17 @@
 <script>
 const REPO="newspeakhouse-lab-2026/constitutional-record", API="https://api.github.com/repos/"+REPO;
 const HOUR=36e5, DAY=24*HOUR, TTL=18e4;
-const NEWFILE="https://github.com/newspeakhouse-lab-2026/constitutional-record/new/main?filename=rules/rule-untitled.md&value=%23%20Rule%3A%20%3Cshort%20title%3E%0A%0A%2A%2ALayer%3A%2A%2A%202%0A%2A%2ATier%3A%2A%2A%20A%0A%0A%3C%21--%20Operative%20text%20only%2C%20in%20numbered%20clauses.%20Reasoning%20goes%20in%20a%20companion%0Arationale.md%2C%20never%20here%2C%20or%20a%20future%20reader%20cites%20your%20argument%20as%20law.%20--%3E%0A%0A%23%23%201.%0A%0A%23%23%202.%0A%0A%2A%2AObserved%20by%3A%2A%2A%20%3C%21--%20If%20this%20creates%20an%20enforceable%20duty%3A%20how%20would%20fulfilment%20or%0Abreach%20reasonably%20become%20known%2C%20in%20the%20ordinary%20course%3F%20If%20it%20creates%20none%2C%20write%0A%22none%20%E2%80%94%20creates%20no%20enforceable%20duty%22.%20--%3E%0A%0A%3C%21--%20If%20this%20instrument%20expires%2C%20declare%20it%20on%20one%20line%2C%20with%20the%20UTC%20offset%3A%0A%2A%2AEnds%3A%2A%2A%202026-11-30T23%3A59%3A00%2B00%3A00%20%E2%80%94%20reason%0AThe%20UK%20is%20on%20BST%20from%20late%20March%20to%20late%20October%3A%20%2B01%3A00%20in%20summer%2C%20%2B00%3A00%20in%20winter.%20--%3E%0A";
+// The skeleton is .github/instrument-template.md, read from the Record like
+// everything else, so it cannot drift from the templates beside it. Until that
+// file is on main the button still works — it just opens an empty file.
+const NEWBASE=`https://github.com/${REPO}/new/main?filename=rules/rule-untitled.md`;
+const newFileURL=t=>{
+  if(!t) return NEWBASE;
+  const v=encodeURIComponent(t);
+  // A prefill long enough to break the URL would give a button that silently
+  // fails. Better an empty file than a dead link.
+  return v.length>6000?NEWBASE:NEWBASE+"&value="+v;
+};
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
@@ -159,7 +168,8 @@ function windowOf(pr,proc){
   const days=(names.find(n=>/^days-\d+$/.test(n))||"").split("-")[1];
   const openedAt=pick(/^opened:/);
   const endorsed=pick(/^endorsed:/);
-  const o={layer,tier,days,opened:null,closes:null,minimum:false,why:[],state:"open"};
+  const other=names.filter(n=>!/^(layer-\d|tier-[abc]|days-\d+|opened:|endorsed:)/.test(n));
+  const o={layer,tier,days,other,opened:null,closes:null,minimum:false,why:[],state:"open"};
 
   if(pr.draft){o.state="draft";o.why.push(`a draft — the proposer has not <a href="https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/CONTRIBUTING.md#the-process-end-to-end">submitted it for deliberation</a>`);return o}
   if(!layer){o.state="unknown";o.why.push(`no <a href="https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/CONTRIBUTING.md#words-used-here">layer or tier</a> recorded — a period may well be running, but nothing here can say so`);return o}
@@ -228,9 +238,10 @@ async function collect(){
     .sort((a,b)=>new Date(b.merged_at)-new Date(a.merged_at));
 
   const at={}; for(const e of tree.tree||[]) if(e.type==="blob") at[e.path]=e.sha;
-  const instruments=Object.keys(at).filter(p=>/^(rules|policies)\/.*\.md$/.test(p)&&!/\/rationale\.md$/.test(p)).sort();
+  const instruments=Object.keys(at).filter(p=>/^(rules|policies|disputes)\/.*\.md$/.test(p)&&!/\/rationale\.md$/.test(p)).sort();
 
   const cText = at["constitution.md"] ? await blob(at["constitution.md"]) : null;
+  const tmpl  = at[".github/instrument-template.md"] ? await blob(at[".github/instrument-template.md"]) : null;
   const roles = at["roles.md"] ? await blob(at["roles.md"]) : null;
 
   // How the Constitution came to say what it says. Keyed on constitution.md's own
@@ -287,7 +298,7 @@ async function collect(){
   }
 
   return {
-    cfg, stale, checked:!!cText, instruments, roles, ends, amendments, merged,
+    cfg, stale, checked:!!cText, instruments, roles, ends, amendments, merged, tmpl,
     props: prs.map(pr=>({pr,win:windowOf(pr,cfg.procedures||{}),
                          notes:notes[pr.number]||0, resolves:linkFor[pr.number]||[]})),
     issues: issues.filter(i=>!i.pull_request).map(i=>({...i,prs:linkedBy[i.number]||[]}))
@@ -319,7 +330,8 @@ function render(d){
   for(const {pr,win,notes,resolves} of d.props){
     const tags=[`<span class="tag ty">Proposal</span>`,
                 win.layer?`<span class="tag">L${win.layer}</span>`:"",
-                win.tier?`<span class="tag">${win.tier.toUpperCase()}</span>`:""].join("");
+                win.tier?`<span class="tag">${win.tier.toUpperCase()}</span>`:"",
+                ...(win.other||[]).map(l=>`<span class="tag">${esc(l)}</span>`)].join("");
     const lbl=`<span class="num">#${pr.number}</span><a href="${pr.html_url}">${esc(pr.title)}</a>`;
     const age=Math.floor((Date.now()-+new Date(pr.created_at))/DAY);
     const quiet=Math.floor((Date.now()-+new Date(pr.updated_at))/DAY);
@@ -327,6 +339,9 @@ function render(d){
     if(quiet>=7) bits.push(`<span class="q7">quiet ${quiet}d</span>`);
     bits.push(notes?`${notes} note${notes>1?"s":""}`:`<span class="q7">no comment</span>`);
     if(win.endorse) bits.push(`${win.endorse.have}/${win.endorse.need} endorsed`);
+    const rev=(pr.requested_reviewers||[]).map(r=>"@"+esc(r.login));
+    if(rev.length) bits.push(`review requested from ${rev.join(", ")}`);
+    if(pr.base&&pr.base.ref!=="main") bits.push(`<span class="q7">targets ${esc(pr.base.ref)}, not main</span>`);
     if(resolves.length) bits.push("resolves "+resolves.map(n=>`#${n}`).join(", "));
     const meta=tags+bits.join(" · ");
 
@@ -344,7 +359,8 @@ function render(d){
   o.push("<h2>Deadlines and open proposals</h2>");
   o.push(`<p class="note">Every deadline the Record knows about, soonest first: dates the Constitution
     sets, instruments that expire, and deliberation periods that can be shown to have started.
-    Proposals with no countdown come after them, each saying why it has none.</p>`);
+    Proposals with no countdown come after them, each saying why it has none.
+    <a href="https://github.com/${REPO}/pulls">All open proposals on GitHub</a>.</p>`);
   if(!live.length&&!noclock.length) o.push(`<p class="note">Nothing open and nothing pending.</p>`);
   o.push(live.map(x=>x.html).join(""));
   if(live.length&&noclock.length) o.push(`<div class="div">No countdown</div>`);
@@ -355,7 +371,7 @@ function render(d){
     o.push(`<p class="note">Raised but not yet drafted. An issue is where a question lives before anyone
       has written the text that would answer it — it adopts nothing by itself.
       <a href="https://github.com/${REPO}/issues/new?template=proposal.yml">Raise one</a>,
-      or <a href="${NEWFILE}">start a proposal</a> if you already have the text.</p>`);
+      or <a href="${newFileURL(d.tmpl)}">start a proposal</a> if you already have the text.</p>`);
     o.push(d.issues.map(i=>{
       const age=Math.floor((Date.now()-+new Date(i.created_at))/DAY);
       const m=[`@${esc(i.user.login)}`,`open ${age}d`];
@@ -371,12 +387,15 @@ function render(d){
   o.push(`<h2>In force</h2>`);
   o.push(`<p class="note">What binds the Laboratory today — the instruments on <code>main</code>, and who
     holds office. This is the current state; the section below is the record of how it changed.</p>`);
-  const inforce=d.instruments.map(path=>{
-    const kind=path.endsWith("/policy.md")?"Policy":"Rule";
+  const inforce=(d.checked?[row("",
+      `<span class="tag">Constitution</span><a href="https://github.com/${REPO}/blob/main/constitution.md">constitution.md</a>`,
+      `the authority every instrument below derives from`,"","","idle")]:[])
+    .concat(d.instruments.map(path=>{
+    const kind=path.startsWith("disputes/")?"Dispute":path.endsWith("/policy.md")?"Policy":"Rule";
     const name=path.split("/").pop().replace(/\.md$/,"");
     return row("",`<span class="tag">${kind}</span><a href="https://github.com/${REPO}/blob/main/${path}">${esc(name)}</a>`,
       esc(path),"","","idle");
-  }).concat(rrows.map(l=>{
+  })).concat(rrows.map(l=>{
     const c=l.split("|").map(x=>x.trim()).filter(Boolean);
     return row("",`<span class="tag">Role</span>${esc(c[0]||"")}`,esc(c[1]||""),"",esc(c[2]||""),"idle");
   }));
@@ -401,17 +420,16 @@ function render(d){
     Record Keeper to verify — most of it runs in the governance channel, which this page cannot see.</p>`);
   o.push(events.length?events.slice(0,SHOW).map(e=>{
     if(e.m){
-      const meta=`<span class="tag">proposed by ${esc(e.m.user?e.m.user.login:"unknown")}</span>`
-        + (e.amends.length
-            ? `<span class="warnish">amended the Constitution</span> &middot; `
-              + e.amends.map(a=>`<a href="${a.url}">${a.sha}</a>`).join(", ")
-            : "");
+      const parts=[`@${esc(e.m.user?e.m.user.login:"unknown")}`];
+      if(e.amends.length) parts.push(`<span class="warnish">amended the Constitution</span> `
+        + e.amends.map(a=>`<a href="${a.url}">${a.sha}</a>`).join(", "));
+      const meta=parts.join(" &middot; ");
       return row("",`<span class="num">#${e.m.number}</span><a href="${e.m.html_url}">${esc(e.m.title)}</a>`,
         meta,"",fmt(e.at),"idle");
     }
     const a=e.a;
     return row("",esc(a.msg),
-      `<span class="tag">${esc(a.who)}</span><a href="${a.url}">${a.sha}</a> &middot; `
+      `@${esc(a.who)} &middot; <a href="${a.url}">${a.sha}</a> &middot; `
       + (a===founding?`the commit that founded the Record`:`<span class="warnish">no pull request</span>`),
       "",fmt(e.at),"idle");
   }).join(""):`<p class="note">Nothing has entered the Record yet.</p>`);
@@ -419,11 +437,10 @@ function render(d){
     o.push(`<p class="note">${events.length-SHOW} older ${events.length-SHOW===1?"change is":"changes are"}
       not shown — <a href="https://github.com/${REPO}/pulls?q=is%3Apr+is%3Amerged">see them on GitHub</a>.</p>`);
 
+  $("#newprop").href=newFileURL(d.tmpl);
   $("#out").innerHTML=o.join("");
   $("#stamp").textContent=new Date().toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
 }
-
-document.getElementById("newprop").href=NEWFILE;
 
 collect().then(render).catch(e=>{
   const rl = e.reset

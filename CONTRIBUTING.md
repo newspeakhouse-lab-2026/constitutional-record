@@ -294,6 +294,16 @@ Two things about the current settings do **not** match the Constitution, and bot
 
 **If you cannot push a branch, you have read access, and that is a bug, not a decision.** You cannot open a pull request without pushing a branch, so read access means you cannot propose anything. Constitution §1 says no member may lose a right because of the tooling. Ask in the governance channel and it will be raised to write.
 
+## Starting from the dashboard
+
+The **Start a proposal** button opens GitHub's file editor on a new file, prefilled from `.github/instrument-template.md`. You do not need git, a clone, or anything installed — you type the rule in the browser.
+
+**Set the path before you commit.** It arrives as `rules/rule-untitled.md`, which is an Ordinary rule. A Policy belongs at `policies/{area}/policy.md`, an adjudication at `disputes/dispute-{name}.md`, and anything time-limited takes an `exp-` prefix instead of `rule-`. The filename box at the top of the editor is editable; the template's first comment lists the paths.
+
+**When you press Commit changes**, GitHub offers to create a new branch and open a pull request. Take it. For most members it is the only option, because `main` is protected.
+
+**If you are a Record Keeper, you will also be offered "commit directly to the `main` branch". Never take it.** Organisation administrators bypass the branch protection, so the editor shows them a button nobody else has. Committing straight to `main` puts text in the Record with no proposal, no deliberation period and no diff for anyone to object to — which is the one thing the Record exists to prevent.
+
 ## Amending an existing rule
 
 1. Open the file on GitHub
