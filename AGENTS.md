@@ -149,6 +149,16 @@ Before filing, check these too, and report what is missing rather than quietly f
 - Provisional numbers marked provisional
 - Could a member who was not in the room operate this? Could the next cohort? Can a reader who disagrees find the clause they disagree with?
 
+## What this repository gives you to work with
+
+| | |
+|---|---|
+| `.github/pull_request_template.md` | Pre-fills every pull request. It asks for the layer and its reasoning, the tier, the deliberation period, `Observed by:`, conflicts searched, source of authority for Layers 3 and 4, experiment fields, and the amendment record. **Fill it rather than replacing it** — a member's proposal is judged on what it contains. |
+| `.github/ISSUE_TEMPLATE/proposal.yml` | One issue form for proposing before any text exists. Three required fields: layer, what is proposed, and why that layer. |
+| `.github/workflows/label-proposals.yml` | Reads the pull request body and applies `layer-*`, `tier-*` and `days-*` labels; records `opened:` and `endorsed:`. It comments rather than failing when it cannot read a layer. |
+| `.github/workflows/check-record.yml` | Warns when the dashboard's figures no longer match the Record. Never fails a pull request. |
+| `docs/` | The dashboard, read live from the Record. `docs/data.json` holds the constitutional facts it cannot derive. |
+
 ## Metadata on a proposal
 
 Three fields in the pull request template are read by a workflow and turned into labels, which the Record dashboard reads to compute deliberation windows. Fill them with **bare values**, on their own lines:
@@ -170,7 +180,9 @@ Two further labels are written by a workflow, never by you:
 | `opened:2026-10-03T19:06:12Z` | When the proposal was submitted for deliberation — added when it leaves draft, removed if it returns to draft |
 | `endorsed:2` | How many members have endorsed it, recounted on every review |
 
-**Never add, edit or remove either by hand.** The `opened:` label is the evidence that a deliberation period began — `rules/rule-deliberation-clock.md` says a period that cannot be shown to have begun has not begun — and evidence an agent can write is not evidence. If one is wrong, say so and let a member fix it.
+`endorsed:` counts approving reviews, and an approving review is not necessarily an endorsement. `main` is protected with a rule requiring one approval before the merge button unlocks, so a Record Keeper may approve purely to confirm the process ran. **Never report `endorsed:2` on a Layer 4 amendment as "the clock has started" without checking what those two reviews actually say** — the Constitution wants two members endorsing the amendment, not two clicks.
+
+**Never add, edit or remove either by hand.** The `opened:` label is the evidence that a deliberation period began, and evidence an agent can write is not evidence. (A *proposed*, not yet adopted, rule would put this in the Record: `rules/rule-deliberation-clock.md`. Until it is merged, treat it as a convention, not a clause.) If one is wrong, say so and let a member fix it.
 
 A missing layer means the proposal is unlabelled and will not appear on the dashboard with a window. It does **not** invalidate the proposal — the tooling creates no duty, and the workflow comments rather than failing. Tell the member what is missing and why it matters, not that they have done something wrong.
 

@@ -50,13 +50,3 @@ A rule or policy with an end date declares it in one line, inside itself:
 The page reads these from the repository tree, so **a new expiry is discovered where it was written** rather than copied into this folder by someone who has to remember. It covers an instrument's own expiry only — recurring obligations and event-triggered windows are not expressible this way, and the latter cannot be shown at all.
 
 Updating `data.json` is a change to the Record like any other: a branch, a pull request, a Record Keeper merges.
-
-## Decided against
-
-A design panel considered these and advised against each. Recorded so they are not quietly reopened.
-
-- **A document viewer in the page.** With no dependencies permitted, rendering `CONTRIBUTING.md` or the Constitution here means hand-writing a markdown parser and applying it to operative governance text. A mis-rendered table or a flattened list in constitutional text looks exactly as authoritative as a correct one, and GitHub already renders it with history, blame and permalinks. Link out instead.
-- **A shortcut into creating a pull request.** GitHub offers nothing clean, and the nearest thing re-enables the commit-straight-to-`main` default that `CONTRIBUTING.md` warns about. It would also skip the classification the guide puts first.
-- **A "link AI agent" affordance.** The Constitution requires an agent be documented and communicated to the membership — a fact living in the governance channel, which this page cannot read. A button would claim a capability the page does not have, and parsing pull request bodies for a disclosure sentence would under-report by omission: a missed parse reads as "no agent", which is the false emptiness this page is built to avoid.
-
-The test they proposed for anything added later: **is there a true sentence this page's existing read surface can say about it?** If the honest answer needs inferring, parsing or guessing, that is a cannot-tell state, and the right response is a cannot-tell row rather than a feature dressed up as more certain than its data.

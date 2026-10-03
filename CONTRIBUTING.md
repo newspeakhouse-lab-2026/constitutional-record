@@ -282,6 +282,18 @@ There is no separate GitHub approval step — the vote already happened. The mer
 
 The Record Keeper announces the result in the governance channel with a link to the merged pull request.
 
+## What GitHub currently enforces, and where it differs from the Constitution
+
+`main` is protected by a repository ruleset. Nobody can commit to it directly, delete it, or rewrite its history — every change arrives as a pull request. That is right, and it matches Constitution §1's requirement that the Record carry the exact adopted text.
+
+Two things about the current settings do **not** match the Constitution, and both are being fixed rather than worked around:
+
+**The ruleset requires one approving review before the merge button unlocks.** The Constitution requires no endorsement for a Layer 2 proposal, so a Tier A rule that passed properly — nobody objected for 48 hours — still waits for somebody to click Approve. If you are the Record Keeper making that click, say in the review that you are confirming the process ran and taking no position on the proposal. An approving review is **not** support, and the dashboard's `endorsed:` count cannot tell the difference.
+
+**Write access also confers merge access.** Constitution §3 says Record Keepers are *"the only members with merge access"*. The Record Keepers hold repository admin, which is how that office is implemented — admin is what merge access *is*. But the ruleset adds no rule restricting who may update `main`, and on GitHub anyone with write access can merge an approved pull request. So the seven members holding write today can merge too, and the Constitution allows none of them to. Closing it means pointing the ruleset at a Record Keepers team, so that `roles.md` and the repository's settings say the same thing and rotating the office is a single edit in one place.
+
+**If you cannot push a branch, you have read access, and that is a bug, not a decision.** You cannot open a pull request without pushing a branch, so read access means you cannot propose anything. Constitution §1 says no member may lose a right because of the tooling. Ask in the governance channel and it will be raised to write.
+
 ## Amending an existing rule
 
 1. Open the file on GitHub
@@ -290,6 +302,20 @@ The Record Keeper announces the result in the governance channel with a link to 
 4. The pull request will show exactly what changed — additions in green, removals in red
 
 The same deliberation and approval process applies, at the layer of the instrument you are changing.
+
+## If your instrument expires
+
+A rule or policy with an end date says so in one line, inside itself:
+
+```
+**Ends:** 2026-11-30T23:59:00+00:00 — when the proposal-process Policy is adopted, whichever is first
+```
+
+Written that way, the expiry appears on the dashboard. Written only in prose, it does not, and a rule that quietly stops being a rule is the kind of thing nobody notices until it matters.
+
+**Write the UTC offset.** The United Kingdom is on British Summer Time from late March to late October, so 23:59 on 4 October is `+01:00` and on 30 November is `+00:00`. Getting this wrong puts the deadline an hour out, which has already happened once.
+
+This covers an instrument's **own expiry**. A policy may also set recurring obligations ("a retro each term") or windows triggered by events ("within 24 hours of posting") — neither is expressible this way, and the second cannot be shown at all, because the triggering event happens somewhere the Record cannot see.
 
 ## Archiving, not deleting
 

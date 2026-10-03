@@ -1,14 +1,11 @@
 <!--
-A pull request is the only thing that can enter the Record — an issue holds no
-text. So this template carries everything the Constitution requires of a
-proposal, and a pull request opened without a prior issue is complete on its own.
+Only a merged pull request adopts anything, so this template carries everything
+the Constitution requires — a pull request opened without a prior issue is
+complete on its own.
 
-Opening an issue first is optional and useful when you want to propose a rule
-before you have drafted its text.
-
-The Layer, Tier and Deliberation period fields below are read automatically and
-turned into labels, which the Record dashboard uses. Write bare values after
-them — "2", "A", "5" — and leave the explanatory comments alone.
+Layer, Tier and Deliberation period are read automatically and turned into
+labels the dashboard uses. Write bare values — "2", "A", "5". Fill this in
+rather than replacing it: comments in <!-- --> never appear in the posted body.
 -->
 
 ## Proposal
@@ -103,18 +100,15 @@ box is ticked; delete them otherwise. -->
 
 ## Checks
 
-- [ ] Layer stated **with its reasoning**, not just the label
+<!-- Only the things the sections above do not already ask for. -->
+
 - [ ] Filed at the path the layer requires, `exp-` prefixed if time-limited
-- [ ] `Observed by:` present if any enforceable duty is created, and honest
-- [ ] Conflicts searched across the Record, open PRs, open issues, branches, and the organisation's other repositories
-- [ ] Thresholds computed from the current `members.md`, fractions rounded up
-- [ ] Dates and arithmetic computed, not recalled
+- [ ] Thresholds computed from the current `members.md`, fractions rounded **up**
+- [ ] Dates and arithmetic computed, not recalled — including the weekday where the text names one
 - [ ] Cross-references resolve — every section cited exists
-- [ ] No authority claimed that the Charter reserves to the College
 - [ ] No personal data — no contact details, nothing identifying guests or non-members
-- [ ] Reasoning lives in a companion `rationale.md`, not in the operative text
-- [ ] Provisional numbers marked provisional
-- [ ] **Does this create, change or remove a deadline?** If so, `docs/data.json` is updated in this pull request. Nothing can detect a *new* deadline added to the Constitution — only this question can
+- [ ] Reasoning in a companion `rationale.md`, not in the operative text; provisional numbers marked provisional
+- [ ] **Does this create, change or remove a deadline?** If so, update `docs/data.json` here. Nothing can detect a deadline newly added to the Constitution — only this question can
 
 ---
 
