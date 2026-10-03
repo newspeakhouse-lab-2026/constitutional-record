@@ -39,15 +39,35 @@ def date_in(quote):
     return (year, month, day, int(t.group(1)), int(t.group(2))) if t else (year, month, day, None, None)
 
 
+def read(path):
+    try:
+        return open(path).read()
+    except OSError:
+        return None
+
+
 def main():
-    data = json.load(open("docs/data.json"))
-    const = open("constitution.md").read()
-    cn = norm(const)
+    # A branch may legitimately not carry every file — a rule on its own branch
+    # has no docs/ folder. Missing input is a reason to skip a check and say so,
+    # never a reason to crash: a crash is a failure, and this must never fail.
+    raw = read("docs/data.json")
+    const = read("constitution.md")
+    data = {}
+    if raw is None:
+        print("note: no docs/data.json here, so the quote and time checks are skipped")
+    else:
+        try:
+            data = json.loads(raw)
+        except json.JSONDecodeError as e:
+            warn("docs/data.json", f"is not valid JSON ({e}), so the dashboard cannot read it")
+    if const is None and raw is not None:
+        print("note: no constitution.md here, so quotes cannot be checked against it")
+    cn = norm(const) if const else None
 
     # 1 — quotes still present
     entries = [("procedures." + k, v) for k, v in data.get("procedures", {}).items()]
     entries += [("fixed[%d]" % i, v) for i, v in enumerate(data.get("fixed", []))]
-    for name, e in entries:
+    for name, e in entries if cn else []:
         if "quote" not in e:
             warn("docs/data.json", f"{name} has no quote, so nothing can verify it against the Constitution")
         elif norm(e["quote"]) not in cn:
@@ -59,6 +79,9 @@ def main():
     # 2 — the instant agrees with the wall-clock time its quote states
     for i, f in enumerate(data.get("fixed", [])):
         want = date_in(f.get("quote", ""))
+        if not f.get("at"):
+            warn("docs/data.json", f'fixed[{i}] has no "at", so nothing can be counted down to')
+            continue
         if not want:
             continue
         uk = datetime.fromisoformat(f["at"].replace("Z", "+00:00")).astimezone(UK)
