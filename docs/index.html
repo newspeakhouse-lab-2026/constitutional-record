@@ -227,10 +227,16 @@ async function collect(){
     .catch(()=>{throw new Unreadable("docs/data.json could not be read")});
 
   // Three calls, flat, however many proposals or instruments there are.
-  const [prs,issues,tree]=await Promise.all([
+  const [prs,issues,tree,closed]=await Promise.all([
     api("/pulls?state=open&per_page=100"),
     api("/issues?state=open&per_page=100"),
-    api("/git/trees/main?recursive=1")]);
+    api("/git/trees/main?recursive=1"),
+    // Every merge into main is an adoption. One flat call covers rules,
+    // policies, roles and the Constitution together — per-instrument history
+    // would cost a call per file and grow with the Record.
+    api("/pulls?state=closed&sort=updated&direction=desc&per_page=100")]);
+  const merged=(closed||[]).filter(p=>p.merged_at)
+    .sort((a,b)=>new Date(b.merged_at)-new Date(a.merged_at));
 
   const at={}; for(const e of tree.tree||[]) if(e.type==="blob") at[e.path]=e.sha;
   const instruments=Object.keys(at).filter(p=>/^(rules|policies)\/.*\.md$/.test(p)&&!/\/rationale\.md$/.test(p)).sort();
@@ -292,7 +298,7 @@ async function collect(){
   }
 
   return {
-    cfg, stale, checked:!!cText, instruments, roles, ends, amendments,
+    cfg, stale, checked:!!cText, instruments, roles, ends, amendments, merged,
     props: prs.map(pr=>({pr,win:windowOf(pr,cfg.procedures||{}),
                          notes:notes[pr.number]||0, resolves:linkFor[pr.number]||[]})),
     issues: issues.filter(i=>!i.pull_request).map(i=>({...i,prs:linkedBy[i.number]||[]}))
@@ -393,6 +399,24 @@ function render(d){
     return row("",`<span class="tag">${kind}</span><a href="https://github.com/${REPO}/blob/main/${path}">${esc(name)}</a>`,
       esc(path),"","","idle");
   }).join(""):'<p class="note">Nothing adopted yet.</p>');
+  o.push("</details>");
+
+  const mg=d.merged||[];
+  o.push(`<details class="ref"><summary>Merged into the Record (${mg.length})</summary>`);
+  o.push(mg.length
+    ? `<p class="note">Every pull request that has entered the Record, newest first — the adoption
+       history for rules, policies and roles alike. Whether the deliberation each records actually
+       happened is for a Record Keeper to verify; much of it runs in the governance channel, which
+       this page cannot see.</p>`
+      + mg.map(m=>row("",
+          `<a href="${m.html_url}">#${m.number}</a> ${esc(m.title)}`,
+          // Who merged it is deliberately absent: the pull request list does not
+          // carry it, and fetching it would cost one call per pull request. It
+          // is on the pull request itself, which the number links to.
+          `<span class="tag">proposed by ${esc(m.user?m.user.login:"unknown")}</span>`
+          + `into ${esc(m.base?m.base.ref:"main")}`,
+          "", fmt(new Date(m.merged_at)), "idle")).join("")
+    : `<p class="note">Nothing has been merged yet.</p>`);
   o.push("</details>");
 
   const rows=d.roles?d.roles.split("\n").filter(l=>/^\|/.test(l)&&!/^\|\s*-/.test(l)).slice(1):[];
