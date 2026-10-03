@@ -43,6 +43,12 @@
   .pick i{font-style:normal;color:var(--faint);font-size:.62rem;letter-spacing:.08em;
     text-transform:uppercase;margin-left:.45rem}
   .pick span{display:block;font-size:.73rem;line-height:1.5;color:var(--muted);margin-top:.2rem}
+  .pickwrap{margin:.55rem 0}
+  .pickwrap .pick{margin:0}
+  .areain{display:block;width:100%;margin:.4rem 0 0;padding:.4rem .55rem;font:inherit;font-size:.76rem;
+    border:1px solid var(--line);border-radius:4px;background:var(--bg);color:var(--ink)}
+  .areain:focus{outline:none;border-color:var(--accent)}
+  .areapath{display:block;font:inherit;font-size:.68rem;color:var(--faint);margin-top:.3rem}
   dialog form{margin-top:.9rem;text-align:right}
   dialog button{font:inherit;font-size:.75rem;padding:.3rem .8rem;border:1px solid var(--rule);
     border-radius:999px;background:var(--bg);color:var(--muted);cursor:pointer}
@@ -164,7 +170,7 @@ const KINDS=[
   {file:".github/instrument-templates/rule.md", path:"rules/rule-untitled.md",
    name:"An Ordinary rule", tag:"Layer 2",
    desc:"Operates within a frame that already exists, or sets a parameter. Passes in 48 hours if nobody objects."},
-  {file:".github/instrument-templates/policy.md", path:"policies/area/policy.md",
+  {file:".github/instrument-templates/policy.md", path:"policies/{area}/policy.md", area:true,
    name:"A Policy", tag:"Layer 3",
    desc:"Creates or redesigns the governance of an area, or creates an office. One endorsement, seven days, 8 of 14."},
   {file:".github/instrument-templates/dispute.md", path:"disputes/dispute-untitled.md",
@@ -505,9 +511,29 @@ function render(d){
    Without a template it opens an empty file, which is still a working route. */
 let SHAS={}, pickLoaded=false;
 $("#amendlink").href=`https://github.com/${REPO}/edit/main/constitution.md`;
+const TPL={};
+// GitHub turns every "/" in the filename into a breadcrumb it will not let you
+// edit, so a policy's area has to be chosen here rather than in the editor.
+const slug=v=>v.trim().toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
+const pathFor=(k,i)=>k.area?k.path.replace("{area}",slug(($("#area"+i)||{}).value||"")||"area"):k.path;
+const refresh=i=>{
+  const k=KINDS[i], path=pathFor(k,i);
+  $("#pick"+i).href=newFileURL(path,TPL[i]||null);
+  const out=$("#path"+i); if(out) out.textContent=path;
+};
 $("#pickopts").innerHTML=KINDS.map((k,i)=>
-  `<a class="pick" id="pick${i}" href="${newFileURL(k.path,null)}"><b>${esc(k.name)}</b><i>${esc(k.tag)}</i>
-    <span>${esc(k.desc)}</span></a>`).join("");
+  `<div class="pickwrap"><a class="pick" id="pick${i}" href="${newFileURL(pathFor(k,i),null)}">
+     <b>${esc(k.name)}</b><i>${esc(k.tag)}</i><span>${esc(k.desc)}</span></a>${
+   k.area?`<input class="areain" id="area${i}" aria-label="Which area does this Policy govern?"
+     placeholder="Which area? e.g. spaces, finance, safety">
+     <code class="areapath" id="path${i}">${esc(k.path.replace("{area}","area"))}</code>`:""}</div>`).join("");
+KINDS.forEach((k,i)=>{ if(!k.area) return;
+  $("#area"+i).addEventListener("input",()=>refresh(i));
+  $("#pick"+i).addEventListener("click",e=>{
+    if(slug($("#area"+i).value)) return;         // an area is named, go
+    e.preventDefault(); e.stopPropagation(); $("#area"+i).focus();
+  });
+});
 document.addEventListener("click",async e=>{
   const a=e.target.closest("#newprop,.openpick"); if(!a) return;
   e.preventDefault(); $("#pick").showModal();
@@ -516,7 +542,7 @@ document.addEventListener("click",async e=>{
   // anything never pays for the templates.
   await Promise.all(KINDS.map(async (k,i)=>{
     const sha=SHAS[k.file]; if(!sha) return;
-    try{ $("#pick"+i).href=newFileURL(k.path, await blob(sha)); }catch{}
+    try{ TPL[i]=await blob(sha); refresh(i); }catch{}
   }));
 });
 
