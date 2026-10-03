@@ -128,6 +128,18 @@ So the division is fixed:
 
 **Only you can** post to the governance channel, endorse, vote, raise an objection or state a consent position, and — as a Record Keeper — verify and merge. An agent may draft any of those for you to send. It must not send them. Consent that an agent can manufacture is not consent.
 
+#### Which model you may use — the clause people misread
+
+Section 1 contains two permissions, one after the other, and they bind differently:
+
+> Any member may choose to run an AI agent, provided it is documented and communicated to the rest of the membership.
+
+> By Ordinary resolution, the Laboratory may also augment the Agent role with a computational system… **The system runs on open-source models with no external logging.**
+
+**The open-source requirement applies only to the second.** It governs a system that augments the Agent *office* — something the Laboratory would have to adopt by Ordinary resolution, and which does not exist. **An agent you run yourself has no model restriction.** Claude, GPT, a local Llama: the Constitution is indifferent. What it asks of you is disclosure and identifiability, not a particular vendor.
+
+If the Laboratory ever does want an agent of its own, that clause becomes binding and rules most hosted models out. That is a conversation worth having on its own terms, not one to drift into.
+
 #### Setting one up
 
 ```bash
@@ -136,7 +148,24 @@ git clone https://github.com/newspeakhouse-lab-2026/constitutional-record
 cd constitutional-record       # AGENTS.md is read from here automatically
 ```
 
-`AGENTS.md` is plain prose carrying no tool-specific commands, so it works with whatever you use. `CLAUDE.md` beside it is a single line pointing at the same file, for tools that look for that name instead. Without `gh` authenticated, an agent can read and draft but cannot open a pull request.
+Without `gh` authenticated, an agent can read and draft but cannot open a pull request.
+
+**What this repository offers an agent, and what needs which tool:**
+
+| | |
+|---|---|
+| `AGENTS.md` | The instructions. Plain prose, no tool-specific commands — **any agent that reads `AGENTS.md` gets them** |
+| `CLAUDE.md` | One line pointing at `AGENTS.md`, for tools that look for that name instead |
+| `.claude/skills/` | `classify`, `draft-policy`, `review-agenda`. **Claude Code only** — there is no cross-tool equivalent |
+| `.claude/hooks/` | Stops an agent merging or pushing to `main`. **Claude Code only**, and it does not take effect until you trust the folder |
+
+**Tools members are using or might:**
+
+- **[Claude Code](https://claude.com/product/claude-code)** — terminal. Reads `AGENTS.md`, and is the only thing that runs the skills and the merge hook.
+- **[Claude Cowork](https://claude.com/product/cowork)** — Anthropic's desktop application. The instructions in `AGENTS.md` apply the same way; whether the skills and hook behave identically there is untested.
+- **[opencode](https://opencode.ai)** — MIT-licensed and open source, terminal and desktop, reads `AGENTS.md`, and supports many model providers rather than one. **The option that ties the Laboratory to no vendor**, which is worth something in a record meant to outlast any of us.
+
+Nothing here mandates a tool. The Constitution's Communications Infrastructure section says platforms are "implementation details to be determined and updated by the laboratory from time to time" — so this is a note on what currently works, not a rule, and anyone adopting something else should say so and improve this list.
 
 #### Declaring it — which the Constitution requires and we have nowhere to put
 
