@@ -15,7 +15,8 @@ Tooling to help members draft and file proposals, held in this repository:
 | `.github/ISSUE_TEMPLATE/`, `.github/pull_request_template.md` | A proposal form and a pull request template, asking for what the Constitution requires |
 | `.claude/skills/` | Optional procedures an agent may load: `classify`, `draft-policy`, `review-agenda` |
 | `.claude/hooks/`, `.claude/settings.json` | A hook preventing an agent from merging, pushing to `main`, force-pushing or rewriting history |
-| `.github/workflows/label-proposals.yml` | Reads the layer, tier and deliberation period from a pull request body and applies them as labels |
+| `.github/workflows/label-proposals.yml` | Reads the layer, tier and deliberation period from a pull request body and applies them as labels, and records when a proposal opened and how many members have endorsed it |
+| `.github/workflows/check-record.yml`, `.github/scripts/check-record.py` | Warns when the dashboard's figures no longer match the Record — a quoted clause that has been amended, a time that disagrees with its own quote, an instrument that expires without saying so |
 | `docs/` | A page showing the state of the Record: deadlines, open deliberation windows, adopted instruments, roles and thresholds |
 
 ## What this does not do
@@ -38,6 +39,8 @@ Any part of this rule may be amended by Ordinary resolution. Changes to files it
 
 ## Ends
 
-When the proposal-process Policy is adopted, or at the end of this Constitution on 30 November 2026, whichever comes first.
+**Ends:** 2026-11-30T23:59:00+00:00 — when the proposal-process Policy is adopted, or at the end of this Constitution, whichever comes first
+
+The line above is written in a form the Record dashboard can read, so this rule's expiry is visible rather than buried in prose. The offset is explicit because the United Kingdom is on British Summer Time from late March to late October, and a missing offset is how a deadline ends up an hour out.
 
 `Observed by:` This rule creates no enforceable duty, so there is nothing to observe breach of. The files it adopts are in the Record and their history is public; whether they are used is visible in the proposals members file, and whether they help is a question for a monthly review.

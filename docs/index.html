@@ -195,6 +195,19 @@ async function collect(){
   const cText = at["constitution.md"] ? await blob(at["constitution.md"]) : null;
   const roles = at["roles.md"] ? await blob(at["roles.md"]) : null;
 
+  // An instrument that expires declares it in one parseable line, so its expiry
+  // is discovered where it was written rather than transcribed somewhere else.
+  // Blobs are cached by SHA, so this costs nothing after the first load.
+  const ends=[];
+  for(const path of instruments){
+    let txt; try{ txt=await blob(at[path]); }catch{ continue }
+    const m=txt.match(/^\*\*Ends:\*\*\s*(\S+)\s*[\u2014-]\s*(.+)$/m);
+    if(!m) continue;
+    const when=new Date(m[1]);
+    if(isNaN(+when)) continue;
+    ends.push({name:path.split("/").pop().replace(/\.md$/,""), at:when, why:m[2].trim(), path});
+  }
+
   // Every figure on this page is a copy of something the Constitution says.
   // Check the sentences it was copied from are still there.
   const norm=t=>t.replace(/\*/g,"").replace(/\s+/g," ").trim();
@@ -212,7 +225,7 @@ async function collect(){
   }
 
   return {
-    cfg, stale, checked:!!cText, instruments, roles,
+    cfg, stale, checked:!!cText, instruments, roles, ends,
     props: prs.map(pr=>({pr,win:windowOf(pr,cfg.procedures||{}),
                          notes:notes[pr.number]||0, resolves:linkFor[pr.number]||[]})),
     issues: issues.filter(i=>!i.pull_request).map(i=>({...i,prs:linkedBy[i.number]||[]}))

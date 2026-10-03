@@ -71,6 +71,16 @@ programme, the Access Register, the building's fabric, the College's legal,
 financial and safety obligations, Fellowship admission, Faculty appointment,
 the Dean's office. -->
 
+### Does this expire?
+
+<!-- If the instrument has an end date, declare it in one line the dashboard can read,
+inside the instrument itself:
+
+  **Ends:** 2026-11-30T23:59:00+00:00 — reason
+
+Write the UTC offset explicitly: the UK is on BST from late March to late October,
+so 23:59 on 4 October is +01:00 and on 30 November is +00:00. -->
+
 ### Experiment
 
 - [ ] **This is a time-limited experiment** — filed with an `exp-` prefix
@@ -104,6 +114,7 @@ box is ticked; delete them otherwise. -->
 - [ ] No personal data — no contact details, nothing identifying guests or non-members
 - [ ] Reasoning lives in a companion `rationale.md`, not in the operative text
 - [ ] Provisional numbers marked provisional
+- [ ] **Does this create, change or remove a deadline?** If so, `docs/data.json` is updated in this pull request. Nothing can detect a *new* deadline added to the Constitution — only this question can
 
 ---
 

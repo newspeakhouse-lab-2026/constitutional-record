@@ -1,0 +1,29 @@
+# Checks that what the dashboard claims still matches what the Record says.
+#
+# Warnings only, never a failure. rules/rule-drafting-tools.md says this tooling
+# creates no duty, and an amendment is valid whatever docs/data.json happens to
+# contain. The point is to tell whoever is amending the Constitution, on the
+# pull request making the change, that something else needs updating too —
+# rather than letting the dashboard quietly count down to a number nobody voted
+# for.
+
+name: Check the Record
+
+on:
+  pull_request:
+    paths:
+      - 'constitution.md'
+      - 'docs/data.json'
+      - 'rules/**'
+      - 'policies/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 .github/scripts/check-record.py

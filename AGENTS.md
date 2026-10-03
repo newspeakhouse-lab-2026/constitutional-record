@@ -174,6 +174,20 @@ Two further labels are written by a workflow, never by you:
 
 A missing layer means the proposal is unlabelled and will not appear on the dashboard with a window. It does **not** invalidate the proposal — the tooling creates no duty, and the workflow comments rather than failing. Tell the member what is missing and why it matters, not that they have done something wrong.
 
+## Declaring an expiry
+
+An instrument that expires says so in one line the dashboard can read:
+
+```
+**Ends:** 2026-11-30T23:59:00+00:00 — when the proposal-process Policy is adopted, whichever is first
+```
+
+**Write the UTC offset explicitly.** The United Kingdom is on British Summer Time from late March to late October, so `23:59` on 4 October is `+01:00` and on 30 November is `+00:00`. Writing `Z` for a summer date puts the deadline an hour out — this has already happened once, and the check in `.github/workflows/check-record.yml` exists because of it.
+
+This covers an instrument's **own expiry** and nothing else. A policy may also contain recurring obligations ("a retro each term") and event-triggered windows ("within 24 hours of posting); neither is expressible this way, and the second cannot be shown at all, because the triggering event lives outside the Record.
+
+It is a convention, not a duty. An instrument without the line is perfectly valid; its expiry is simply invisible, and the check says so.
+
 ## Filing
 
 **The pull request is the proposal of record.** An issue holds no text, and Constitution §1 requires a rule's exact adopted text to appear in the Record, so only a merged pull request adopts anything. Never tell a member an issue alone has adopted something. An issue first is optional, and worth it only when the text does not exist yet.
