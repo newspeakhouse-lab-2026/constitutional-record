@@ -50,6 +50,9 @@
     border:1px solid var(--line);border-radius:2px;padding:.08rem .28rem;margin-right:.25rem;
     white-space:nowrap}
   .why{grid-column:1;font-size:.74rem;color:var(--soon);margin-top:.15rem}
+  .why a{color:inherit;text-decoration:underline;text-underline-offset:2px}
+  .why a:hover{color:var(--ink)}
+  .note a{color:var(--accent)}
   .sub{grid-column:1/-1;font:600 .64rem/1 var(--ui);text-transform:uppercase;letter-spacing:.09em;
     color:var(--faint);padding:.8rem .25rem .25rem;border-bottom:1px solid var(--line)}
   .warn{border:1px solid var(--urgent);border-left-width:3px;border-radius:2px;padding:.5rem .6rem;
@@ -66,6 +69,9 @@
   <header><h1>State of the Record</h1><span class="stamp" id="stamp">reading…</span></header>
   <main id="out"></main>
   <footer id="foot">
+    <a href="https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/CONTRIBUTING.md#the-process-end-to-end"><strong>How to propose &rarr;</strong></a> &nbsp;·&nbsp;
+    <a href="https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/CONTRIBUTING.md">The member guide</a> &nbsp;·&nbsp;
+    <a href="https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/constitution.md">The Constitution</a><br>
     Read live from <a href="https://github.com/newspeakhouse-lab-2026/constitutional-record">the Constitutional Record</a> on each load.
     Times are UK time, as the Constitution states them.
     <strong>A countdown appears only where a deliberation period has demonstrably begun</strong> — where there is none, the rows above say why.
@@ -129,9 +135,9 @@ function windowOf(pr,proc){
   const endorsed=pick(/^endorsed:/);
   const o={layer,tier,days,opened:null,closes:null,minimum:false,why:[],state:"open"};
 
-  if(pr.draft){o.state="draft";o.why.push("a draft — the proposer has not submitted it for deliberation");return o}
-  if(!layer){o.state="unknown";o.why.push("no layer or tier recorded — a period may well be running, but nothing here can say so");return o}
-  if(layer==="0"||layer==="1"){o.state="none";o.why.push(`Layer ${layer} — records or coordinates within existing rules, so no deliberation period is required`);return o}
+  if(pr.draft){o.state="draft";o.why.push(`a draft — the proposer has not <a href="https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/CONTRIBUTING.md#the-process-end-to-end">submitted it for deliberation</a>`);return o}
+  if(!layer){o.state="unknown";o.why.push(`no <a href="https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/CONTRIBUTING.md#words-used-here">layer or tier</a> recorded — a period may well be running, but nothing here can say so`);return o}
+  if(layer==="0"||layer==="1"){o.state="none";o.why.push(`<a href="https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/CONTRIBUTING.md#words-used-here">Layer ${layer}</a> — records or coordinates within existing rules, so no deliberation period is required`);return o}
 
   const key = layer==="4"?"layer-4" : layer==="3"?"layer-3" : tier?("tier-"+tier):null;
   const p = key && proc[key];
@@ -142,7 +148,7 @@ function windowOf(pr,proc){
     o.endorse={have,need:p.needsApprovals};
     if(have<p.needsApprovals){
       o.state="unstarted";
-      o.why.push(`a Constitutional amendment\u2019s clock starts at ${p.needsApprovals} endorsing reviews (\u00a72) — this has ${have}`);
+      o.why.push(`a Constitutional amendment\u2019s clock starts at ${p.needsApprovals} <a href="https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/CONTRIBUTING.md#endorsing">endorsing reviews</a> (\u00a72) — this has ${have}`);
       return o;
     }
   }
@@ -153,7 +159,7 @@ function windowOf(pr,proc){
   }
   o.opened=new Date(openedAt);
   let d=p.days;
-  if(p.daysFromLabel){ if(!days){o.state="unknown";o.why.push("Tier B with no stated period — \u00a72 requires one");return o} d=Number(days); }
+  if(p.daysFromLabel){ if(!days){o.state="unknown";o.why.push(`<a href="https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/CONTRIBUTING.md#words-used-here">Tier B</a> with no stated period — \u00a72 requires one`);return o} d=Number(days); }
   o.closes=new Date(+o.opened+d*DAY); o.minimum=!!p.minimum;
   return o;
 }
@@ -273,7 +279,7 @@ function render(d){
       live.push({ms:r.ms,html:row(r.word,lbl,meta,r.txt,(win.minimum?"≥ ":"")+fmt(win.closes),r.cls)});
     } else {
       const word={draft:"draft",unstarted:"awaiting",none:"none needed",unknown:"—"}[win.state]||"—";
-      const html=row(word,lbl,meta,word,"","idle",win.state==="unknown"?"":esc(win.why.join(" · ")));
+      const html=row(word,lbl,meta,word,"","idle",win.state==="unknown"?"":win.why.join(" · "));
       (win.state==="unknown"?unknowns:stopped).push(html);
     }
   }
@@ -284,7 +290,7 @@ function render(d){
   if(stopped.length){ o.push(`<div class="r"><span class="sub">No deliberation period running</span></div>`); o.push(stopped.join("")); }
   if(unknowns.length){
     o.push(`<div class="r"><span class="sub">Cannot tell — layer or tier not recorded</span></div>`);
-    o.push(`<p class="note">A deliberation period may well be running for ${unknowns.length===1?"this":"each of these"}. Nothing here can say so until the layer, and for Layer 2 the tier, is recorded on the proposal.</p>`);
+    o.push(`<p class="note">A deliberation period may well be running for ${unknowns.length===1?"this":"each of these"}. Nothing here can say so until the <a href="https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/CONTRIBUTING.md#words-used-here">layer</a>, and for Layer 2 the tier, is recorded on the proposal.</p>`);
     o.push(unknowns.join("")); }
 
   if(d.issues.length){

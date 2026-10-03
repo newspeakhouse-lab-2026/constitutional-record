@@ -128,9 +128,31 @@ So the division is fixed:
 
 **Only you can** post to the governance channel, endorse, vote, raise an objection or state a consent position, and — as a Record Keeper — verify and merge. An agent may draft any of those for you to send. It must not send them. Consent that an agent can manufacture is not consent.
 
-To work this way you need `git`, the [GitHub CLI](https://cli.github.com) authenticated with `gh auth login`, and a clone of this repository. An agent tool does **not** authenticate GitHub for you — that is a separate step, and PRs cannot be opened without it. `AGENTS.md` in this repository is read automatically by agent tools that look for it; it is plain prose and carries no tool-specific commands, so it works with whatever you use.
+#### Setting one up
 
-When an agent has helped prepare a proposal, say so in the pull request and name yourself as the member responsible.
+```bash
+gh auth login                  # the agent tool does NOT do this for you
+git clone https://github.com/newspeakhouse-lab-2026/constitutional-record
+cd constitutional-record       # AGENTS.md is read from here automatically
+```
+
+`AGENTS.md` is plain prose carrying no tool-specific commands, so it works with whatever you use. `CLAUDE.md` beside it is a single line pointing at the same file, for tools that look for that name instead. Without `gh` authenticated, an agent can read and draft but cannot open a pull request.
+
+#### Declaring it — which the Constitution requires and we have nowhere to put
+
+Section 1 says an agent must be **documented and communicated to the rest of the membership**. There is no register, and nothing in the Record records who is running what. Until there is — the AI policy is the obvious place to create one — the minimum that satisfies the clause is:
+
+1. **Post once to the governance channel** saying you are running an agent and what it is. That is the communicating.
+2. **Say so on every proposal it helped prepare**, naming yourself as the member responsible. That is the identifying, and Section 1 requires it separately: an agent acting on Laboratory infrastructure must be *clearly identifiable as that member's agent*.
+3. **Mark its commits.** A `Co-Authored-By:` trailer naming the agent does this, and survives in the history where a pull request comment does not.
+
+#### Two labels it must never touch
+
+The `opened:` and `endorsed:` labels are written by a workflow. **An agent must not add, edit or remove either by hand.** The `opened:` label is the evidence that a deliberation period began, and evidence an agent can write is not evidence. If one looks wrong, it is for a member to fix.
+
+#### When it gets something wrong
+
+It is your proposal. Section 1 is unambiguous that an agent's actions are the member's responsibility, and "the agent drafted it" is not a defence for a clause nobody checked. Read what it wrote before you file it — particularly the layer and its reasoning, which is the part the cohort will test first.
 
 ## Doing it
 
