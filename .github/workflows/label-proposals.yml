@@ -88,9 +88,16 @@ jobs:
 
             // ---- layer, tier, period, from what the proposer wrote -------------
             const body = pr.body || '';
-            const layer = (body.match(/\*\*Layer:\*\*\s*\**\s*(\d)/i) || [])[1];
-            const tier  = (body.match(/\*\*Tier:\*\*\s*\**\s*([ABC])\b/i) || [])[1];
-            const days  = (body.match(/\*\*Deliberation period:\*\*\s*\**\s*(\d+)/i) || [])[1];
+            // Anchored to one line, and \s would span newlines: a field left blank
+            // followed by prose that happens to start with a digit would otherwise
+            // be read as the answer. "**Layer:**" above "2 Ordinary · 3 Policy" is
+            // the template's own wording, and it labelled that proposal layer-2.
+            const H = '[^\\S\\n]*';
+            const field = (label, capture) =>
+              (body.match(new RegExp(`^${H}\\*\\*${label}:\\*\\*${H}\\**${H}(${capture})`, 'im')) || [])[1];
+            const layer = field('Layer', '\\d');
+            const tier  = field('Tier', '[ABC]\\b');
+            const days  = field('Deliberation period', '\\d+');
 
             const wanted = new Set();
             if (layer) wanted.add(`layer-${layer}`);

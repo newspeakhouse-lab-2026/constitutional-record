@@ -16,6 +16,8 @@ on:
       - 'docs/data.json'
       - 'rules/**'
       - 'policies/**'
+      - '.github/workflows/label-proposals.yml'
+      - '.github/scripts/**'
   workflow_dispatch:
 
 permissions:
@@ -27,3 +29,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: python3 .github/scripts/check-record.py
+
+      # The labelling workflow runs on pull_request_target, which GitHub always
+      # executes from the default branch — so it cannot be exercised by the pull
+      # request that changes it. This runs its logic against a stubbed API
+      # instead. Unlike the check above, a failure here is a real failure: it
+      # means the workflow would mislabel a proposal.
+      - name: Test the labelling workflow's logic
+        run: node .github/scripts/test-label-proposals.mjs
