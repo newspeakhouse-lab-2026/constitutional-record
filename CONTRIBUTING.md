@@ -99,6 +99,10 @@ Every amendment follows the same arc. The deliberation periods and thresholds di
 
 Step 7 is the one people miss, and it is the only step with no trace on GitHub.
 
+Two things happen on their own as you go. When you fill in the Layer, Tier and Deliberation period, a workflow turns them into **labels**; and when you take the pull request out of draft it adds an **`opened:`** label recording the moment, which is what shows that a deliberation period began. A second label, **`endorsed:`**, counts endorsing reviews. Nobody writes these by hand.
+
+The [dashboard](https://newspeakhouse-lab-2026.github.io/constitutional-record/) reads them, so a proposal with no layer recorded shows as *cannot tell* rather than appearing to have no window running. If your proposal looks wrong there, the labels are the place to look.
+
 ### What starts the clock
 
 It differs by layer, and the Constitution is explicit for only two of them.
@@ -184,6 +188,23 @@ For Tier A the window **is** the proposal's visibility in the governance channel
 
 An objection is never a bare "no": it is stated with its reason and a suggested route forward. A single stated objection moves an Ordinary proposal **up** a tier. It can never move down.
 
+### Endorsing
+
+Two layers need an endorsement before anything else happens, and for one of them the endorsement **is** the starting gun.
+
+| | |
+|---|---|
+| **Layer 3 Policy** | "At least one other member must endorse" |
+| **Layer 4 Constitutional** | "**Two endorsing reviews start the 7-day deliberation clock**" |
+
+So a constitutional amendment's clock does not run from when it was opened. It runs from the moment the second member reviews it. An amendment nobody reviews has no window running, however long it has been sitting there — which is the position pull request #2 is in.
+
+**Endorsing is not supporting.** It says *this deserves to be deliberated*, not *I agree with it*. You can endorse an amendment onto the agenda and then vote against it, and that is a perfectly coherent thing to do.
+
+This matters more than it sounds. If people treat endorsement as agreement, then anyone who opposes an amendment can stop it being deliberated at all simply by declining to review — **a veto the Constitution never granted anyone.** Opposition belongs in the vote, where it is counted and recorded.
+
+In practice an endorsement is an **approving review** on the pull request. The Constitution says "endorsing reviews" without defining them; approving review is the reading the tooling uses, and it is a reading rather than a quotation. If the Laboratory means something else by it, say so and the tooling should follow.
+
 ### Voting
 
 Voting happens as the Constitution specifies for the layer — in the governance channel, by show of hands, by anonymous poll, however the Laboratory decides. **GitHub is not the voting platform.**
@@ -253,3 +274,4 @@ Configuring branch protection implements an existing constitutional requirement 
 | See the full history of a rule | Open the file → **History** |
 | See all current rules | Browse the repo on `main` |
 | Check thresholds and windows | `AGENTS.md` — or ask your agent |
+| See what is closing, and what is running | The [dashboard](https://newspeakhouse-lab-2026.github.io/constitutional-record/) |

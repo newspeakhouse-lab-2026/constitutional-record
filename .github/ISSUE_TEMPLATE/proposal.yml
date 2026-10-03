@@ -67,7 +67,7 @@ body:
     id: days
     attributes:
       label: Deliberation period — Tier B only
-      description: "§2 requires a Tier B proposal to run for *a stated period of less than seven days*. Write the number of days. A period that was never stated cannot have elapsed."
+      description: "Constitution §2 requires a Tier B proposal to run for *a stated period of less than seven days*. Write the number of days. A period that was never stated cannot have elapsed."
       placeholder: "5"
     validations:
       required: false

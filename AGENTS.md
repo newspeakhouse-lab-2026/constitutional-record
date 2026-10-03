@@ -163,6 +163,15 @@ Three fields in the pull request template are read by a workflow and turned into
 - **Tier** — A, B or C. Layer 2 only.
 - **Deliberation period** — days, Tier B only. Constitution §2 requires a Tier B proposal to run for *a stated period of less than seven days*, and a period never stated cannot have elapsed.
 
+Two further labels are written by a workflow, never by you:
+
+| | |
+|---|---|
+| `opened:2026-10-03T19:06:12Z` | When the proposal was submitted for deliberation — added when it leaves draft, removed if it returns to draft |
+| `endorsed:2` | How many members have endorsed it, recounted on every review |
+
+**Never add, edit or remove either by hand.** The `opened:` label is the evidence that a deliberation period began — `rules/rule-deliberation-clock.md` says a period that cannot be shown to have begun has not begun — and evidence an agent can write is not evidence. If one is wrong, say so and let a member fix it.
+
 A missing layer means the proposal is unlabelled and will not appear on the dashboard with a window. It does **not** invalidate the proposal — the tooling creates no duty, and the workflow comments rather than failing. Tell the member what is missing and why it matters, not that they have done something wrong.
 
 ## Filing

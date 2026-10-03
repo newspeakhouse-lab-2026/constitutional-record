@@ -28,7 +28,7 @@ never moves down. -->
 
 **Deliberation period:** <!-- Tier B only. Write just the number of days, under 7 -->
 
-<!-- §2 requires a Tier B proposal to run for "a stated period of less than seven
+<!-- Constitution §2 requires a Tier B proposal to run for "a stated period of less than seven
 days". A period that was never stated cannot have elapsed. -->
 
 **File(s):**

@@ -1,31 +1,61 @@
 {
-  "_comment": "Dates the Constitution fixes, which cannot be derived from the GitHub API. Everything else on the dashboard is read live from the Record. Changing this file is a Record change like any other: branch, pull request, Record Keeper merges.",
+  "_comment": "Constitutional facts the page cannot derive. Each carries the sentence it came from, so a CI check can fail when an amendment changes the wording. Members and thresholds are NOT here — they are counted live from members.md.",
   "repo": "newspeakhouse-lab-2026/constitutional-record",
+  "procedures": {
+    "tier-a": {
+      "name": "Tier A",
+      "days": 2,
+      "source": "§2",
+      "quote": "Tier A — 48 hours."
+    },
+    "tier-b": {
+      "name": "Tier B",
+      "daysFromLabel": true,
+      "source": "§2",
+      "quote": "Deliberation runs for a stated period of less than seven days."
+    },
+    "tier-c": {
+      "name": "Tier C",
+      "days": 7,
+      "minimum": true,
+      "source": "§2",
+      "quote": "Deliberation runs for at least seven days."
+    },
+    "layer-3": {
+      "name": "Policy",
+      "days": 7,
+      "source": "§2",
+      "quote": "Seven-day deliberation."
+    },
+    "layer-4": {
+      "name": "Amendment",
+      "days": 7,
+      "needsApprovals": 2,
+      "source": "§2",
+      "quote": "Two endorsing reviews start the 7-day deliberation clock."
+    }
+  },
   "fixed": [
     {
       "label": "Constitution expires",
       "at": "2026-11-30T23:59:00Z",
       "source": "§5",
+      "quote": "This Constitution expires at 23:59 (UK time) on Monday, 30 November 2026",
       "note": "Unless re-ratified or replaced by two-thirds of all members. If it lapses, functions revert to the College."
     },
     {
       "label": "Re-ratification must have entered deliberation",
       "at": "2026-11-23T23:59:00Z",
       "source": "§5",
-      "note": "A re-ratification or replacement proposal must have obtained its endorsements and entered its seven-day deliberation period by this date."
+      "quote": "no later than Monday, 23 November 2026",
+      "note": "A re-ratification or replacement proposal must have obtained its endorsements and entered seven-day deliberation."
     },
     {
       "label": "Interim role holders' terms end",
-      "at": "2026-10-04T23:59:00Z",
+      "at": "2026-10-04T22:59:00Z",
       "source": "§6",
-      "note": "Unless extended, or until holders are elected. Pull request #2 proposes extending to 2 November — proposed, not adopted."
+      "quote": "Ending 23:59 (UK time) on Sunday, 4 October 2026",
+      "note": "Unless extended. Pull request #2 proposes extending to 2 November — proposed, not adopted."
     }
-  ],
-  "thresholds": {
-    "members": 14,
-    "majorityOfAll": 8,
-    "twoThirdsOfAll": 10,
-    "quorum": 7,
-    "note": "Fractions of all members round up (§1). Recompute from members.md if membership changes."
-  }
+  ]
 }
