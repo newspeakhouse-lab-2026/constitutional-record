@@ -29,6 +29,7 @@
   header nav a{color:var(--muted);text-decoration:none}
   header nav a:hover{color:var(--accent);text-decoration:underline}
   header nav a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
+  .warnish{color:var(--accent)}
   a.btn{border:1px solid var(--rule);border-radius:999px;padding:.3rem .7rem;color:var(--ink);
     background:var(--bg);white-space:nowrap}
   a.btn:hover{border-color:var(--accent);color:var(--accent);text-decoration:none}
@@ -237,6 +238,30 @@ async function collect(){
   const cText = at["constitution.md"] ? await blob(at["constitution.md"]) : null;
   const roles = at["roles.md"] ? await blob(at["roles.md"]) : null;
 
+  // How the Constitution came to say what it says. Keyed on constitution.md's own
+  // blob SHA, so the whole history is fetched once and never again until the
+  // Constitution actually changes — at which point the key changes with it.
+  let amendments=[];
+  if(at["constitution.md"]){
+    const hk="hist:"+at["constitution.md"];
+    let hit=null; try{ hit=localStorage.getItem(hk) }catch{}
+    if(hit!==null){ try{ amendments=JSON.parse(hit) }catch{} }
+    else try{
+      // Bounded on purpose: each commit costs one further call to find its pull
+      // request, and that is the only cost on this page that grows with the
+      // Record. Cached against the Constitution's blob SHA, so it is paid once.
+      const cs=(await api("/commits?path=constitution.md&per_page=12")).slice(0,12);
+      amendments=await Promise.all(cs.map(async c=>{
+        let prs=[];
+        try{ prs=(await api(`/commits/${c.sha}/pulls`)).map(x=>x.number) }catch{}
+        return {sha:c.sha.slice(0,7), url:c.html_url, at:c.commit.committer.date,
+                msg:(c.commit.message||"").split("\n")[0],
+                who:(c.author&&c.author.login)||c.commit.author.name, prs};
+      }));
+      try{ localStorage.setItem(hk,JSON.stringify(amendments)) }catch{}
+    }catch{}
+  }
+
   // An instrument that expires declares it in one parseable line, so its expiry
   // is discovered where it was written rather than transcribed somewhere else.
   // Blobs are cached by SHA, so this costs nothing after the first load.
@@ -267,7 +292,7 @@ async function collect(){
   }
 
   return {
-    cfg, stale, checked:!!cText, instruments, roles, ends,
+    cfg, stale, checked:!!cText, instruments, roles, ends, amendments,
     props: prs.map(pr=>({pr,win:windowOf(pr,cfg.procedures||{}),
                          notes:notes[pr.number]||0, resolves:linkFor[pr.number]||[]})),
     issues: issues.filter(i=>!i.pull_request).map(i=>({...i,prs:linkedBy[i.number]||[]}))
@@ -341,6 +366,25 @@ function render(d){
         m.join(" · "),"","","idle");
     }).join(""));
   }
+
+  const am=d.amendments||[];
+  o.push(`<details class="ref"><summary>How the Constitution was amended (${am.length})</summary>`);
+  o.push(am.length
+    ? `<p class="note">Every change to <code>constitution.md</code>, newest first. The pull request is
+       where the reasoning and the deliberation are; the commit is what entered the Record.</p>`
+      + am.map((a,i)=>row("",
+          `${esc(a.msg)}`,
+          `<span class="tag">${esc(a.who)}</span> <a href="${a.url}">${a.sha}</a>`
+          + (a.prs&&a.prs.length
+              ? " &middot; " + a.prs.map(n=>`<a href="https://github.com/${REPO}/pull/${n}">#${n}</a>`).join(", ")
+              // The oldest entry is the commit that founded the Record, so it
+              // predates the process and having no pull request is expected.
+              : i===am.length-1
+                ? " &middot; the commit that founded the Record"
+                : ` &middot; <span class="warnish">no pull request</span>`),
+          "", fmt(new Date(a.at)), "idle")).join("")
+    : `<p class="note">The history could not be read.</p>`);
+  o.push(`</details>`);
 
   o.push(`<details class="ref"><summary>Adopted (${d.instruments.length})</summary>`);
   o.push(d.instruments.length?d.instruments.map(path=>{
