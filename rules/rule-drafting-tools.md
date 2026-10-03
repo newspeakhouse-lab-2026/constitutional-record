@@ -39,6 +39,16 @@ Requiring no approving review is deliberate: a Layer 2 proposal needs no endorse
 
 **The page reports; it does not decide.** What it displays has whatever force the Record gives it and no more. A proposal with no recorded opening is shown as not opened rather than guessed at, and nothing on the page is ever described as ready to merge — that judgement belongs to a Record Keeper who can see the governance channel. The labelling workflow never fails a check: a proposal missing a label is unlabelled, not blocked.
 
+## Keeping these in step with the Constitution
+
+Everything adopted here **describes** the Constitution. None of it has authority of its own. Where any file above disagrees with the Constitution, the Constitution is right and the file is wrong — that holds for `AGENTS.md`, `CONTRIBUTING.md`, the templates, the figures in `docs/data.json`, and anything the dashboard displays.
+
+**A proposal that changes the Constitution should update the affected tooling in the same pull request.** The pull request template asks this directly for deadlines, because nothing can detect a deadline newly added to a clause. It is the cheapest moment to do it: the person who knows what changed is already there.
+
+Three things notice drift rather than prevent it. `check-record.py` warns when a clause quoted in `docs/data.json` is no longer in `constitution.md`, when a stated time disagrees with its own quote, and when an instrument appears to expire without a readable `Ends:` line. The dashboard says plainly that its figures are unverified rather than showing them as though checked. The monthly review looks.
+
+**None of this may block an amendment.** A proposal is not invalid because the tooling was not updated alongside it, no check here fails a pull request, and nobody carries a duty to maintain these files. Tooling that has fallen behind the Constitution is a defect in the tooling, never in the instrument — and a Laboratory that could not amend its Constitution until a dashboard was updated would have the relationship exactly backwards.
+
 ## Interim
 
 Section 2 provides that the first Policy to be issued will define the issue templates for each layer and the proposer's checklist. These templates are **interim**, adopted at Layer 2 so that members have something to file with before that Policy exists. That Policy supersedes this rule, and may change or discard anything here.
