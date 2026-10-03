@@ -21,11 +21,15 @@
   body{margin:0;background:var(--bg);color:var(--ink);font:0.875rem/1.4 var(--ui);-webkit-font-smoothing:antialiased}
   .wrap{max-width:62rem;margin:0 auto;padding:1.5rem 1rem 3rem}
   h1{font:600 1.15rem/1.2 ui-serif,Georgia,serif;margin:0;letter-spacing:-.01em}
-  header{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;
+  header{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;flex-wrap:wrap;
     padding-bottom:.5rem;border-bottom:2px solid var(--rule);margin-bottom:.25rem}
+  header nav{display:flex;align-items:baseline;gap:.9rem;font-size:.75rem}
+  header nav a{color:var(--muted);text-decoration:none}
+  header nav a:hover{color:var(--accent);text-decoration:underline}
+  header nav a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
   .stamp{font:0.72rem/1 var(--mono);color:var(--faint)}
-  h2{font:600 .68rem/1 var(--ui);text-transform:uppercase;letter-spacing:.1em;color:var(--faint);
-    margin:1.5rem 0 .2rem;padding-bottom:.25rem;border-bottom:1px solid var(--line)}
+  h2{font:600 .74rem/1 var(--ui);text-transform:uppercase;letter-spacing:.11em;color:var(--ink);
+    margin:2.6rem 0 0;padding:0 .25rem .45rem;border-bottom:1px solid var(--rule)}
   h2:first-of-type{margin-top:.9rem}
 
   /* one row grammar: title and meta stack on the left, time on the right */
@@ -44,7 +48,12 @@
   .urgent .rem{color:var(--urgent)}
   .soon .rem{color:var(--soon)}
   .idle .rem{color:var(--faint);font-weight:400;font-size:.76rem}
-  .q7{color:var(--soon)}
+  .q7{color:var(--soon);font-weight:500}
+  /* Reference material is genuinely static; live signals a tier below the clocks
+     — quiet counters, comment counts, endorsement progress — are not, and were
+     styled as though they were. */
+  .ref .meta,.ref .lbl{color:var(--faint)}
+  .ref .lbl a{color:var(--muted)}
   .tag.ty{color:var(--ink);border-color:var(--rule)}
   .tag{font:0.63rem/1 var(--ui);letter-spacing:.04em;text-transform:uppercase;color:var(--muted);
     border:1px solid var(--line);border-radius:2px;padding:.08rem .28rem;margin-right:.25rem;
@@ -52,9 +61,24 @@
   .why{grid-column:1;font-size:.74rem;color:var(--soon);margin-top:.15rem}
   .why a{color:inherit;text-decoration:underline;text-underline-offset:2px}
   .why a:hover{color:var(--ink)}
+  .note{color:var(--muted);font-size:.76rem;line-height:1.55;padding:.1rem 0 .55rem 1rem;max-width:46rem}
   .note a{color:var(--accent)}
-  .sub{grid-column:1/-1;font:600 .64rem/1 var(--ui);text-transform:uppercase;letter-spacing:.09em;
-    color:var(--faint);padding:.8rem .25rem .25rem;border-bottom:1px solid var(--line)}
+  details{margin-top:1.6rem;border-top:1px solid var(--line)}
+  details + details{margin-top:0}
+  summary{font:600 .68rem/1 var(--ui);text-transform:uppercase;letter-spacing:.09em;color:var(--muted);
+    cursor:pointer;padding:.65rem .25rem;list-style:none;display:flex;gap:.45rem;align-items:center}
+  summary::-webkit-details-marker{display:none}
+  summary::before{content:"\25B8";font-size:.7rem;color:var(--faint);transition:transform .12s}
+  details[open] summary::before{transform:rotate(90deg)}
+  summary:hover{color:var(--ink)}
+  summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+  footer{margin-top:2.6rem;padding-top:.75rem;border-top:1px solid var(--rule);
+    color:var(--faint);font-size:.73rem;line-height:1.6;max-width:46rem}
+  footer a{color:var(--accent)}
+  .sub{display:block;font:600 .64rem/1.3 var(--ui);letter-spacing:.02em;color:var(--faint);
+    padding:1.4rem 0 .4rem 1rem;position:relative}
+  .sub::before{content:"";position:absolute;left:0;top:1.5rem;width:.55rem;
+    border-top:1px solid var(--rule)}
   .warn{border:1px solid var(--urgent);border-left-width:3px;border-radius:2px;padding:.5rem .6rem;
     margin:.9rem 0 .2rem;font-size:.8rem;line-height:1.45;color:var(--ink)}
   .warn .q{display:block;font:0.72rem/1.5 var(--mono);color:var(--muted);margin-top:.3rem}
@@ -66,13 +90,18 @@
 </style>
 </head>
 <body><div class="wrap">
-  <header><h1>State of the Record</h1><span class="stamp" id="stamp">reading…</span></header>
+  <header>
+    <h1>State of the Record</h1>
+    <nav>
+      <a href="https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/CONTRIBUTING.md">Member guide</a>
+      <a href="https://github.com/newspeakhouse-lab-2026/constitutional-record/pulls">Proposals</a>
+      <span class="stamp" id="stamp">reading…</span>
+    </nav>
+  </header>
   <main id="out"></main>
   <footer id="foot">
-    <a href="https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/CONTRIBUTING.md#the-process-end-to-end"><strong>How to propose &rarr;</strong></a> &nbsp;·&nbsp;
-    <a href="https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/CONTRIBUTING.md">The member guide</a> &nbsp;·&nbsp;
-    <a href="https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/constitution.md">The Constitution</a><br>
-    Read live from <a href="https://github.com/newspeakhouse-lab-2026/constitutional-record">the Constitutional Record</a> on each load.
+    Read live from <a href="https://github.com/newspeakhouse-lab-2026/constitutional-record">the Constitutional Record</a> on each load, and from
+    <a href="https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/constitution.md">the Constitution</a> itself — which is checked against the figures above.
     Times are UK time, as the Constitution states them.
     <strong>A countdown appears only where a deliberation period has demonstrably begun</strong> — where there is none, the rows above say why.
   </footer>
@@ -287,14 +316,15 @@ function render(d){
 
   o.push("<h2>Clocks</h2>");
   o.push(live.length?live.map(x=>x.html).join(""):'<p class="note">Nothing running.</p>');
-  if(stopped.length){ o.push(`<div class="r"><span class="sub">No deliberation period running</span></div>`); o.push(stopped.join("")); }
+  if(stopped.length){ o.push(`<span class="sub">No deliberation period is running</span>`); o.push(stopped.join("")); }
   if(unknowns.length){
-    o.push(`<div class="r"><span class="sub">Cannot tell — layer or tier not recorded</span></div>`);
+    o.push(`<span class="sub">Cannot tell — layer or tier not recorded</span>`);
     o.push(`<p class="note">A deliberation period may well be running for ${unknowns.length===1?"this":"each of these"}. Nothing here can say so until the <a href="https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/CONTRIBUTING.md#words-used-here">layer</a>, and for Layer 2 the tier, is recorded on the proposal.</p>`);
     o.push(unknowns.join("")); }
 
   if(d.issues.length){
     o.push(`<h2>Proposed, no text yet (${d.issues.length})</h2>`);
+    o.push(`<p class="note">An issue holds no text and adopts nothing — only a merged pull request does. It is where to start when you want to propose something before drafting it. <a href="${"https://github.com/newspeakhouse-lab-2026/constitutional-record"}/issues/new?template=proposal.yml">Open an issue</a>.</p>`);
     o.push(d.issues.map(i=>{
       const age=Math.floor((Date.now()-+new Date(i.created_at))/DAY);
       const m=[`@${esc(i.user.login)}`,`open ${age}d`];
@@ -305,7 +335,7 @@ function render(d){
     }).join(""));
   }
 
-  o.push(`<details><summary>Adopted (${d.instruments.length})</summary>`);
+  o.push(`<details class="ref"><summary>Adopted (${d.instruments.length})</summary>`);
   o.push(d.instruments.length?d.instruments.map(path=>{
     const kind=path.endsWith("/policy.md")?"Policy":"Rule";
     const name=path.split("/").pop().replace(/\.md$/,"");
@@ -315,7 +345,7 @@ function render(d){
   o.push("</details>");
 
   const rows=d.roles?d.roles.split("\n").filter(l=>/^\|/.test(l)&&!/^\|\s*-/.test(l)).slice(1):[];
-  o.push(`<details><summary>Roles (${rows.length})</summary>`);
+  o.push(`<details class="ref"><summary>Roles (${rows.length})</summary>`);
   o.push(rows.length?rows.map(l=>{const c=l.split("|").map(x=>x.trim()).filter(Boolean);
     return row("",esc(c[0]||""),esc(c[1]||""),"",esc(c[2]||""),"idle")}).join("")
     :'<p class="note">No <code>roles.md</code> in the Record. §3 requires one, maintained by the Record Keepers.</p>');
