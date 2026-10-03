@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>State of the Record — Newspeak House Governance Laboratory 2026</title>
+<style>
+  :root {
+    --bg: #fbfaf8; --panel: #ffffff; --ink: #1a1a18; --muted: #6b6861;
+    --line: #e3e0da; --accent: #8a6a3a; --urgent: #a33; --soon: #9a6b12;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #141413; --panel: #1c1c1a; --ink: #e8e6e1; --muted: #8e8a82;
+      --line: #2e2d2a; --accent: #c9a876; --urgent: #e07a6f; --soon: #d6a84f;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 16px/1.55 ui-serif, Georgia, "Times New Roman", serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 2.5rem 1.25rem 6rem; }
+  header { border-bottom: 1px solid var(--line); padding-bottom: 1.25rem; margin-bottom: 2rem; }
+  h1 { font-size: 1.5rem; font-weight: 600; margin: 0 0 .35rem; letter-spacing: -.01em; }
+  .sub { color: var(--muted); font-size: .9rem; margin: 0; }
+  h2 {
+    font-size: .78rem; text-transform: uppercase; letter-spacing: .09em;
+    color: var(--muted); font-weight: 600; font-family: system-ui, sans-serif;
+    margin: 2.5rem 0 .85rem; padding-bottom: .4rem; border-bottom: 1px solid var(--line);
+  }
+  h2:first-of-type { margin-top: 1.5rem; }
+  .card {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 6px;
+    padding: .85rem 1rem; margin-bottom: .55rem;
+    display: flex; gap: 1rem; align-items: baseline; flex-wrap: wrap;
+  }
+  .card .main { flex: 1 1 22rem; min-width: 0; }
+  .card .right { text-align: right; font-family: var(--mono); font-size: .82rem; white-space: nowrap; }
+  .title { font-weight: 500; }
+  .title a { color: inherit; text-decoration: none; border-bottom: 1px solid var(--line); }
+  .title a:hover { border-bottom-color: var(--accent); }
+  .meta { color: var(--muted); font-size: .83rem; margin-top: .2rem; font-family: system-ui, sans-serif; }
+  .remain { font-size: 1.05rem; font-weight: 600; display: block; }
+  .remain.urgent { color: var(--urgent); }
+  .remain.soon { color: var(--soon); }
+  .remain.none { color: var(--muted); font-weight: 400; font-size: .85rem; }
+  .when { color: var(--muted); font-size: .76rem; }
+  .tag {
+    display: inline-block; font-family: system-ui, sans-serif; font-size: .68rem;
+    letter-spacing: .05em; text-transform: uppercase; padding: .12rem .45rem;
+    border: 1px solid var(--line); border-radius: 3px; color: var(--muted);
+    margin-right: .3rem; vertical-align: .08em;
+  }
+  .blocking { color: var(--soon); font-size: .83rem; margin-top: .25rem; font-family: system-ui, sans-serif; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: .55rem; }
+  .note { color: var(--muted); font-size: .85rem; margin: .4rem 0 1rem; }
+  footer { margin-top: 4rem; padding-top: 1.25rem; border-top: 1px solid var(--line); color: var(--muted); font-size: .82rem; }
+  footer a { color: var(--accent); }
+  .err { border-color: var(--urgent); color: var(--urgent); }
+  .loading { color: var(--muted); font-style: italic; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>State of the Record</h1>
+    <p class="sub">2026 Newspeak House Governance Laboratory · <span id="stamp" class="loading">reading the Record…</span></p>
+  </header>
+  <main id="out"></main>
+  <footer>
+    Read live from <a href="https://github.com/newspeakhouse-lab-2026/constitutional-record">the Constitutional Record</a> each time this page loads.
+    A rule is valid only if it was adopted through the procedure required for its layer and its exact adopted text appears in the Record — this page reports, it does not decide.
+    <strong>A proposal shown as “not opened” has no deliberation period running</strong>, however long it has been visible.
+  </footer>
+</div>
+
+<script>
+const REPO = "newspeakhouse-lab-2026/constitutional-record";
+const API = "https://api.github.com/repos/" + REPO;
+const HOUR = 36e5, DAY = 24 * HOUR;
+const CACHE_TTL = 3 * 60 * 1000;
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
+
+async function api(path) {
+  const key = "rec:" + path;
+  try {
+    const hit = JSON.parse(sessionStorage.getItem(key) || "null");
+    if (hit && Date.now() - hit.t < CACHE_TTL) return hit.v;
+  } catch {}
+  const r = await fetch(API + path, { headers: { Accept: "application/vnd.github+json" } });
+  if (!r.ok) return null;
+  const v = await r.json();
+  try { sessionStorage.setItem(key, JSON.stringify({ t: Date.now(), v })); } catch {}
+  return v;
+}
+
+/* ---- window arithmetic -------------------------------------------------- */
+
+function labelsOf(pr) {
+  const names = (pr.labels || []).map(l => l.name);
+  const pick = re => (names.find(n => re.test(n)) || "").split("-")[1];
+  return { layer: pick(/^layer-\d$/), tier: pick(/^tier-[abc]$/), days: pick(/^days-\d+$/) };
+}
+
+// The Constitution states a trigger for two procedures only. Tier A runs on
+// visibility in the governance channel; a Constitutional amendment runs from
+// two endorsing reviews. Everything else is supplied by the deliberation-clock
+// rule: a period begins at a recorded opening, or not at all.
+async function windowOf(pr) {
+  const { layer, tier, days } = labelsOf(pr);
+  const out = { layer, tier, days, opened: null, closes: null, blocking: [], minimum: false };
+
+  if (!layer) out.blocking.push("no layer recorded, so nothing can be computed");
+  if (pr.draft) { out.blocking.push("still a draft — not opened for deliberation"); return out; }
+
+  if (layer === "4") {
+    const reviews = await api(`/pulls/${pr.number}/reviews`) || [];
+    const endorsing = reviews.filter(r => r.state === "APPROVED").length;
+    if (endorsing < 2) {
+      out.blocking.push(`needs two endorsing reviews to start the clock — has ${endorsing}`);
+      return out;
+    }
+    out.opened = new Date(reviews.filter(r => r.state === "APPROVED")[1].submitted_at);
+    out.closes = new Date(+out.opened + 7 * DAY);
+    return out;
+  }
+
+  const timeline = await api(`/issues/${pr.number}/timeline`) || [];
+  const ready = timeline.filter(e => e.event === "ready_for_review").pop();
+  out.opened = new Date(ready ? ready.created_at : pr.created_at);
+
+  if (layer === "3") { out.closes = new Date(+out.opened + 7 * DAY); return out; }
+
+  if (tier === "a") out.closes = new Date(+out.opened + 2 * DAY);
+  else if (tier === "b") {
+    if (!days) { out.blocking.push("Tier B with no stated period — §2 requires one"); return out; }
+    out.closes = new Date(+out.opened + Number(days) * DAY);
+  } else if (tier === "c") { out.closes = new Date(+out.opened + 7 * DAY); out.minimum = true; }
+  else out.blocking.push("no tier recorded");
+
+  return out;
+}
+
+function remaining(at) {
+  if (!at) return null;
+  const ms = +at - Date.now();
+  const past = ms < 0, a = Math.abs(ms);
+  const d = Math.floor(a / DAY), h = Math.floor((a % DAY) / HOUR);
+  const txt = d >= 2 ? `${d} days` : d >= 1 ? `${d}d ${h}h` : `${h}h`;
+  return { ms, past, txt: past ? `${txt} ago` : txt, cls: past ? "urgent" : ms < DAY ? "urgent" : ms < 3 * DAY ? "soon" : "" };
+}
+
+const fmt = d => d ? d.toLocaleString("en-GB", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "";
+
+/* ---- assemble ----------------------------------------------------------- */
+
+async function collect() {
+  const [fixedRes, prs, issues, rules, policies, rolesFile] = await Promise.all([
+    fetch("data.json").then(r => r.json()).catch(() => ({ fixed: [] })),
+    api("/pulls?state=open&per_page=100"),
+    api("/issues?state=open&per_page=100"),
+    api("/contents/rules"),
+    api("/contents/policies"),
+    api("/contents/roles.md")
+  ]);
+
+  const proposals = [];
+  for (const pr of prs || []) proposals.push({ pr, win: await windowOf(pr) });
+
+  return {
+    fixed: (fixedRes.fixed || []).map(f => ({ ...f, at: new Date(f.at) })),
+    thresholds: fixedRes.thresholds,
+    proposals,
+    issues: (issues || []).filter(i => !i.pull_request),
+    rules: (rules || []).filter(f => f.name.endsWith(".md")),
+    policies: Array.isArray(policies) ? policies : [],
+    roles: rolesFile ? atob(rolesFile.content.replace(/\n/g, "")) : null
+  };
+}
+
+/* ---- render ------------------------------------------------------------- */
+
+function card(title, meta, rightTop, rightBottom, blocking, cls = "") {
+  return `<div class="card ${cls}">
+    <div class="main"><div class="title">${title}</div>
+      ${meta ? `<div class="meta">${meta}</div>` : ""}
+      ${blocking ? `<div class="blocking">${blocking}</div>` : ""}
+    </div>
+    <div class="right">${rightTop}${rightBottom ? `<span class="when">${rightBottom}</span>` : ""}</div>
+  </div>`;
+}
+
+function render(d) {
+  const o = [];
+  const soon = [];
+
+  for (const f of d.fixed) {
+    const r = remaining(f.at);
+    if (r && !r.past && r.ms < 14 * DAY) soon.push({ label: f.label, r, when: fmt(f.at), note: f.source });
+  }
+  for (const { pr, win } of d.proposals) {
+    const r = remaining(win.closes);
+    if (r && !r.past && r.ms < 14 * DAY) soon.push({ label: `#${pr.number} ${pr.title}`, r, when: fmt(win.closes), note: "deliberation closes" });
+  }
+  soon.sort((a, b) => a.r.ms - b.r.ms);
+
+  if (soon.length) {
+    o.push("<h2>Closing soon</h2>");
+    for (const s of soon) o.push(card(esc(s.label), esc(s.note), `<span class="remain ${s.r.cls}">${s.r.txt}</span>`, s.when));
+  }
+
+  o.push("<h2>Deliberation windows</h2>");
+  if (!d.proposals.length) o.push('<p class="note">No open proposals.</p>');
+  for (const { pr, win } of d.proposals) {
+    const tags = [
+      win.layer ? `<span class="tag">Layer ${win.layer}</span>` : "",
+      win.tier ? `<span class="tag">Tier ${win.tier.toUpperCase()}</span>` : "",
+      win.days ? `<span class="tag">${win.days} days</span>` : "",
+      pr.draft ? `<span class="tag">draft</span>` : ""
+    ].join("");
+    const r = remaining(win.closes);
+    const right = win.closes
+      ? `<span class="remain ${r.cls}">${r.past ? "elapsed" : r.txt}</span>`
+      : `<span class="remain none">not opened</span>`;
+    o.push(card(
+      `${tags}<a href="${pr.html_url}">#${pr.number} ${esc(pr.title)}</a>`,
+      `@${esc(pr.user.login)} · opened ${new Date(pr.created_at).toLocaleDateString("en-GB")}${win.opened ? ` · clock from ${fmt(win.opened)}` : ""}`,
+      right,
+      win.closes ? `${win.minimum ? "at least until " : "closes "}${fmt(win.closes)}` : "",
+      win.blocking.length ? esc(win.blocking.join(" · ")) : ""
+    ));
+  }
+
+  if (d.issues.length) {
+    o.push("<h2>Proposed, no text yet</h2>");
+    o.push('<p class="note">An issue holds no text. Only a merged pull request puts a rule in the Record.</p>');
+    for (const i of d.issues)
+      o.push(card(`<a href="${i.html_url}">#${i.number} ${esc(i.title)}</a>`, `@${esc(i.user.login)} · ${new Date(i.created_at).toLocaleDateString("en-GB")}`, "", ""));
+  }
+
+  o.push("<h2>Adopted</h2>");
+  const adopted = [...d.policies.map(p => ({ ...p, kind: "Policy" })), ...d.rules.map(r => ({ ...r, kind: "Rule" }))];
+  if (!adopted.length) o.push('<p class="note">Nothing in <code>policies/</code>. Only <code>rules/</code> has been used so far.</p>');
+  o.push('<div class="grid">');
+  for (const f of adopted)
+    o.push(`<div class="card"><div class="main"><div class="title"><span class="tag">${f.kind}</span><a href="${f.html_url}">${esc(f.name.replace(/\.md$/, ""))}</a></div></div></div>`);
+  o.push("</div>");
+
+  o.push("<h2>Roles</h2>");
+  if (!d.roles) {
+    o.push('<p class="note">No <code>roles.md</code> in the Record. §3 requires one, maintained by the Record Keepers.</p>');
+  } else {
+    const rows = d.roles.split("\n").filter(l => /^\|/.test(l) && !/^\|\s*-/.test(l)).slice(1);
+    o.push('<div class="grid">');
+    for (const row of rows) {
+      const c = row.split("|").map(s => s.trim()).filter(Boolean);
+      if (c.length >= 2) o.push(card(esc(c[0]), esc(c[1]), "", c[2] ? esc(c[2]) : ""));
+    }
+    o.push("</div>");
+  }
+
+  o.push("<h2>Fixed by the Constitution</h2>");
+  for (const f of d.fixed) {
+    const r = remaining(f.at);
+    o.push(card(esc(f.label), `${esc(f.source)} — ${esc(f.note)}`, `<span class="remain ${r.cls}">${r.past ? "passed" : r.txt}</span>`, fmt(f.at)));
+  }
+
+  if (d.thresholds) {
+    const t = d.thresholds;
+    o.push("<h2>Thresholds</h2>");
+    o.push(`<p class="note">${t.members} members. Majority of all: <strong>${t.majorityOfAll}</strong>. Two-thirds of all: <strong>${t.twoThirdsOfAll}</strong>. Quorum: <strong>${t.quorum}</strong>. ${esc(t.note)}</p>`);
+  }
+
+  $("#out").innerHTML = o.join("");
+  $("#stamp").textContent = "read " + new Date().toLocaleTimeString("en-GB");
+  $("#stamp").className = "";
+}
+
+collect().then(render).catch(e => {
+  $("#out").innerHTML = `<div class="card err"><div class="main"><div class="title">Could not read the Record</div><div class="meta">${esc(e.message)} — GitHub's API allows 60 unauthenticated requests an hour per address. Try again shortly.</div></div></div>`;
+  $("#stamp").textContent = "failed";
+});
+</script>
+</body>
+</html>

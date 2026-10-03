@@ -1,0 +1,87 @@
+# Reads the Layer, Tier and Deliberation period from a pull request body and
+# turns them into labels, which the Record dashboard reads.
+#
+# It never fails a check. rules/rule-drafting-tools.md says this tooling creates
+# no duty, and a workflow that blocked a proposal for a missing label would
+# contradict its own instrument. When it cannot read the fields it says so, once.
+
+name: Label proposals
+
+on:
+  pull_request_target:
+    types: [opened, edited, reopened, ready_for_review, converted_to_draft]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const body = pr.body || '';
+            const { owner, repo } = context.repo;
+
+            // Bare values written after the bold field names in the template.
+            const layer = (body.match(/\*\*Layer:\*\*\s*\**\s*(\d)/i) || [])[1];
+            const tier  = (body.match(/\*\*Tier:\*\*\s*\**\s*([ABC])\b/i) || [])[1];
+            const days  = (body.match(/\*\*Deliberation period:\*\*\s*\**\s*(\d+)/i) || [])[1];
+
+            const wanted = new Set();
+            if (layer) wanted.add(`layer-${layer}`);
+            if (tier)  wanted.add(`tier-${tier.toLowerCase()}`);
+            if (days)  wanted.add(`days-${days}`);
+
+            const current = pr.labels.map(l => l.name);
+            const managed = n => /^(layer-\d|tier-[abc]|days-\d+)$/.test(n);
+
+            for (const name of current.filter(managed)) {
+              if (!wanted.has(name)) {
+                await github.rest.issues.removeLabel({
+                  owner, repo, issue_number: pr.number, name
+                }).catch(() => {});
+              }
+            }
+
+            const toAdd = [...wanted].filter(n => !current.includes(n));
+            if (toAdd.length) {
+              // Create any label that does not exist yet, then apply.
+              for (const name of toAdd) {
+                await github.rest.issues.getLabel({ owner, repo, name })
+                  .catch(() => github.rest.issues.createLabel({
+                    owner, repo, name, color: 'ededed',
+                    description: 'Applied automatically from the pull request body'
+                  }).catch(() => {}));
+              }
+              await github.rest.issues.addLabels({
+                owner, repo, issue_number: pr.number, labels: toAdd
+              }).catch(e => core.warning(`could not add labels: ${e.message}`));
+            }
+
+            // Say something only when the layer is missing, and only once.
+            if (layer) return;
+            const marker = '<!-- label-proposals -->';
+            const comments = await github.rest.issues.listComments({
+              owner, repo, issue_number: pr.number, per_page: 100
+            });
+            if (comments.data.some(c => (c.body || '').includes(marker))) return;
+
+            await github.rest.issues.createComment({
+              owner, repo, issue_number: pr.number,
+              body: [
+                marker,
+                "I could not read a **Layer** from this pull request, so it has not been labelled and the Record dashboard will not show it.",
+                "",
+                "Add a line with a bare value, for example:",
+                "",
+                "```",
+                "**Layer:** 2",
+                "**Tier:** A",
+                "```",
+                "",
+                "Nothing is blocked by this — the proposal stands or falls on its own terms, and `rules/rule-drafting-tools.md` creates no duty. Editing the description re-runs this."
+              ].join('\n')
+            }).catch(() => {});

@@ -1,0 +1,31 @@
+{
+  "_comment": "Dates the Constitution fixes, which cannot be derived from the GitHub API. Everything else on the dashboard is read live from the Record. Changing this file is a Record change like any other: branch, pull request, Record Keeper merges.",
+  "repo": "newspeakhouse-lab-2026/constitutional-record",
+  "fixed": [
+    {
+      "label": "Constitution expires",
+      "at": "2026-11-30T23:59:00Z",
+      "source": "§5",
+      "note": "Unless re-ratified or replaced by two-thirds of all members. If it lapses, functions revert to the College."
+    },
+    {
+      "label": "Re-ratification must have entered deliberation",
+      "at": "2026-11-23T23:59:00Z",
+      "source": "§5",
+      "note": "A re-ratification or replacement proposal must have obtained its endorsements and entered its seven-day deliberation period by this date."
+    },
+    {
+      "label": "Interim role holders' terms end",
+      "at": "2026-10-04T23:59:00Z",
+      "source": "§6",
+      "note": "Unless extended, or until holders are elected. Pull request #2 proposes extending to 2 November — proposed, not adopted."
+    }
+  ],
+  "thresholds": {
+    "members": 14,
+    "majorityOfAll": 8,
+    "twoThirdsOfAll": 10,
+    "quorum": 7,
+    "note": "Fractions of all members round up (§1). Recompute from members.md if membership changes."
+  }
+}

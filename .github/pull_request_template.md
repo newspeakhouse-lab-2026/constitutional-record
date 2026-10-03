@@ -5,21 +5,31 @@ proposal, and a pull request opened without a prior issue is complete on its own
 
 Opening an issue first is optional and useful when you want to propose a rule
 before you have drafted its text.
+
+The Layer, Tier and Deliberation period fields below are read automatically and
+turned into labels, which the Record dashboard uses. Write bare values after
+them — "2", "A", "5" — and leave the explanatory comments alone.
 -->
 
 ## Proposal
 
-**Layer:**
-<!-- 2 Ordinary / 3 Policy / 4 Constitutional — or "0/1" if this is a correction or
-coordination that creates no rule. Classified by actual EFFECT, not by convenience.
-Where two layers are arguable, the more demanding process applies. -->
+**Layer:** <!-- write just the number: 2, 3, 4 — or 0 for a correction creating no rule -->
 
-**Tier (Layer 2 only):**
+<!-- 2 Ordinary · 3 Policy · 4 Constitutional. Classified by actual EFFECT, not by
+convenience. Where two layers are arguable, the more demanding process applies. -->
+
+**Tier:** <!-- Layer 2 only. Write just the letter: A, B or C -->
+
 <!-- A — 48h, passes absent a stated objection
      B — a stated period under 7 days, passes absent a stated objection
      C — 7 days or more, simple majority of those voting, quorum 7
 A proposal may enter at any tier. One stated objection moves it up a tier; it
 never moves down. -->
+
+**Deliberation period:** <!-- Tier B only. Write just the number of days, under 7 -->
+
+<!-- §2 requires a Tier B proposal to run for "a stated period of less than seven
+days". A period that was never stated cannot have elapsed. -->
 
 **File(s):**
 <!-- policies/{area}/policy.md · policies/{area}/rule-*.md · rules/rule-*.md ·

@@ -149,6 +149,22 @@ Before filing, check these too, and report what is missing rather than quietly f
 - Provisional numbers marked provisional
 - Could a member who was not in the room operate this? Could the next cohort? Can a reader who disagrees find the clause they disagree with?
 
+## Metadata on a proposal
+
+Three fields in the pull request template are read by a workflow and turned into labels, which the Record dashboard reads to compute deliberation windows. Fill them with **bare values**, on their own lines:
+
+```
+**Layer:** 2
+**Tier:** A
+**Deliberation period:** 5
+```
+
+- **Layer** — 2, 3 or 4. Always.
+- **Tier** — A, B or C. Layer 2 only.
+- **Deliberation period** — days, Tier B only. Constitution §2 requires a Tier B proposal to run for *a stated period of less than seven days*, and a period never stated cannot have elapsed.
+
+A missing layer means the proposal is unlabelled and will not appear on the dashboard with a window. It does **not** invalidate the proposal — the tooling creates no duty, and the workflow comments rather than failing. Tell the member what is missing and why it matters, not that they have done something wrong.
+
 ## Filing
 
 **The pull request is the proposal of record.** An issue holds no text, and Constitution §1 requires a rule's exact adopted text to appear in the Record, so only a merged pull request adopts anything. Never tell a member an issue alone has adopted something. An issue first is optional, and worth it only when the text does not exist yet.

@@ -15,6 +15,8 @@ Tooling to help members draft and file proposals, held in this repository:
 | `.github/ISSUE_TEMPLATE/`, `.github/pull_request_template.md` | A proposal form and a pull request template, asking for what the Constitution requires |
 | `.claude/skills/` | Optional procedures an agent may load: `classify`, `draft-policy`, `review-agenda` |
 | `.claude/hooks/`, `.claude/settings.json` | A hook preventing an agent from merging, pushing to `main`, force-pushing or rewriting history |
+| `.github/workflows/label-proposals.yml` | Reads the layer, tier and deliberation period from a pull request body and applies them as labels |
+| `docs/` | A page showing the state of the Record: deadlines, open deliberation windows, adopted instruments, roles and thresholds |
 
 ## What this does not do
 
@@ -23,6 +25,8 @@ Tooling to help members draft and file proposals, held in this repository:
 **It binds no member.** `AGENTS.md` instructs a tool, not a person. Any member may ignore it, use a different agent, use none, or propose entirely through the website. The merge hook constrains a member's own agent in their own clone and can be switched off by the member it belongs to; it takes nothing from a Record Keeper.
 
 **It is subordinate.** `AGENTS.md` states that where it contradicts the Constitution, the Constitution wins and the file is wrong.
+
+**The page reports; it does not decide.** What it displays has whatever force the Record gives it and no more. A proposal with no recorded opening is shown as not opened rather than guessed at, and nothing on the page is ever described as ready to merge — that judgement belongs to a Record Keeper who can see the governance channel. The labelling workflow never fails a check: a proposal missing a label is unlabelled, not blocked.
 
 ## Interim
 
