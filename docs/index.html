@@ -1,0 +1,571 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%237a5a2a'/%3E%3Crect x='4' y='4' width='8' height='1.4' fill='%23fbfaf8'/%3E%3Crect x='4' y='7.3' width='8' height='1.4' fill='%23fbfaf8'/%3E%3Crect x='4' y='10.6' width='5' height='1.4' fill='%23fbfaf8'/%3E%3C/svg%3E">
+<title>State of the Record — Newspeak House Governance Laboratory 2026</title>
+<style>
+  :root {
+    --bg:#fbfaf8; --ink:#1a1a18; --muted:#5f5c56; --faint:#8a867e;
+    --line:#e3e0da; --rule:#cfcbc3; --accent:#7a5a2a;
+    --urgent:#a3301f; --soon:#8a5c08;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+    --ui: system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+    --bg:#131312; --ink:#e9e7e2; --muted:#9a958c; --faint:#726d65;
+    --line:#2a2927; --rule:#3a3835; --accent:#c9a876;
+    --urgent:#e8806f; --soon:#d4a344;
+  }}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:0.875rem/1.4 var(--ui);-webkit-font-smoothing:antialiased}
+  .wrap{max-width:62rem;margin:0 auto;padding:1.5rem 1rem 3rem}
+  h1{font:600 1.15rem/1.2 ui-serif,Georgia,serif;margin:0;letter-spacing:-.01em}
+  .what{margin:.25rem 0 0;font-size:.76rem;color:var(--muted);max-width:40rem}
+  header{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;flex-wrap:wrap;
+    padding-bottom:.5rem;border-bottom:2px solid var(--rule);margin-bottom:.25rem}
+  header nav{display:flex;align-items:baseline;gap:.9rem;font-size:.75rem}
+  header nav a{color:var(--muted);text-decoration:none}
+  header nav a:hover{color:var(--accent);text-decoration:underline}
+  header nav a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
+  .warnish{color:var(--accent)}
+  .tag.st{border-color:var(--rule);color:var(--muted)}
+  .tag[title]{cursor:help}
+  dialog{border:1px solid var(--rule);border-radius:6px;background:var(--bg);color:var(--ink);
+    padding:1.3rem 1.4rem;max-width:34rem;width:calc(100% - 2rem)}
+  dialog::backdrop{background:rgba(0,0,0,.5)}
+  dialog h3{font:600 1rem/1.2 ui-serif,Georgia,serif;margin:0}
+  .pick{display:block;border:1px solid var(--line);border-radius:4px;padding:.6rem .7rem;
+    margin:.55rem 0;text-decoration:none;color:var(--ink)}
+  .pick:hover,.pick:focus-visible{border-color:var(--accent);outline:none}
+  .pick b{font:600 .82rem/1.3 var(--ui)}
+  .pick i{font-style:normal;color:var(--faint);font-size:.62rem;letter-spacing:.08em;
+    text-transform:uppercase;margin-left:.45rem}
+  .pick span{display:block;font-size:.73rem;line-height:1.5;color:var(--muted);margin-top:.2rem}
+  .pickwrap{margin:.55rem 0}
+  .pickwrap .pick{margin:0}
+  .areain{display:block;width:100%;margin:.4rem 0 0;padding:.4rem .55rem;font:inherit;font-size:.76rem;
+    border:1px solid var(--line);border-radius:4px;background:var(--bg);color:var(--ink)}
+  .areain:focus{outline:none;border-color:var(--accent)}
+  .areapath{display:block;font:inherit;font-size:.68rem;color:var(--faint);margin-top:.3rem}
+  dialog form{margin-top:.9rem;text-align:right}
+  dialog button{font:inherit;font-size:.75rem;padding:.3rem .8rem;border:1px solid var(--rule);
+    border-radius:999px;background:var(--bg);color:var(--muted);cursor:pointer}
+  .div{display:flex;align-items:center;gap:.7rem;margin:1.6rem 0 .3rem;
+    font:600 .62rem/1 var(--ui);text-transform:uppercase;letter-spacing:.1em;color:var(--faint)}
+  .div::after{content:"";flex:1;height:1px;background:var(--line)}
+  a.btn{border:1px solid var(--rule);border-radius:999px;padding:.3rem .7rem;color:var(--ink);
+    background:var(--bg);white-space:nowrap}
+  a.btn:hover{border-color:var(--accent);color:var(--accent);text-decoration:none}
+  .stamp{font:0.72rem/1 var(--mono);color:var(--faint)}
+  h2{font:600 .74rem/1 var(--ui);text-transform:uppercase;letter-spacing:.11em;color:var(--ink);
+    margin:2.6rem 0 0;padding:0 .25rem .45rem;border-bottom:1px solid var(--rule)}
+  h2:first-of-type{margin-top:.9rem}
+
+  /* one row grammar: title and meta stack on the left, time on the right */
+  .r{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.25rem 1rem;
+     align-items:start;padding:.45rem .25rem;border-bottom:1px solid var(--line)}
+  .r:last-child{border-bottom:0}
+  .lbl{min-width:0}
+  .lbl a{color:inherit;text-decoration:none;padding-block:.15rem}
+  .lbl a:hover{color:var(--accent);text-decoration:underline}
+  .lbl a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+  .num{font:0.78rem/1.5 var(--mono);color:var(--faint);margin-right:.3rem}
+  .meta{grid-column:1;font-size:.75rem;color:var(--muted);margin-top:.1rem}
+  .rt{grid-column:2;grid-row:1/span 2;text-align:right;white-space:nowrap}
+  .rem{display:block;font:600 .85rem/1.3 var(--mono);font-variant-numeric:tabular-nums}
+  .abs{display:block;font:0.71rem/1.3 var(--mono);color:var(--faint);font-variant-numeric:tabular-nums}
+  .urgent .rem{color:var(--urgent)}
+  .soon .rem{color:var(--soon)}
+  .idle .rem{color:var(--faint);font-weight:400;font-size:.76rem}
+  .q7{color:var(--soon);font-weight:500}
+  /* Reference material is genuinely static; live signals a tier below the clocks
+     — quiet counters, comment counts, endorsement progress — are not, and were
+     styled as though they were. */
+  .tag.ty{color:var(--ink);border-color:var(--rule)}
+  .tag{font:0.63rem/1 var(--ui);letter-spacing:.04em;text-transform:uppercase;color:var(--muted);
+    border:1px solid var(--line);border-radius:2px;padding:.08rem .28rem;margin-right:.25rem;
+    white-space:nowrap}
+  .why{grid-column:1;font-size:.74rem;color:var(--soon);margin-top:.15rem}
+  .why a{color:inherit;text-decoration:underline;text-underline-offset:2px}
+  .why a:hover{color:var(--ink)}
+  .note{color:var(--muted);font-size:.76rem;line-height:1.55;padding:.1rem 0 .55rem 1rem;max-width:46rem}
+  .note a{color:var(--accent)}
+  footer{margin-top:2.6rem;padding-top:.75rem;border-top:1px solid var(--rule);
+    color:var(--faint);font-size:.73rem;line-height:1.6;max-width:46rem}
+  footer a{color:var(--accent)}
+  .warn{border:1px solid var(--urgent);border-left-width:3px;border-radius:2px;padding:.5rem .6rem;
+    margin:.9rem 0 .2rem;font-size:.8rem;line-height:1.45;color:var(--ink)}
+  .warn .q{display:block;font:0.72rem/1.5 var(--mono);color:var(--muted);margin-top:.3rem}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  @media (max-width:40rem){
+    .abs{display:none}
+    .r{padding:.5rem .25rem}
+  }
+</style>
+</head>
+<body><div class="wrap">
+  <header>
+    <div><h1>State of the Record</h1>
+      <p class="what">What the 2026 Newspeak House Governance Laboratory has decided, is deciding, and is running out of time to decide.</p></div>
+    <nav>
+      <a href="https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/CONTRIBUTING.md">Contributing guide</a>
+      <a class="btn" id="newprop" href="#">Start a proposal</a>
+      <span class="stamp" id="stamp">reading…</span>
+    </nav>
+  </header>
+  <main id="out"></main>
+  <dialog id="pick">
+    <h3>Start a proposal</h3>
+    <p class="note" style="padding-left:0">What you are filing decides where it goes, and where it goes
+      decides which procedure applies. Pick the one that matches what this actually does — not the
+      quickest route. Each opens a new file in GitHub, already filled in.</p>
+    <div id="pickopts"></div>
+    <p class="note" style="padding-left:0">Amending the Constitution is Layer 4 and edits
+      <a id="amendlink" href="#">constitution.md</a> itself rather than adding a file.
+      <strong>When you commit, choose &ldquo;create a new branch and start a pull request&rdquo;.</strong></p>
+    <form method="dialog"><button>Close</button></form>
+  </dialog>
+  <footer id="foot">
+    Read live from <a href="https://github.com/newspeakhouse-lab-2026/constitutional-record">the Constitutional Record</a> on each load, and from
+    <a href="https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/constitution.md">the Constitution</a> itself — which is checked against the figures above.
+    Times are UK time, as the Constitution states them.
+    <strong>A countdown runs from the opening recorded on the proposal itself.</strong> Deliberation also
+    runs in the governance channel, which this page cannot see — so a countdown is evidence that a period
+    was opened here, not proof that it is running. Where there is none, the rows above say why.
+  </footer>
+</div>
+
+<script>
+const REPO="newspeakhouse-lab-2026/constitutional-record", API="https://api.github.com/repos/"+REPO;
+const HOUR=36e5, DAY=24*HOUR, TTL=18e4;
+// The skeletons live in .github/instrument-templates/, read from the Record
+// like everything else so they cannot drift from the templates beside them.
+// Until they are on main the buttons still work — they open an empty file.
+const newFileURL=(path,t)=>{
+  const base=`https://github.com/${REPO}/new/main?filename=${encodeURIComponent(path)}`;
+  if(!t) return base;
+  const v=encodeURIComponent(t);
+  // A prefill long enough to break the URL gives a button that silently fails.
+  // Better an empty file than a dead link.
+  return v.length>6000?base:base+"&value="+v;
+};
+// Where each kind of instrument goes. The path decides which procedure applies,
+// so choosing here is the same choice as choosing a layer.
+const LAYER={
+  "0":"Layer 0 — Operational: a reversible action within existing rules. Nothing is committed and no period runs.",
+  "1":"Layer 1 — Coordination: scheduling and logistics. Nothing is committed and no period runs.",
+  "2":"Layer 2 — Ordinary: operates within a frame that already exists, or sets a parameter.",
+  "3":"Layer 3 — Policy: creates or redesigns the governance of an area, or creates an office.",
+  "4":"Layer 4 — Constitutional: alters rights, thresholds, procedures, or the allocation of authority."};
+// Why a row has no countdown, said in the tag rather than in a word nobody can decode.
+const stateOf=w=>
+  w.state==="draft"     ? {t:"Draft", d:"The proposer has not submitted this for deliberation."}
+: w.state==="unstarted" ? {t:"Not started", d:"The deliberation period has not begun, so no clock is running."}
+: w.state==="none"      ? {t:"No period needed", d:"The Constitution requires no deliberation period at this layer."}
+: w.state==="unknown"   ? (w.layer
+    ? {t:"No tier recorded", d:"A Layer 2 proposal states a tier, and the tier is what decides how long deliberation runs."}
+    : {t:"No layer recorded", d:"The layer decides which procedure applies, so without it nothing here can work out whether a period is running."})
+: null;
+const KINDS=[
+  {file:".github/instrument-templates/rule.md", path:"rules/rule-untitled.md",
+   name:"An Ordinary rule", tag:"Layer 2",
+   desc:"Operates within a frame that already exists, or sets a parameter. Passes in 48 hours if nobody objects."},
+  {file:".github/instrument-templates/policy.md", path:"policies/{area}/policy.md", area:true,
+   name:"A Policy", tag:"Layer 3",
+   desc:"Creates or redesigns the governance of an area, or creates an office. One endorsement, seven days, 8 of 14."},
+  {file:".github/instrument-templates/dispute.md", path:"disputes/dispute-untitled.md",
+   name:"A record of an adjudication", tag:"§4",
+   desc:"Only after a Step 3 vote has already decided the matter. Filing this starts nothing — an adjudication begins by raising a concern in the governance channel or with the Agent."},
+];
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+/* A failed read must never look like an empty Record. Everything here either
+   returns data or throws; nothing returns null and lets the page render
+   emptiness as though it were a finding. */
+class Unreadable extends Error{ constructor(msg,reset){ super(msg); this.reset=reset; } }
+
+async function api(p){
+  const k="rec:"+p;
+  try{const h=JSON.parse(sessionStorage.getItem(k)||"null");if(h&&Date.now()-h.t<TTL)return h.v}catch{}
+  let r;
+  try{ r=await fetch(API+p,{headers:{Accept:"application/vnd.github+json"}}); }
+  catch(e){ throw new Unreadable("the network request failed"); }
+  if(r.status===403||r.status===429){
+    if(r.headers.get("x-ratelimit-remaining")==="0"){
+      const reset=new Date(+r.headers.get("x-ratelimit-reset")*1000);
+      throw new Unreadable("rate-limited by GitHub",reset);
+    }
+    throw new Unreadable("GitHub refused the request");
+  }
+  if(!r.ok) throw new Unreadable(`GitHub returned ${r.status} for ${p}`);
+  const v=await r.json();
+  try{sessionStorage.setItem(k,JSON.stringify({t:Date.now(),v}))}catch{}
+  return v;
+}
+
+/* A blob SHA is content-addressed, so a blob never changes. Cache it for good:
+   after the first load nothing here is fetched again until something merges. */
+async function blob(sha){
+  const k="blob:"+sha;
+  try{ const hit=localStorage.getItem(k); if(hit!==null) return hit; }catch{}
+  const b=await api(`/git/blobs/${sha}`);
+  const txt=new TextDecoder().decode(Uint8Array.from(atob(b.content.replace(/\n/g,"")),c=>c.charCodeAt(0)));
+  try{ localStorage.setItem(k,txt); }catch{}
+  return txt;
+}
+
+/* Deliberation arithmetic comes from data.json, which cites the clause it came
+   from — so amending the Constitution is a reviewable diff, not a silent change
+   in a script. Opening times and endorsement counts come from labels the
+   workflow writes, which is both cheaper and better evidence: the label is
+   visible on the proposal, which is what "shown to have begun" means. */
+function windowOf(pr,proc){
+  const names=(pr.labels||[]).map(l=>l.name);
+  // Split on the FIRST colon only — an ISO timestamp is full of colons and dashes.
+  const pick=re=>{const x=names.find(v=>re.test(v));return x?x.slice(x.indexOf(":")+1):null};
+  const layer=(names.find(n=>/^layer-\d$/.test(n))||"").split("-")[1];
+  const tier=(names.find(n=>/^tier-[abc]$/.test(n))||"").split("-")[1];
+  const days=(names.find(n=>/^days-\d+$/.test(n))||"").split("-")[1];
+  const openedAt=pick(/^opened:/);
+  const endorsed=pick(/^endorsed:/);
+  const other=names.filter(n=>!/^(layer-\d|tier-[abc]|days-\d+|opened:|endorsed:)/.test(n));
+  const o={layer,tier,days,other,opened:null,closes:null,minimum:false,why:[],state:"open"};
+
+  if(pr.draft){o.state="draft";o.why.push(`a draft — the proposer has not <a href="https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/CONTRIBUTING.md#the-process-end-to-end">submitted it for deliberation</a>`);return o}
+  if(!layer){o.state="unknown";o.why.push(`a period may well be running — nothing here can say so until the <a href="https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/CONTRIBUTING.md#words-used-here">layer</a> is on the proposal`);return o}
+  if(layer==="0"||layer==="1"){o.state="none";o.why.push(`<a href="https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/CONTRIBUTING.md#words-used-here">Layer ${layer}</a> — records or coordinates within existing rules, so no deliberation period is required`);return o}
+
+  const key = layer==="4"?"layer-4" : layer==="3"?"layer-3" : tier?("tier-"+tier):null;
+  const p = key && proc[key];
+  if(!p){ o.state="unknown"; if(layer!=="4"&&layer!=="3") o.why.push("no tier recorded"); return o }
+
+  if(p.needsApprovals){
+    const have=endorsed===null?0:Number(endorsed);
+    o.endorse={have,need:p.needsApprovals};
+    if(have<p.needsApprovals){
+      o.state="unstarted";
+      o.why.push(`a Constitutional amendment\u2019s clock starts at ${p.needsApprovals} <a href="https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/CONTRIBUTING.md#endorsing">endorsing reviews</a> (\u00a72) — this has ${have}`);
+      return o;
+    }
+  }
+  if(!openedAt){
+    o.state="unknown";
+    o.why.push("no recorded opening, so nothing here can say a period is running");
+    return o;
+  }
+  o.opened=new Date(openedAt);
+  let d=p.days;
+  if(p.daysFromLabel){ if(!days){o.state="unknown";o.why.push(`<a href="https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/CONTRIBUTING.md#words-used-here">Tier B</a> with no stated period — \u00a72 requires one`);return o} d=Number(days); }
+  o.closes=new Date(+o.opened+d*DAY); o.minimum=!!p.minimum;
+  return o;
+}
+
+function rem(at){
+  if(!at)return null;
+  const ms=+at-Date.now(), past=ms<0, a=Math.abs(ms);
+  const d=Math.floor(a/DAY), h=Math.floor((a%DAY)/HOUR);
+  const t=d>=2?`${d}d`:d>=1?`${d}d ${h}h`:`${h}h`;
+  return {ms,past,txt:past?"elapsed":t,
+    cls:past||ms<DAY?"urgent":ms<3*DAY?"soon":"",
+    word:past?"elapsed":ms<DAY?"closing today":ms<3*DAY?"closing soon":"running"};
+}
+// The Constitution states its deadlines in UK time, so show them in UK time.
+const fmt=d=>d?d.toLocaleString("en-GB",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit",timeZone:"Europe/London"}):"";
+
+function row(sr,label,meta,remTxt,abs,cls,why){
+  return `<div class="r ${cls||""}">
+    <div class="lbl">${label}</div>
+    <div class="rt"><span class="rem">${remTxt||""}${sr?`<span class="sr"> \u2014 ${sr}</span>`:""}</span>${
+      abs?`<span class="abs">${abs}</span>`:""}</div>
+    ${meta?`<div class="meta">${meta}</div>`:""}
+    ${why?`<div class="why">${why}</div>`:""}</div>`;
+}
+
+async function collect(){
+  const cfg=await fetch("data.json",{cache:"no-store"}).then(r=>r.json())
+    .catch(()=>{throw new Unreadable("docs/data.json could not be read")});
+
+  // Three calls, flat, however many proposals or instruments there are.
+  const [prs,issues,tree,closed]=await Promise.all([
+    api("/pulls?state=open&per_page=100"),
+    api("/issues?state=open&per_page=100"),
+    api("/git/trees/main?recursive=1"),
+    // Every merge into main is an adoption. One flat call covers rules,
+    // policies, roles and the Constitution together — per-instrument history
+    // would cost a call per file and grow with the Record.
+    api("/pulls?state=closed&sort=updated&direction=desc&per_page=100")]);
+  const merged=(closed||[]).filter(p=>p.merged_at)
+    .sort((a,b)=>new Date(b.merged_at)-new Date(a.merged_at));
+
+  const at={}; for(const e of tree.tree||[]) if(e.type==="blob") at[e.path]=e.sha;
+  const instruments=Object.keys(at).filter(p=>/^(rules|policies|disputes)\/.*\.md$/.test(p)&&!/\/rationale\.md$/.test(p)).sort();
+
+  const cText = at["constitution.md"] ? await blob(at["constitution.md"]) : null;
+  const roles = at["roles.md"] ? await blob(at["roles.md"]) : null;
+
+  // How the Constitution came to say what it says. Keyed on constitution.md's own
+  // blob SHA, so the whole history is fetched once and never again until the
+  // Constitution actually changes — at which point the key changes with it.
+  let amendments=[];
+  if(at["constitution.md"]){
+    const hk="hist:"+at["constitution.md"];
+    let hit=null; try{ hit=localStorage.getItem(hk) }catch{}
+    if(hit!==null){ try{ amendments=JSON.parse(hit) }catch{} }
+    else try{
+      // Bounded on purpose: each commit costs one further call to find its pull
+      // request, and that is the only cost on this page that grows with the
+      // Record. Cached against the Constitution's blob SHA, so it is paid once.
+      const cs=(await api("/commits?path=constitution.md&per_page=12")).slice(0,12);
+      amendments=await Promise.all(cs.map(async c=>{
+        let prs=[];
+        try{ prs=(await api(`/commits/${c.sha}/pulls`)).map(x=>x.number) }catch{}
+        return {sha:c.sha.slice(0,7), url:c.html_url, at:c.commit.committer.date,
+                msg:(c.commit.message||"").split("\n")[0],
+                who:(c.author&&c.author.login)||c.commit.author.name, prs};
+      }));
+      try{ localStorage.setItem(hk,JSON.stringify(amendments)) }catch{}
+    }catch{}
+  }
+
+  // An instrument that expires declares it in one parseable line, so its expiry
+  // is discovered where it was written rather than transcribed somewhere else.
+  // Blobs are cached by SHA, so this costs nothing after the first load.
+  const ends=[];
+  for(const path of instruments){
+    let txt; try{ txt=await blob(at[path]); }catch{ continue }
+    // Written for a person first, with the machine-readable instant in backticks:
+    //   **Ends:** 23:59 UK time, Monday 30 November 2026 (`2026-11-30T23:59:00+00:00`) — reason
+    // The older bare-timestamp form still parses.
+    // Strip HTML comments first: guidance left behind from a template is not
+    // part of the instrument, and its worked example is not a real expiry.
+    const m=txt.replace(/<!--[\s\S]*?-->/g,"").match(/^\*\*Ends:\*\*[^\S\n]*(.+)$/m);
+    if(!m) continue;
+    const line=m[1];
+    const bt=line.match(/`([^`]+)`/);
+    const iso=bt?bt[1]:(line.match(/^(\S+)/)||[])[1];
+    const when=new Date(iso);
+    if(isNaN(+when)) continue;
+    const why=(line.split(/\s[\u2014\u2013]\s/)[1]||"").trim();
+    ends.push({name:path.split("/").pop().replace(/\.md$/,""), at:when, why, path});
+  }
+
+  // Every figure on this page is a copy of something the Constitution says.
+  // Check the sentences it was copied from are still there.
+  const norm=t=>t.replace(/\*/g,"").replace(/\s+/g," ").trim();
+  const stale=[];
+  if(cText){ const cn=norm(cText);
+    for(const e of [...Object.values(cfg.procedures||{}),...(cfg.fixed||[])])
+      if(e.quote && !cn.includes(norm(e.quote))) stale.push(e);
+  }
+
+  const notes={}; for(const i of issues) notes[i.number]=i.comments;
+  const linkFor={}, linkedBy={};
+  for(const pr of prs){
+    const m=[...(pr.body||"").matchAll(/(?:resolves|closes|fixes)\s+#(\d+)/gi)].map(x=>+x[1]);
+    if(m.length){ linkFor[pr.number]=m; for(const n of m) (linkedBy[n]=linkedBy[n]||[]).push(pr.number); }
+  }
+
+  return {
+    cfg, stale, checked:!!cText, instruments, roles, ends, amendments, merged, shas:at,
+    props: prs.map(pr=>({pr,win:windowOf(pr,cfg.procedures||{}),
+                         notes:notes[pr.number]||0, resolves:linkFor[pr.number]||[]})),
+    issues: issues.filter(i=>!i.pull_request).map(i=>({...i,prs:linkedBy[i.number]||[]}))
+  };
+}
+
+function render(d){
+  const o=[], live=[], noclock=[];
+
+  if(d.stale.length) o.push(`<div class="warn"><strong>This page may be out of date.</strong>
+    ${d.stale.length===1?"A figure below is":"Figures below are"} copied from
+    ${d.stale.map(e=>esc(e.source)).filter((v,i,a)=>a.indexOf(v)===i).join(", ")},
+    and the sentence ${d.stale.length===1?"it was":"they were"} copied from is no longer in
+    <code>constitution.md</code>. Someone has amended it without updating <code>docs/data.json</code>.
+    ${d.stale.map(e=>`<span class="q">${esc(e.source)} was quoted as: &ldquo;${esc(e.quote)}&rdquo;</span>`).join("")}</div>`);
+  else if(!d.checked) o.push(`<div class="warn">Could not read <code>constitution.md</code>, so the figures below are unverified.</div>`);
+
+  for(const f of d.cfg.fixed||[]){
+    const at=new Date(f.at), r=rem(at);
+    live.push({ms:r.ms,html:row(r.word,esc(f.label),
+      `<span class="tag ty">Constitution</span><span class="tag">${esc(f.source)}</span>${esc(f.note)}`,
+      r.txt,fmt(at),r.cls)});
+  }
+  for(const e of d.ends||[]){
+    const r=rem(e.at);
+    live.push({ms:r.ms,html:row(r.word,esc(e.name),
+      `<span class="tag ty">Instrument</span>${esc(e.why||"")}`,r.txt,fmt(e.at),r.cls)});
+  }
+  for(const {pr,win,notes,resolves} of d.props){
+    const tp=win.tier&&(d.cfg.procedures||{})["tier-"+win.tier];
+    const st=win.closes?null:stateOf(win);
+    const tags=[`<span class="tag ty">Proposal</span>`,
+                win.layer?`<span class="tag" title="${esc(LAYER[win.layer]||"")}">L${win.layer}</span>`:"",
+                win.tier?`<span class="tag" title="${esc(tp?tp.source+": “"+tp.quote+"”":"")}">${win.tier.toUpperCase()}</span>`:"",
+                st?`<span class="tag st" title="${esc(st.d)}">${esc(st.t)}</span>`:"",
+                ...(win.other||[]).map(l=>`<span class="tag">${esc(l)}</span>`)].join("");
+    const lbl=`<span class="num">#${pr.number}</span><a href="${pr.html_url}">${esc(pr.title)}</a>`;
+    const age=Math.floor((Date.now()-+new Date(pr.created_at))/DAY);
+    const quiet=Math.floor((Date.now()-+new Date(pr.updated_at))/DAY);
+    const bits=["@"+esc(pr.user.login), `open ${age}d`];
+    if(quiet>=7) bits.push(`<span class="q7">quiet ${quiet}d</span>`);
+    bits.push(notes?`${notes} note${notes>1?"s":""}`:`<span class="q7">no comment</span>`);
+    if(win.endorse) bits.push(`${win.endorse.have}/${win.endorse.need} endorsed`);
+    const rev=(pr.requested_reviewers||[]).map(r=>"@"+esc(r.login));
+    if(rev.length) bits.push(`review requested from ${rev.join(", ")}`);
+    if(pr.base&&pr.base.ref!=="main") bits.push(`<span class="q7">targets ${esc(pr.base.ref)}, not main</span>`);
+    if(resolves.length) bits.push("resolves "+resolves.map(n=>`#${n}`).join(", "));
+    const meta=tags+bits.join(" · ");
+
+    if(win.closes){
+      const r=rem(win.closes);
+      live.push({ms:r.ms,html:row(r.word,lbl,meta,r.txt,(win.minimum?"≥ ":"")+fmt(win.closes),r.cls)});
+    } else {
+      // The state is a tag now, so the right column stays empty rather than
+      // carrying a word that needed decoding. sr keeps it for screen readers.
+      noclock.push(row(st?st.t:"",lbl,meta,"","","idle",
+        win.state==="none"?"":win.why.join(" · ")));
+    }
+  }
+  live.sort((a,b)=>a.ms-b.ms);
+
+  o.push("<h2>Deadlines and open proposals</h2>");
+  o.push(`<p class="note">Every deadline the Record knows about, soonest first: dates the Constitution
+    sets, instruments that expire, and deliberation periods that can be shown to have started.
+    Proposals with no countdown come after them, each saying why it has none.
+    <a href="https://github.com/${REPO}/pulls">All open proposals on GitHub</a>.</p>`);
+  if(!live.length&&!noclock.length) o.push(`<p class="note">Nothing open and nothing pending.</p>`);
+  o.push(live.map(x=>x.html).join(""));
+  if(live.length&&noclock.length) o.push(`<div class="div">No countdown</div>`);
+  o.push(noclock.join(""));
+
+  if(d.issues.length){
+    o.push(`<h2>Under discussion (${d.issues.length})</h2>`);
+    o.push(`<p class="note">Raised but not yet drafted. An issue is where a question lives before anyone
+      has written the text that would answer it — it adopts nothing by itself.
+      <a href="https://github.com/${REPO}/issues/new?template=proposal.yml">Raise one</a>,
+      or <a class="openpick" href="#">start a proposal</a> if you already have the text.</p>`);
+    o.push(d.issues.map(i=>{
+      const age=Math.floor((Date.now()-+new Date(i.created_at))/DAY);
+      const m=[`@${esc(i.user.login)}`,`open ${age}d`];
+      m.push(i.prs.length?`being drafted in ${i.prs.map(n=>`#${n}`).join(", ")}`
+                         :`<span class="q7">no pull request — nothing can be adopted from it</span>`);
+      return row("",`<span class="num">#${i.number}</span><a href="${i.html_url}">${esc(i.title)}</a>`,
+        m.join(" · "),"","","idle");
+    }).join(""));
+  }
+
+  // What exists now, which is a different question from how it got here.
+  const rrows=d.roles?d.roles.split("\n").filter(l=>/^\|/.test(l)&&!/^\|\s*-/.test(l)).slice(1):[];
+  o.push(`<h2>In force</h2>`);
+  o.push(`<p class="note">What binds the Laboratory today — the instruments on <code>main</code>, and who
+    holds office. This is the current state; the section below is the record of how it changed.</p>`);
+  const inforce=(d.checked?[row("",
+      `<span class="tag">Constitution</span><a href="https://github.com/${REPO}/blob/main/constitution.md">constitution.md</a>`,
+      `the authority every instrument below derives from`,"","","idle")]:[])
+    .concat(d.instruments.map(path=>{
+    const kind=path.startsWith("disputes/")?"Dispute":path.endsWith("/policy.md")?"Policy":"Rule";
+    const name=path.split("/").pop().replace(/\.md$/,"");
+    return row("",`<span class="tag">${kind}</span><a href="https://github.com/${REPO}/blob/main/${path}">${esc(name)}</a>`,
+      esc(path),"","","idle");
+  })).concat(rrows.map(l=>{
+    const c=l.split("|").map(x=>x.trim()).filter(Boolean);
+    return row("",`<span class="tag">Role</span>${esc(c[0]||"")}`,esc(c[1]||""),"",esc(c[2]||""),"idle");
+  }));
+  if(!rrows.length) o.push(`<p class="note">No <code>roles.md</code> in the Record, so no office holder
+    appears below. §3 requires one, maintained by the Record Keepers.</p>`);
+  o.push(inforce.length?inforce.join(""):`<p class="note">Nothing adopted yet.</p>`);
+
+  // One history. A change to the Constitution that arrived through a pull request
+  // is an annotation on that pull request, not a second entry for the same event.
+  const am=d.amendments||[], byPR={};
+  for(const a of am) for(const n of (a.prs||[])) (byPR[n]=byPR[n]||[]).push(a);
+  const founding=am.length?am[am.length-1]:null;
+  const events=[
+    ...(d.merged||[]).map(m=>({at:new Date(m.merged_at),m,amends:byPR[m.number]||[]})),
+    ...am.filter(a=>!a.prs||!a.prs.length).map(a=>({at:new Date(a.at),a}))
+  ].sort((x,y)=>y.at-x.at);
+
+  const SHOW=10;
+  o.push(`<h2>How the Record got here</h2>`);
+  o.push(`<p class="note">Every change that has entered <code>main</code>, newest first; changes to the
+    Constitution are marked. Whether the deliberation each one records actually happened is for a
+    Record Keeper to verify — most of it runs in the governance channel, which this page cannot see.</p>`);
+  o.push(events.length?events.slice(0,SHOW).map(e=>{
+    if(e.m){
+      const parts=[`@${esc(e.m.user?e.m.user.login:"unknown")}`];
+      if(e.amends.length) parts.push(`<span class="warnish">amended the Constitution</span> `
+        + e.amends.map(a=>`<a href="${a.url}">${a.sha}</a>`).join(", "));
+      const meta=parts.join(" &middot; ");
+      return row("",`<span class="num">#${e.m.number}</span><a href="${e.m.html_url}">${esc(e.m.title)}</a>`,
+        meta,"",fmt(e.at),"idle");
+    }
+    const a=e.a;
+    return row("",esc(a.msg),
+      `@${esc(a.who)} &middot; <a href="${a.url}">${a.sha}</a> &middot; `
+      + (a===founding?`the commit that founded the Record`:`<span class="warnish">no pull request</span>`),
+      "",fmt(e.at),"idle");
+  }).join(""):`<p class="note">Nothing has entered the Record yet.</p>`);
+  if(events.length>SHOW)
+    o.push(`<p class="note">${events.length-SHOW} older ${events.length-SHOW===1?"change is":"changes are"}
+      not shown — <a href="https://github.com/${REPO}/pulls?q=is%3Apr+is%3Amerged">see them on GitHub</a>.</p>`);
+
+  SHAS=d.shas;
+  $("#out").innerHTML=o.join("");
+  $("#stamp").textContent=new Date().toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
+}
+
+/* Filing a proposal does not depend on being able to read the Record, so the
+   picker is wired at load and keeps working when the page cannot see anything.
+   Without a template it opens an empty file, which is still a working route. */
+let SHAS={}, pickLoaded=false;
+$("#amendlink").href=`https://github.com/${REPO}/edit/main/constitution.md`;
+const TPL={};
+// GitHub turns every "/" in the filename into a breadcrumb it will not let you
+// edit, so a policy's area has to be chosen here rather than in the editor.
+const slug=v=>v.trim().toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
+const pathFor=(k,i)=>k.area?k.path.replace("{area}",slug(($("#area"+i)||{}).value||"")||"area"):k.path;
+const refresh=i=>{
+  const k=KINDS[i], path=pathFor(k,i);
+  $("#pick"+i).href=newFileURL(path,TPL[i]||null);
+  const out=$("#path"+i); if(out) out.textContent=path;
+};
+$("#pickopts").innerHTML=KINDS.map((k,i)=>
+  `<div class="pickwrap"><a class="pick" id="pick${i}" href="${newFileURL(pathFor(k,i),null)}">
+     <b>${esc(k.name)}</b><i>${esc(k.tag)}</i><span>${esc(k.desc)}</span></a>${
+   k.area?`<input class="areain" id="area${i}" aria-label="Which area does this Policy govern?"
+     placeholder="Which area? e.g. spaces, finance, safety">
+     <code class="areapath" id="path${i}">${esc(k.path.replace("{area}","area"))}</code>`:""}</div>`).join("");
+KINDS.forEach((k,i)=>{ if(!k.area) return;
+  $("#area"+i).addEventListener("input",()=>refresh(i));
+  $("#pick"+i).addEventListener("click",e=>{
+    if(slug($("#area"+i).value)) return;         // an area is named, go
+    e.preventDefault(); e.stopPropagation(); $("#area"+i).focus();
+  });
+});
+document.addEventListener("click",async e=>{
+  const a=e.target.closest("#newprop,.openpick"); if(!a) return;
+  e.preventDefault(); $("#pick").showModal();
+  if(pickLoaded) return; pickLoaded=true;
+  // Read only when someone opens the picker: a visitor who never files
+  // anything never pays for the templates.
+  await Promise.all(KINDS.map(async (k,i)=>{
+    const sha=SHAS[k.file]; if(!sha) return;
+    try{ TPL[i]=await blob(sha); refresh(i); }catch{}
+  }));
+});
+
+collect().then(render).catch(e=>{
+  const rl = e.reset
+    ? `GitHub allows 60 unauthenticated requests an hour from one address, and this one has used them. It resets at <strong>${e.reset.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"})}</strong>.`
+    : "";
+  $("#out").innerHTML=`<div class="warn"><strong>The Record could not be read, so nothing is shown.</strong><br>
+    ${esc(e.message||"unknown error")}. ${rl}<br>
+    <span class="q">This is not a statement that nothing is happening \u2014 it is a statement that this page cannot currently see. Open
+    <a href="https://github.com/${REPO}/pulls">the pull requests</a> directly.</span></div>`;
+  $("#stamp").textContent="could not read";
+});
+</script>
+</body></html>

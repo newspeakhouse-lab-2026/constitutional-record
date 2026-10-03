@@ -1,0 +1,384 @@
+# The Constitutional Record: A GitHub Guide
+
+## What this is
+
+The Constitutional Record is a **public** GitHub repository. It is the single source of truth for every rule, policy, and constitutional decision the Laboratory makes. Every decision that persists is a file in the repo. Every adoption is a merge. The history is immutable — nothing is deleted, only archived.
+
+All Laboratory members have write access. The repository is public, as Section 1 of the Constitution requires, so that the Laboratory's reasoning is legible to anyone — the College, future cohorts, and the field.
+
+> **The repository is public. Write accordingly.** Anything you put in a file, a commit message, a pull request or a comment is visible to the world and stays in the history. Candid or sensitive discussion belongs in the governance channel, not here. Never commit personal data — contact details, third-party phone numbers, or anything identifying about guests or non-members. Refer to roles, not people.
+>
+> Material may be removed where retaining it would disclose personal or confidential information or create a serious risk of harm. The removal and its reason are recorded without reproducing the removed material. But the authoritative history may **not** be rewritten merely to erase an adopted decision: errors are corrected by a new commit.
+
+## What is GitHub / git?
+
+Git is a version control system — it tracks every change ever made to a set of files, who made it, and when. GitHub is a website that hosts git repositories and adds a web interface for collaboration.
+
+Key concepts:
+
+- **Repository (repo)** — a folder of files with its full history. Ours holds the constitution, rules, policies, and disputes.
+- **Branch** — a parallel version of the repo where you can make changes without affecting the main copy. Think of it as a draft.
+- **Commit** — a saved change. Every commit has a timestamp, an author, and a description. Commits are permanent.
+- **Pull request (PR)** — a proposal to merge a branch into `main`. It shows what changed and has a space for discussion, evidence, and approvals.
+- **Merge** — when a pull request is accepted, the branch's changes are added to `main`. This is the moment a decision enters the record.
+- **Main** — the official branch. What's on `main` is the law. Everything should reach it through a pull request.
+
+**You do not need to install anything.** Everything in this guide can be done through GitHub's website. Members comfortable with the command line can use `git` and the GitHub CLI instead, and AI agents authorised under the Constitution's computational tools clause work the same way — see *Working with an AI agent* below, and `AGENTS.md`.
+
+**If GitHub is a barrier, it must not cost you anything.** Section 1 provides that no member may lose a right under the Constitution because they cannot use GitHub or the Laboratory's communication channel, and the Convener must provide a reasonably equivalent route and ensure anything submitted through it is communicated and recorded as the Constitution otherwise requires. Ask the Convener. This guide exists to reduce how often that is needed, not to replace it.
+
+## Roles
+
+**Members** — everyone in the Laboratory. You propose rules, discuss pull requests, and vote through the process defined in the Constitution.
+
+**Record Keepers (two people)** — the only members with merge access. They verify that the correct process was followed — that the vote happened, the outcome is recorded, and the PR text matches the decision — before merging. They are custodians, not gatekeepers: they check the process, not whether they personally agree. Having two means one being unavailable never blocks the record. The Constitution says either may merge; it does not expressly forbid merging your own proposal, but a verification carried out by the author verifies little, so **the practice is that the other Record Keeper merges**. Any member can create branches and pull requests; a Record Keeper is there to help members who'd rather not, and to perform the final merge.
+
+Current role holders are recorded in `roles.md`, maintained by the Record Keepers. A role is held only if it was conferred through the procedures the Constitution sets out — a repository edit does not confer it.
+
+## Repository structure
+
+```
+constitution.md                      Layer 4 — Constitutional
+members.md                           Authoritative membership list
+roles.md                             Current role holders
+policies/
+  {area}/
+    policy.md                        Layer 3 — Policy: the governance frame for an area
+    rule-{name}.md                   Layer 2 — Rules within that area
+    exp-rule-{name}.md               A time-limited experiment
+    rationale.md                     Reasoning, explicitly not operative
+rules/
+  rule-{name}.md                     Layer 2 — Standalone rules, no policy area or crossing several
+disputes/
+  dispute-{date}-{name}.md           Adjudication precedent
+AGENTS.md                            Instructions for members' AI agents
+CLAUDE.md                            One line, pointing at AGENTS.md
+CONTRIBUTING.md                      This guide
+.github/
+  ISSUE_TEMPLATE/                    The Proposal form
+  pull_request_template.md           The checks every pull request should pass
+```
+
+A policy area is a **folder**. The Layer 3 policy is `policy.md`; each Layer 2 rule in that area is its own `rule-*.md` file beside it. Keeping them separate is the point: the policy changes only by Policy resolution, while its rules and parameters change at Tier A in 48 hours.
+
+A rule that belongs to no policy area, or crosses several, lives in `rules/`.
+
+Any instrument may be filed as a time-limited experiment using the `exp-` prefix, at whatever layer it belongs to. It must state a hypothesis, success criteria and an end date, and it expires automatically unless adopted or extended.
+
+Put reasoning in a companion `rationale.md`, not in the instrument. Reasoning left inside an instrument becomes binding, and a future reader will cite your argument as law.
+
+## Words used here
+
+| | |
+|---|---|
+| **Instrument** | The operative text itself — a rule, a policy, a constitutional amendment, a dispute decision. The thing that becomes binding, as distinct from the *proposal* asking for it, the *discussion* around it, or the `rationale.md` beside it. The Charter uses the word in §4. |
+| **Layer** | How much weight a decision carries, and therefore what procedure adopts it. Determined by actual effect, not by the proposer's label. |
+| **Tier** | Within Layer 2 only: how long deliberation runs. A (48 hours), B (under seven days), C (seven or more, with a vote). |
+| **Lazy consensus** | Passing because nobody objected within the window, rather than by a vote. Tiers A and B only. |
+| **The Record** | This repository. A rule exists only if its exact adopted text is here. |
+
+## The process, end to end
+
+Every amendment follows the same arc. The deliberation periods and thresholds differ by layer; the steps do not.
+
+| | Step | Who | Where |
+|---|---|---|---|
+| 1 | Set up, once — or not at all, if you use the website | You | Your machine |
+| 2 | Decide what you are proposing, and at which layer | You. An agent may advise; you decide | — |
+| 3 | *Optional:* open an issue, if you have no text yet | You or your agent | GitHub |
+| 4 | Draft the instrument, and a `rationale.md` beside it | Your agent drafts; you own it | Your machine or GitHub |
+| 5 | Check it against what the Constitution requires | Your agent | — |
+| 6 | Branch, commit, open the pull request | You or your agent | GitHub |
+| 7 | **Post it to the governance channel**, with the link and the tier — **this starts the deliberation clock** | **You, personally** | Governance channel |
+| 8 | Deliberate | You. An agent may draft your words; it may never post a position | Channel, pull request, meetings |
+| 9 | Endorsements, where the layer needs them | Other members. Never an agent | Pull request or channel |
+| 10 | Vote | Members. **Never an agent** | As the Constitution specifies — not GitHub |
+| 11 | Record the outcome on the pull request | You, or a Record Keeper | Pull request |
+| 12 | Verify the process and merge | A Record Keeper, ideally not the author | GitHub |
+| 13 | Announce the result | The merging Record Keeper | Governance channel |
+
+Step 7 is the one people miss, and it is the only step with no trace on GitHub.
+
+Two things happen on their own as you go. When you fill in the Layer, Tier and Deliberation period, a workflow turns them into **labels**; and when you take the pull request out of draft it adds an **`opened:`** label recording the moment, which is what shows that a deliberation period began. A second label, **`endorsed:`**, counts endorsing reviews. Nobody writes these by hand.
+
+The [dashboard](https://newspeakhouse-lab-2026.github.io/constitutional-record/) reads them, so a proposal with no layer recorded shows as *cannot tell* rather than appearing to have no window running. If your proposal looks wrong there, the labels are the place to look.
+
+### What starts the clock
+
+It differs by layer, and the Constitution is explicit for only two of them.
+
+| | What starts deliberation |
+|---|---|
+| **Tier A** | The 48 hours **is** the period the proposal is visible in the governance channel (Constitution §2). Post it there, or nothing is running. |
+| **Tier B and C** | The stated period. **The Constitution does not say what triggers it.** |
+| **Layer 3 Policy** | Seven days, after an endorsing member and the preference-mapping step. The trigger is not stated. |
+| **Layer 4** | **"Two endorsing reviews start the 7-day deliberation clock"** — explicit, and those are reviews on the pull request. This clock runs on GitHub. |
+
+Where the Constitution is silent, the safe practice is the same as Tier A: post it to the channel with the link and the tier, and say when the window closes. Then nobody can dispute later when it began. **But do not assume every clock runs in the channel — a Layer 4 amendment sitting without two endorsing reviews has not started at all**, however long it has been open, and however much it has been discussed.
+
+### Working with an AI agent
+
+Constitution §1 permits any member to run an AI agent, provided it is **documented and communicated to the rest of the membership**, and requires that an agent acting on Laboratory infrastructure be **clearly identifiable as that member's agent**. It holds no membership, no vote and no standing, and its actions are your responsibility.
+
+**This is not the Agent.** The Agent is a constitutional office under Constitution §3 — a member, elected by anonymous ranked-choice vote for a two-month term, through whom the Laboratory acts as a body. Constitution §1 does allow the Laboratory to augment that office with a computational system, but only by Ordinary resolution and only on open-source models with no external logging and no individual holding admin access alone. Nothing like that exists. An agent you run is your tool, under your name, and speaks for nobody but you.
+
+So the division is fixed:
+
+**An agent can** read the Record, search for conflicts, classify a proposal and write the reasoning, draft an instrument and its rationale, check a draft against the Constitution's requirements, compute thresholds, create branches, commit, and open pull requests under your name. It cannot tell you whether a deliberation window has elapsed — that runs in the governance channel, which it cannot read.
+
+**Only you can** post to the governance channel, endorse, vote, raise an objection or state a consent position, and — as a Record Keeper — verify and merge. An agent may draft any of those for you to send. It must not send them. Consent that an agent can manufacture is not consent.
+
+#### Which model you may use — the clause people misread
+
+Section 1 contains two permissions, one after the other, and they bind differently:
+
+> Any member may choose to run an AI agent, provided it is documented and communicated to the rest of the membership.
+
+> By Ordinary resolution, the Laboratory may also augment the Agent role with a computational system… **The system runs on open-source models with no external logging.**
+
+**The open-source requirement applies only to the second.** It governs a system that augments the Agent *office* — something the Laboratory would have to adopt by Ordinary resolution, and which does not exist. **An agent you run yourself has no model restriction.** Claude, GPT, a local Llama: the Constitution is indifferent. What it asks of you is disclosure and identifiability, not a particular vendor.
+
+If the Laboratory ever does want an agent of its own, that clause becomes binding and rules most hosted models out. That is a conversation worth having on its own terms, not one to drift into.
+
+#### Setting one up
+
+```bash
+gh auth login                  # the agent tool does NOT do this for you
+git clone https://github.com/newspeakhouse-lab-2026/constitutional-record
+cd constitutional-record       # AGENTS.md is read from here automatically
+```
+
+Without `gh` authenticated, an agent can read and draft but cannot open a pull request.
+
+**What this repository offers an agent, and what needs which tool:**
+
+| | |
+|---|---|
+| `AGENTS.md` | The instructions. Plain prose, no tool-specific commands — **any agent that reads `AGENTS.md` gets them** |
+| `CLAUDE.md` | One line pointing at `AGENTS.md`, for tools that look for that name instead |
+| `.claude/skills/` | `classify`, `draft-policy`, `review-agenda`. **Claude Code only** — there is no cross-tool equivalent |
+| `.claude/hooks/` | Stops an agent merging or pushing to `main`. **Claude Code only**, and it does not take effect until you trust the folder |
+
+**Tools members are using or might:**
+
+- **[Claude Code](https://claude.com/product/claude-code)** — terminal. Reads `AGENTS.md`, and is the only thing that runs the skills and the merge hook.
+- **[Claude Cowork](https://claude.com/product/cowork)** — Anthropic's desktop application. The instructions in `AGENTS.md` apply the same way; whether the skills and hook behave identically there is untested.
+- **[opencode](https://opencode.ai)** — MIT-licensed and open source, terminal and desktop, reads `AGENTS.md`, and supports many model providers rather than one. **The option that ties the Laboratory to no vendor**, which is worth something in a record meant to outlast any of us.
+
+Nothing here mandates a tool. The Constitution's Communications Infrastructure section says platforms are "implementation details to be determined and updated by the laboratory from time to time" — so this is a note on what currently works, not a rule, and anyone adopting something else should say so and improve this list.
+
+#### Declaring it — required by the Constitution, with nowhere yet to record it
+
+Section 1 says an agent must be **documented and communicated to the rest of the membership**. There is no register, and nothing in the Record records who is running what. Until there is — the AI policy is the obvious place to create one — the minimum that satisfies the clause is:
+
+1. **Post once to the governance channel** saying you are running an agent and what it is. That is the communicating.
+2. **Say so on every proposal it helped prepare**, naming yourself as the member responsible. That is the identifying, and Section 1 requires it separately: an agent acting on Laboratory infrastructure must be *clearly identifiable as that member's agent*.
+3. **Mark its commits.** A `Co-Authored-By:` trailer naming the agent does this, and survives in the history where a pull request comment does not.
+
+#### Two labels it must never touch
+
+The `opened:` and `endorsed:` labels are written by a workflow. **An agent must not add, edit or remove either by hand.** The `opened:` label is the evidence that a deliberation period began, and evidence an agent can write is not evidence. If one looks wrong, it is for a member to fix.
+
+#### When it gets something wrong
+
+It is your proposal. Section 1 is unambiguous that an agent's actions are the member's responsibility, and "the agent drafted it" is not a defence for a clause nobody checked. Read what it wrote before you file it — particularly the layer and its reasoning, which is the part the cohort will test first.
+
+## Doing it
+
+The table above is the summary. This is the detail, for the steps that have any.
+
+### Deciding whether you need an issue
+
+**An issue cannot adopt anything.** It holds discussion, not text, and Constitution §1 requires that a rule's exact adopted text appear in the Record. Only a merged pull request does that.
+
+So the pull request is the proposal of record, and its template asks for everything the Constitution requires. **Open an issue first only when it helps** — when you want to propose a rule before drafting its wording, or deliberate on whether a rule should exist before arguing about its text. Go to **Issues → New issue** and use the Proposal form: it asks three things (the layer, what you are proposing, and why that layer) and then tells you what the pull request will need. If you already have the text, go straight to a pull request.
+
+A proposal is classified by its **actual effect**, not by the label you choose. Where two layers are reasonably arguable, the more demanding process applies.
+
+### Creating a branch and drafting the text
+
+**Through the website**, with nothing installed:
+
+1. Open the folder where your instrument belongs (e.g. `rules/`) and choose **Add file → Create new file** — or open an existing file and use the edit (pencil) icon
+2. Name it in the **Name your file…** box, and write the text
+3. Click **Commit changes…**, the green button at the top right
+4. **In the dialog, change the branch option.** It opens on *"Commit directly to the `main` branch"* — see the warning below
+5. Choose **"Create a new branch for this commit and start a pull request"**. A branch name appears, auto-filled as something like `yourname-patch-1`; rename it to something meaningful, e.g. `rule-quiet-hours`
+6. The dialog's title and button both change to **Propose changes**. Click it
+
+> **The branch option is a trap.** The dialog opens with *"Commit directly to the `main` branch"* already selected. Accept that default and your text lands in the Record immediately — no branch, no pull request, no deliberation, no vote. Branch protection is not configured (see below), so nothing stops it. It would not make your rule valid, since validity comes from the procedure and not from the commit, but it does put unadopted text in the Record and someone has to revert it.
+
+GitHub relabels its buttons from time to time. The shape of the flow is stable: edit a file, commit to a **new branch**, open a pull request.
+
+**From the command line**, or through an agent:
+
+```bash
+git clone https://github.com/newspeakhouse-lab-2026/constitutional-record
+cd constitutional-record
+git checkout -b rule-quiet-hours
+# write rules/rule-quiet-hours.md
+git add rules/rule-quiet-hours.md
+git commit -m "Propose ordinary rule: quiet hours"
+git push -u origin rule-quiet-hours
+gh pr create          # fills in the pull request template
+```
+
+For constitutional amendments, edit `constitution.md` on a new branch. Two endorsing reviews on the pull request start the seven-day clock.
+
+### Filling in the pull request template
+
+The pull request is pre-filled with everything the Constitution requires: the layer **and the reasoning for it**, the tier, the `Observed by:` line if the proposal creates any duty, the conflicts you searched, the source of authority for a Policy or an amendment, and the experiment fields if it is one. Link an issue with `Resolves #N` if you opened one.
+
+You don't need everything immediately — the amendment record and the vote evidence are completed after deliberation, before merge.
+
+### Discussion and deliberation
+
+The pull request is visible to all members and to the public. Discussion happens in the pull request, in the governance channel, and in meetings as needed.
+
+For Tier A the window **is** the proposal's visibility in the governance channel (Constitution §2), so post it there with the link and the tier. For Layer 4 the clock starts when two endorsing reviews land on the pull request. See *What starts the clock* above — it is not the same rule for every layer. During it the proposal can be revised — the proposer or any member can push further commits to the branch. **A material change restarts any minimum deliberation period.** A correction that does not change the meaning does not.
+
+An objection is never a bare "no": it is stated with its reason and a suggested route forward. A single stated objection moves an Ordinary proposal **up** a tier. It can never move down.
+
+### Endorsing
+
+Two layers need an endorsement before anything else happens, and for one of them the endorsement **is** the starting gun.
+
+| | |
+|---|---|
+| **Layer 3 Policy** | "At least one other member must endorse" |
+| **Layer 4 Constitutional** | "**Two endorsing reviews start the 7-day deliberation clock**" |
+
+So a constitutional amendment's clock does not run from when it was opened. It runs from the moment the second member reviews it. An amendment nobody reviews has no window running, however long it has been sitting there — which is the position pull request #2 is in.
+
+**Endorsing is not supporting.** It says *this deserves to be deliberated*, not *I agree with it*. You can endorse an amendment onto the agenda and then vote against it, and that is a perfectly coherent thing to do.
+
+This matters more than it sounds. If people treat endorsement as agreement, then anyone who opposes an amendment can stop it being deliberated at all simply by declining to review — **a veto the Constitution never granted anyone.** Opposition belongs in the vote, where it is counted and recorded.
+
+In practice an endorsement is an **approving review** on the pull request. The Constitution says "endorsing reviews" without defining them; approving review is the reading the tooling uses, and it is a reading rather than a quotation. If the Laboratory means something else by it, say so and the tooling should follow.
+
+### Voting
+
+Voting happens as the Constitution specifies for the layer — in the governance channel, by show of hands, by anonymous poll, however the Laboratory decides. **GitHub is not the voting platform.**
+
+### Recording the result
+
+Once the vote concludes, the proposer or a Record Keeper updates the pull request with:
+
+- the vote result and tallies
+- any objections, and how they were addressed
+- any abstentions, in aggregate where the ballot was anonymous
+- a link to the discussion or meeting notes
+- the assumptions the decision rests on, and its status (live, experimental, archived)
+
+These are the amendment record fields Section 1 requires. Add them as a comment or in the pull request description.
+
+### Merging
+
+A Record Keeper checks that the evidence is complete and matches the outcome, then merges. The proposal is now part of the official record on `main`.
+
+There is no separate GitHub approval step — the vote already happened. The merge is a clerical act: confirming the process was followed, not casting a second vote.
+
+**Absence of objection on a pull request is not by itself proof of lazy consensus**, because deliberation also happens in the governance channel. Verifying both is exactly what the Record Keeper's check is for.
+
+The Record Keeper announces the result in the governance channel with a link to the merged pull request.
+
+## What GitHub enforces, and what it cannot
+
+`main` is protected by a repository ruleset, recorded in `.github/ruleset-main.json` so the configuration is reviewable here rather than visible only to administrators. It enforces three things:
+
+- **Every change arrives as a pull request.** Nobody commits to `main` directly.
+- **The branch cannot be deleted or force-pushed**, so the history cannot be quietly rewritten.
+- **Only organisation administrators can merge** — currently the two Record Keepers, which is what Constitution §3 means by *"the only members with merge access"*.
+
+**No approving review is required, deliberately.** A Layer 2 proposal needs no endorsement, so requiring an approval would have forced a procedural click on a rule that passed by nobody objecting — and the dashboard would then have counted that click as an endorsement.
+
+Three things it does **not** do, all of which are why a Record Keeper verifies rather than rubber-stamps:
+
+**It cannot enforce the endorsements a layer requires.** A Layer 4 amendment needs two endorsing reviews and a Layer 3 Policy needs one, and nothing here checks that before the merge button works. §1 describes protection that *"enforces approval requirements per path"*, but GitHub cannot vary a required review count by file, so no setting expresses it. The verification is the Record Keeper's, which is what their office is for.
+
+**It cannot see the governance channel**, where most deliberation actually runs. Absence of objection on a pull request is not proof of lazy consensus.
+
+**It does not constrain the Record Keepers themselves.** Organisation administrators bypass the ruleset — that is what makes merging possible for them and nobody else — so they can also commit straight to `main`. Nothing stops that except the person. If you are a Record Keeper, see the warning under *Starting from the dashboard*.
+
+## Starting from the dashboard
+
+You do not need git, a clone, or anything installed. The **Start a proposal** button on the dashboard asks what you are filing and opens GitHub's editor on a new file, already filled in:
+
+| | | |
+|---|---|---|
+| An Ordinary rule | Layer 2 | `rules/rule-untitled.md` |
+| A Policy | Layer 3 | `policies/{area}/policy.md` — replace `{area}` |
+| A record of an adjudication | §4 | `disputes/dispute-untitled.md` |
+
+Amending the Constitution is Layer 4 and **edits `constitution.md` itself** rather than adding a file, so it is a link in that dialog rather than one of the choices.
+
+**What you are filing decides the path, and the path decides the procedure.** Choose by what the instrument actually does, not by which route is quickest — where two layers are arguable, the more demanding one applies. Rename the file in the editor if you picked wrong; nothing is committed until you press the button.
+
+**Then what happens.** You press *Commit changes*, and GitHub offers to **create a new branch and start a pull request**. Take it. GitHub makes the branch, commits your file to it, and takes you straight to the pull request form with this repository's template already loaded — which is the thing that asks for the layer and its reasoning, `Observed by:`, and the rest. Fill it in, open the pull request, and a workflow labels it. Nothing has been adopted at this point: the deliberation period starts when you post it in the governance channel.
+
+**You will not be committing to `main`**, because `main` is protected and the option is not offered. With one exception:
+
+**If you are a Record Keeper, you will also see "commit directly to the `main` branch". Never take it.** Organisation administrators bypass the branch protection, so the editor shows them a button nobody else has. Committing straight to `main` puts text in the Record with no proposal, no deliberation period and no diff for anyone to object to — the one thing the Record exists to prevent.
+
+Opening the editor commits nothing, so it is safe to click through and look.
+
+## Amending an existing rule
+
+1. Open the file on GitHub
+2. Click the pencil icon to edit
+3. Make your changes on a new branch, as above
+4. The pull request will show exactly what changed — additions in green, removals in red
+
+The same deliberation and approval process applies, at the layer of the instrument you are changing.
+
+## If your instrument expires
+
+A rule or policy with an end date says so in one line, inside itself:
+
+```
+**Ends:** 23:59 UK time, Monday 30 November 2026 (`2026-11-30T23:59:00+00:00`) — when the proposal-process Policy is adopted, whichever is first
+```
+
+Written that way, the expiry appears on the dashboard. Written only in prose, it does not, and a rule that quietly stops being a rule is the kind of thing nobody notices until it matters.
+
+**It says the instant twice on purpose.** The words are for whoever reads the rule; the timestamp in backticks is what the dashboard reads. A check compares them and tells you if they disagree — a wrong weekday, two different dates, or the wrong offset for the time of year.
+
+**Write the UTC offset.** The United Kingdom is on British Summer Time from late March to late October, so 23:59 on 4 October is `+01:00` and on 30 November is `+00:00`. Getting this wrong puts the deadline an hour out, which has already happened once.
+
+This covers an instrument's **own expiry**. A policy may also set recurring obligations ("a retro each term") or windows triggered by events ("within 24 hours of posting") — neither is expressible this way, and the second cannot be shown at all, because the triggering event happens somewhere the Record cannot see.
+
+## Archiving, not deleting
+
+Nothing is deleted from the record. To retire a rule, change its status to **archived** in the file. The file stays in the repo. The full history — adoption, amendments, archival — is preserved in the git log.
+
+## What the Constitution requires of this repository
+
+Section 1 provides that GitHub branch protection enforces approval requirements per path, that Record Keepers are the only members with merge access, and that the authoritative history may not be rewritten to erase an adopted decision.
+
+**Not all of this is configured yet.** As things stand:
+
+| Requirement | Status |
+|---|---|
+| No direct changes to `main` — everything through a pull request | **Not configured.** Anyone with write access can push to `main` |
+| No force-pushing or rewriting history | **Not configured** |
+| Only Record Keepers can merge | **Not configured** — enforced by convention only |
+| Per-path approval requirements | **Not configured** |
+| Issue forms and pull request template | Configured |
+
+Until branch protection is set up, these hold as **norms the Constitution already imposes**, not as technical guarantees — and note that the website's commit dialog *defaults* to committing straight to `main`, so the easiest path through the interface is the one that bypasses the process. Follow them anyway: pushing a rule straight to `main` does not make it a rule. Validity comes from the procedure, and Section 1 is explicit that a repository edit or commit does not itself create authority.
+
+Configuring branch protection implements an existing constitutional requirement rather than creating a new one, and falls to the Record Keepers. Two cautions: set it after any merge-ready proposals have been merged, and make sure restricting merge rights cannot lock the repository if the Record Keeper role falls vacant.
+
+## Quick reference
+
+| Action | How |
+|---|---|
+| Propose a new rule | Create a branch with the file → **Propose changes**. An issue first is optional, for proposing before the text exists |
+| Amend an existing rule | Open file → pencil icon → **Commit changes** → new branch → **Propose changes** |
+| Discuss a proposal | Comment on the pull request |
+| Record a vote result | Comment on the pull request with the evidence in step 6 |
+| See what's being proposed | Open pull requests, open issues, **and** `git branch -a` — drafts live in branches |
+| See the full history of a rule | Open the file → **History** |
+| See all current rules | Browse the repo on `main` |
+| Check thresholds and windows | `AGENTS.md` — or ask your agent |
+| See what is closing, and what is running | The [dashboard](https://newspeakhouse-lab-2026.github.io/constitutional-record/) |
