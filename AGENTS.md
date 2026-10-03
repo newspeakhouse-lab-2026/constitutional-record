@@ -191,10 +191,12 @@ A missing layer means the proposal is unlabelled and will not appear on the dash
 An instrument that expires says so in one line the dashboard can read:
 
 ```
-**Ends:** 2026-11-30T23:59:00+00:00 — when the proposal-process Policy is adopted, whichever is first
+**Ends:** 23:59 UK time, Monday 30 November 2026 (`2026-11-30T23:59:00+00:00`) — when the proposal-process Policy is adopted, whichever is first
 ```
 
-**Write the UTC offset explicitly.** The United Kingdom is on British Summer Time from late March to late October, so `23:59` on 4 October is `+01:00` and on 30 November is `+00:00`. Writing `Z` for a summer date puts the deadline an hour out — this has already happened once, and the check in `.github/workflows/check-record.yml` exists because of it.
+**The line says the instant twice on purpose** — in words for whoever reads the rule, and as a timestamp in backticks for the dashboard. A check compares them, so a disagreement is caught rather than silently believed: it will tell you if the weekday is wrong, if the words and the timestamp name different dates, or if the offset is wrong for that date.
+
+**Write the UTC offset explicitly.** The United Kingdom is on British Summer Time from late March to late October, so `23:59` on 4 October is `+01:00` and on 30 November is `+00:00`. Writing `Z` for a summer date puts the deadline an hour out — that has already happened once, which is why the check exists.
 
 This covers an instrument's **own expiry** and nothing else. A policy may also contain recurring obligations ("a retro each term") and event-triggered windows ("within 24 hours of posting); neither is expressible this way, and the second cannot be shown at all, because the triggering event lives outside the Record.
 

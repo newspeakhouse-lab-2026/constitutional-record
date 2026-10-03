@@ -336,10 +336,12 @@ The same deliberation and approval process applies, at the layer of the instrume
 A rule or policy with an end date says so in one line, inside itself:
 
 ```
-**Ends:** 2026-11-30T23:59:00+00:00 — when the proposal-process Policy is adopted, whichever is first
+**Ends:** 23:59 UK time, Monday 30 November 2026 (`2026-11-30T23:59:00+00:00`) — when the proposal-process Policy is adopted, whichever is first
 ```
 
 Written that way, the expiry appears on the dashboard. Written only in prose, it does not, and a rule that quietly stops being a rule is the kind of thing nobody notices until it matters.
+
+**It says the instant twice on purpose.** The words are for whoever reads the rule; the timestamp in backticks is what the dashboard reads. A check compares them and tells you if they disagree — a wrong weekday, two different dates, or the wrong offset for the time of year.
 
 **Write the UTC offset.** The United Kingdom is on British Summer Time from late March to late October, so 23:59 on 4 October is `+01:00` and on 30 November is `+00:00`. Getting this wrong puts the deadline an hour out, which has already happened once.
 

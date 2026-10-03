@@ -336,11 +336,20 @@ async function collect(){
   const ends=[];
   for(const path of instruments){
     let txt; try{ txt=await blob(at[path]); }catch{ continue }
-    const m=txt.match(/^\*\*Ends:\*\*\s*(\S+)\s*[\u2014-]\s*(.+)$/m);
+    // Written for a person first, with the machine-readable instant in backticks:
+    //   **Ends:** 23:59 UK time, Monday 30 November 2026 (`2026-11-30T23:59:00+00:00`) — reason
+    // The older bare-timestamp form still parses.
+    // Strip HTML comments first: guidance left behind from a template is not
+    // part of the instrument, and its worked example is not a real expiry.
+    const m=txt.replace(/<!--[\s\S]*?-->/g,"").match(/^\*\*Ends:\*\*[^\S\n]*(.+)$/m);
     if(!m) continue;
-    const when=new Date(m[1]);
+    const line=m[1];
+    const bt=line.match(/`([^`]+)`/);
+    const iso=bt?bt[1]:(line.match(/^(\S+)/)||[])[1];
+    const when=new Date(iso);
     if(isNaN(+when)) continue;
-    ends.push({name:path.split("/").pop().replace(/\.md$/,""), at:when, why:m[2].trim(), path});
+    const why=(line.split(/\s[\u2014\u2013]\s/)[1]||"").trim();
+    ends.push({name:path.split("/").pop().replace(/\.md$/,""), at:when, why, path});
   }
 
   // Every figure on this page is a copy of something the Constitution says.

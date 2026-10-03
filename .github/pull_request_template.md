@@ -73,7 +73,7 @@ the Dean's office. -->
 <!-- If the instrument has an end date, declare it in one line the dashboard can read,
 inside the instrument itself:
 
-  **Ends:** 2026-11-30T23:59:00+00:00 — reason
+  **Ends:** 23:59 UK time, Monday 30 November 2026 (`2026-11-30T23:59:00+00:00`) — reason
 
 Write the UTC offset explicitly: the UK is on BST from late March to late October,
 so 23:59 on 4 October is +01:00 and on 30 November is +00:00. -->
@@ -114,14 +114,32 @@ box is ticked; delete them otherwise. -->
 
 ## Amendment record — complete before merge
 
-<!-- Required by Constitution §1 for amendments to the Constitution and to rules. -->
+<!-- Constitution §1 requires six things to be recorded for an amendment to the
+Constitution or to a rule. The date and time is the commit timestamp, so five are
+left for you. Write what actually happened, not what was proposed. -->
 
-- **How it was made:** <!-- lazy consensus / consent / majority / supermajority vote -->
-- **Tally:** <!-- prefer / tolerate / object / abstain, and whether quorum was met -->
+- **How it was made:**
+  <!-- §1 wants a "brief narrative description of how the amendment was made
+  (e.g. by consent, by consensus, by majority / supermajority vote)" — those
+  examples are the Constitution's own. One sentence. For a Tier A rule nobody
+  objected to: "Lazy consensus — posted to the governance channel on 4 October,
+  no objection within 48 hours." Where there was a vote, put the numbers here. -->
+
 - **Assumptions it rests on:**
-- **Status:** <!-- live / experimental / archived -->
+  <!-- What has to stay true for this to keep making sense: a price, a headcount,
+  somebody holding a role, a platform still existing. This is what tells a later
+  reader whether the rule still fits the world it was written for. -->
+
+- **Status:**
+  <!-- live, experimental, or archived — §1's own three words. -->
+
 - **Explanatory notes from the discussion:**
-- **Abstentions or objections:** <!-- in aggregate where the ballot was anonymous -->
+  <!-- What was argued, and what changed because of it. Anything a reader would
+  otherwise have to reconstruct from scattered comments. -->
+
+- **Abstentions or objections:**
+  <!-- §1: recorded "in aggregate where the applicable procedure uses an anonymous
+  or secret ballot". Name nobody who did not object openly. -->
 
 ---
 

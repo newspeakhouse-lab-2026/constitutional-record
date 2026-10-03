@@ -44,7 +44,7 @@ The quote is not a parser. It is a tripwire. It makes no attempt to understand t
 A rule or policy with an end date declares it in one line, inside itself:
 
 ```
-**Ends:** 2026-11-30T23:59:00+00:00 — when the proposal-process Policy is adopted, whichever is first
+**Ends:** 23:59 UK time, Monday 30 November 2026 (`2026-11-30T23:59:00+00:00`) — when the proposal-process Policy is adopted, whichever is first
 ```
 
 The page reads these from the repository tree, so **a new expiry is discovered where it was written** rather than copied into this folder by someone who has to remember. It covers an instrument's own expiry only — recurring obligations and event-triggered windows are not expressible this way, and the latter cannot be shown at all.

@@ -60,7 +60,7 @@ Any part of this rule may be amended by Ordinary resolution. Changes to files it
 
 ## Ends
 
-**Ends:** 2026-11-30T23:59:00+00:00 — when the proposal-process Policy is adopted, or at the end of this Constitution, whichever comes first
+**Ends:** 23:59 UK time, Monday 30 November 2026 (`2026-11-30T23:59:00+00:00`) — when the proposal-process Policy is adopted, or at the end of this Constitution, whichever comes first
 
 The line above is written in a form the Record dashboard can read, so this rule's expiry is visible rather than buried in prose. The offset is explicit because the United Kingdom is on British Summer Time from late March to late October, and a missing offset is how a deadline ends up an hour out.
 

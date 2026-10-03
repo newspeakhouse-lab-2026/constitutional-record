@@ -39,6 +39,38 @@ def date_in(quote):
     return (year, month, day, int(t.group(1)), int(t.group(2))) if t else (year, month, day, None, None)
 
 
+MONTHS = ["january","february","march","april","may","june",
+          "july","august","september","october","november","december"]
+DAYS = ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"]
+
+
+def human_disagrees(words, dt):
+    """An Ends: line states the instant twice — in words and as a timestamp.
+    Report every way the words and the timestamp fail to agree."""
+    out = []
+    if not words.strip():
+        return out
+    m = re.search(r"(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})", words)
+    if m:
+        day, month, year = int(m.group(1)), m.group(2).lower(), int(m.group(3))
+        if month in MONTHS:
+            said = (year, MONTHS.index(month) + 1, day)
+            if said != (dt.year, dt.month, dt.day):
+                out.append(f"the Ends: line reads {day} {m.group(2)} {year} in words but "
+                           f"{dt.date().isoformat()} in its timestamp.")
+    t = re.search(r"\b(\d{1,2}):(\d{2})\b", words)
+    if t and (int(t.group(1)), int(t.group(2))) != (dt.hour, dt.minute):
+        out.append(f"the Ends: line reads {t.group(1)}:{t.group(2)} in words but "
+                   f"{dt.strftime('%H:%M')} in its timestamp.")
+    w = re.search(r"\b(" + "|".join(DAYS) + r")\b", words, re.I)
+    if w and not out:
+        actual = DAYS[dt.weekday()]
+        if w.group(1).lower() != actual:
+            out.append(f"the Ends: line says {w.group(1)} but "
+                       f"{dt.date().isoformat()} is a {actual.capitalize()}.")
+    return out
+
+
 def read(path):
     try:
         return open(path).read()
@@ -98,11 +130,24 @@ def main():
         if path.endswith("rationale.md"):
             continue
         text = open(path).read()
-        declared = re.search(r"^\*\*Ends:\*\*\s*(\S+)\s*[—-]\s*(.+)$", text, re.M)
+        # Guidance left behind from a template is not part of the instrument.
+        # Without this, a template's own worked example is read as a real expiry,
+        # and its explanation of expiry is read as prose claiming one.
+        text = re.sub(r"<!--.*?-->", "", text, flags=re.S)
+        line = re.search(r"^\*\*Ends:\*\*[^\S\n]*(.+)$", text, re.M)
+        declared = None
+        if line:
+            bt = re.search(r"`([^`]+)`", line.group(1))
+            stamp = bt.group(1) if bt else (line.group(1).split() or [""])[0]
+            # Only the newer form states the instant twice. With a bare timestamp
+            # there are no words to disagree with it, and reading them out of the
+            # timestamp itself finds "59:00" inside 23:59:00.
+            words = line.group(1)[:bt.start()] if bt else ""
+            declared = (stamp, words)
         prose = re.search(r"^#+\s*Ends\b", text, re.M) or re.search(r"\bEnds\b.*\b20\d\d\b", text)
         if declared:
             try:
-                dt = datetime.fromisoformat(declared.group(1))
+                dt = datetime.fromisoformat(declared[0])
                 if dt.utcoffset() is None:
                     warn(path, "the Ends: line has no UTC offset. Write +00:00 or +01:00 explicitly — "
                                "the UK is on BST from late March to late October, and a missing offset is how "
@@ -110,13 +155,21 @@ def main():
                 elif dt.utcoffset() != dt.replace(tzinfo=None).replace(tzinfo=UK).utcoffset():
                     warn(path, f"the Ends: line states offset {dt.utcoffset()} but Europe/London is "
                                f"{dt.replace(tzinfo=None).replace(tzinfo=UK).utcoffset()} on that date.")
+                else:
+                    # The line says the same thing twice, once for a person and
+                    # once for the page. If the two disagree, one of them is
+                    # wrong and nobody would notice from reading the rule.
+                    for msg in human_disagrees(declared[1], dt):
+                        warn(path, msg)
             except ValueError:
-                warn(path, f'could not read "{declared.group(1)}" as a date. '
-                           f"Expected: **Ends:** 2026-11-30T23:59:00+00:00 — reason")
+                warn(path, f'could not read "{declared[0]}" as a date. Expected, for example: '
+                           f"**Ends:** 23:59 UK time, Monday 30 November 2026 "
+                           f"(`2026-11-30T23:59:00+00:00`) — reason")
         elif prose:
             warn(path, "this instrument appears to expire but has no machine-readable Ends: line, "
                        "so its expiry will not appear on the dashboard. Add one, for example: "
-                       "**Ends:** 2026-11-30T23:59:00+00:00 — reason")
+                       "**Ends:** 23:59 UK time, Monday 30 November 2026 "
+                       "(`2026-11-30T23:59:00+00:00`) — reason")
 
     print(f"\n{len(warnings)} warning(s).")
     summary = __import__("os").environ.get("GITHUB_STEP_SUMMARY")
