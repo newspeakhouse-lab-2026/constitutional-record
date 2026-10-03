@@ -32,6 +32,6 @@ Whether proposals opened **before this rule** had their periods started — by a
 
 ## Ends
 
-When superseded, or at the end of this Constitution on 30 November 2026, whichever comes first.
+**Ends:** 2026-11-30T23:59:00+00:00 — when superseded, or at the end of this Constitution, whichever comes first
 
 `Observed by:` A proposal's opening is recorded on the proposal itself and relayed to the governance channel, so the date a period began, and whether it has elapsed, is answerable from the Record by any member. A proposal with no recorded opening is observably unopened, which is the point of clause 4.
