@@ -138,9 +138,9 @@
 <script>
 const REPO="newspeakhouse-lab-2026/constitutional-record", API="https://api.github.com/repos/"+REPO;
 const HOUR=36e5, DAY=24*HOUR, TTL=18e4;
-// The skeleton is .github/instrument-template.md, read from the Record like
-// everything else, so it cannot drift from the templates beside it. Until that
-// file is on main the button still works — it just opens an empty file.
+// The skeletons live in .github/instrument-templates/, read from the Record
+// like everything else so they cannot drift from the templates beside them.
+// Until they are on main the buttons still work — they open an empty file.
 const newFileURL=(path,t)=>{
   const base=`https://github.com/${REPO}/new/main?filename=${encodeURIComponent(path)}`;
   if(!t) return base;
