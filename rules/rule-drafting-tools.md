@@ -17,7 +17,16 @@ Tooling to help members draft and file proposals, held in this repository:
 | `.claude/hooks/`, `.claude/settings.json` | A hook preventing an agent from merging, pushing to `main`, force-pushing or rewriting history |
 | `.github/workflows/label-proposals.yml` | Reads the layer, tier and deliberation period from a pull request body and applies them as labels, and records when a proposal opened and how many members have endorsed it |
 | `.github/workflows/check-record.yml`, `.github/scripts/check-record.py` | Warns when the dashboard's figures no longer match the Record — a quoted clause that has been amended, a time that disagrees with its own quote, an instrument that expires without saying so |
+| `.github/ruleset-main.json` | A copy of the branch protection applied to `main`, so the configuration is reviewable in the Record rather than visible only to repository admins |
 | `docs/` | A page showing the state of the Record: deadlines, open deliberation windows, adopted instruments, roles and thresholds |
+
+## The `main` branch configuration
+
+`.github/ruleset-main.json` records what is configured on `main`: every change arrives as a pull request, the branch cannot be deleted or force-pushed, no approving review is required, and only organisation administrators may update the branch.
+
+**This records the configuration; it does not create it.** The authority is Constitution §3, which makes Record Keepers *"the only members with merge access"*. The file exists so that a change to who can merge is something a member can read and object to, instead of a setting two administrators can alter silently. If the file and the live settings disagree, the live settings are what is in force and the file is wrong.
+
+Requiring no approving review is deliberate: a Layer 2 proposal needs no endorsement, so a required approval would have forced a procedural click that the dashboard would then have counted as an endorsement.
 
 ## What this does not do
 
