@@ -6,7 +6,7 @@
 
 ## Why this is needed
 
-Section 2 sets six deliberation procedures and says what starts only two of them. Tier A runs on the proposal being visible in the governance channel; a Constitutional amendment runs from two endorsing reviews. **Tier B, Tier C, Policy resolutions and Emergency resolutions name no trigger at all.**
+Section 2 sets six deliberation procedures and says what starts only two of them. Tier A runs on the proposal being visible in the governance channel; a Constitutional amendment runs from two endorsing reviews. **Tier B, Tier C and Policy resolutions name no trigger at all.** An Emergency resolution implies one — its twelve hours can only run from the tagged proposal — but never says so, and an implication is a poor thing to time a decision by.
 
 A period nobody can date is a period nobody can rely on. This supplies the missing triggers and requires the start to be recorded. It changes neither of the two triggers the Constitution already states.
 
