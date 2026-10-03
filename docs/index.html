@@ -30,6 +30,22 @@
   header nav a:hover{color:var(--accent);text-decoration:underline}
   header nav a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
   .warnish{color:var(--accent)}
+  .tag.st{border-color:var(--rule);color:var(--muted)}
+  .tag[title]{cursor:help}
+  dialog{border:1px solid var(--rule);border-radius:6px;background:var(--bg);color:var(--ink);
+    padding:1.3rem 1.4rem;max-width:34rem;width:calc(100% - 2rem)}
+  dialog::backdrop{background:rgba(0,0,0,.5)}
+  dialog h3{font:600 1rem/1.2 ui-serif,Georgia,serif;margin:0}
+  .pick{display:block;border:1px solid var(--line);border-radius:4px;padding:.6rem .7rem;
+    margin:.55rem 0;text-decoration:none;color:var(--ink)}
+  .pick:hover,.pick:focus-visible{border-color:var(--accent);outline:none}
+  .pick b{font:600 .82rem/1.3 var(--ui)}
+  .pick i{font-style:normal;color:var(--faint);font-size:.62rem;letter-spacing:.08em;
+    text-transform:uppercase;margin-left:.45rem}
+  .pick span{display:block;font-size:.73rem;line-height:1.5;color:var(--muted);margin-top:.2rem}
+  dialog form{margin-top:.9rem;text-align:right}
+  dialog button{font:inherit;font-size:.75rem;padding:.3rem .8rem;border:1px solid var(--rule);
+    border-radius:999px;background:var(--bg);color:var(--muted);cursor:pointer}
   .div{display:flex;align-items:center;gap:.7rem;margin:1.6rem 0 .3rem;
     font:600 .62rem/1 var(--ui);text-transform:uppercase;letter-spacing:.1em;color:var(--faint)}
   .div::after{content:"";flex:1;height:1px;background:var(--line)}
@@ -94,6 +110,17 @@
     </nav>
   </header>
   <main id="out"></main>
+  <dialog id="pick">
+    <h3>Start a proposal</h3>
+    <p class="note" style="padding-left:0">What you are filing decides where it goes, and where it goes
+      decides which procedure applies. Pick the one that matches what this actually does — not the
+      quickest route. Each opens a new file in GitHub, already filled in.</p>
+    <div id="pickopts"></div>
+    <p class="note" style="padding-left:0">Amending the Constitution is Layer 4 and edits
+      <a id="amendlink" href="#">constitution.md</a> itself rather than adding a file.
+      <strong>When you commit, choose &ldquo;create a new branch and start a pull request&rdquo;.</strong></p>
+    <form method="dialog"><button>Close</button></form>
+  </dialog>
   <footer id="foot">
     Read live from <a href="https://github.com/newspeakhouse-lab-2026/constitutional-record">the Constitutional Record</a> on each load, and from
     <a href="https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/constitution.md">the Constitution</a> itself — which is checked against the figures above.
@@ -108,14 +135,42 @@ const HOUR=36e5, DAY=24*HOUR, TTL=18e4;
 // The skeleton is .github/instrument-template.md, read from the Record like
 // everything else, so it cannot drift from the templates beside it. Until that
 // file is on main the button still works — it just opens an empty file.
-const NEWBASE=`https://github.com/${REPO}/new/main?filename=rules/rule-untitled.md`;
-const newFileURL=t=>{
-  if(!t) return NEWBASE;
+const newFileURL=(path,t)=>{
+  const base=`https://github.com/${REPO}/new/main?filename=${encodeURIComponent(path)}`;
+  if(!t) return base;
   const v=encodeURIComponent(t);
-  // A prefill long enough to break the URL would give a button that silently
-  // fails. Better an empty file than a dead link.
-  return v.length>6000?NEWBASE:NEWBASE+"&value="+v;
+  // A prefill long enough to break the URL gives a button that silently fails.
+  // Better an empty file than a dead link.
+  return v.length>6000?base:base+"&value="+v;
 };
+// Where each kind of instrument goes. The path decides which procedure applies,
+// so choosing here is the same choice as choosing a layer.
+const LAYER={
+  "0":"Layer 0 — Operational: a reversible action within existing rules. Nothing is committed and no period runs.",
+  "1":"Layer 1 — Coordination: scheduling and logistics. Nothing is committed and no period runs.",
+  "2":"Layer 2 — Ordinary: operates within a frame that already exists, or sets a parameter.",
+  "3":"Layer 3 — Policy: creates or redesigns the governance of an area, or creates an office.",
+  "4":"Layer 4 — Constitutional: alters rights, thresholds, procedures, or the allocation of authority."};
+// Why a row has no countdown, said in the tag rather than in a word nobody can decode.
+const stateOf=w=>
+  w.state==="draft"     ? {t:"Draft", d:"The proposer has not submitted this for deliberation."}
+: w.state==="unstarted" ? {t:"Not started", d:"The deliberation period has not begun, so no clock is running."}
+: w.state==="none"      ? {t:"No period needed", d:"The Constitution requires no deliberation period at this layer."}
+: w.state==="unknown"   ? (w.layer
+    ? {t:"No tier recorded", d:"A Layer 2 proposal states a tier, and the tier is what decides how long deliberation runs."}
+    : {t:"No layer recorded", d:"The layer decides which procedure applies, so without it nothing here can work out whether a period is running."})
+: null;
+const KINDS=[
+  {file:".github/instrument-templates/rule.md", path:"rules/rule-untitled.md",
+   name:"An Ordinary rule", tag:"Layer 2",
+   desc:"Operates within a frame that already exists, or sets a parameter. Passes in 48 hours if nobody objects."},
+  {file:".github/instrument-templates/policy.md", path:"policies/area/policy.md",
+   name:"A Policy", tag:"Layer 3",
+   desc:"Creates or redesigns the governance of an area, or creates an office. One endorsement, seven days, 8 of 14."},
+  {file:".github/instrument-templates/dispute.md", path:"disputes/dispute-untitled.md",
+   name:"A record of an adjudication", tag:"§4",
+   desc:"Records a decision already taken under Section 4. Applies to the parties only and creates no general rule."},
+];
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
@@ -172,7 +227,7 @@ function windowOf(pr,proc){
   const o={layer,tier,days,other,opened:null,closes:null,minimum:false,why:[],state:"open"};
 
   if(pr.draft){o.state="draft";o.why.push(`a draft — the proposer has not <a href="https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/CONTRIBUTING.md#the-process-end-to-end">submitted it for deliberation</a>`);return o}
-  if(!layer){o.state="unknown";o.why.push(`no <a href="https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/CONTRIBUTING.md#words-used-here">layer or tier</a> recorded — a period may well be running, but nothing here can say so`);return o}
+  if(!layer){o.state="unknown";o.why.push(`a period may well be running — nothing here can say so until the <a href="https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/CONTRIBUTING.md#words-used-here">layer</a> is on the proposal`);return o}
   if(layer==="0"||layer==="1"){o.state="none";o.why.push(`<a href="https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/CONTRIBUTING.md#words-used-here">Layer ${layer}</a> — records or coordinates within existing rules, so no deliberation period is required`);return o}
 
   const key = layer==="4"?"layer-4" : layer==="3"?"layer-3" : tier?("tier-"+tier):null;
@@ -241,7 +296,6 @@ async function collect(){
   const instruments=Object.keys(at).filter(p=>/^(rules|policies|disputes)\/.*\.md$/.test(p)&&!/\/rationale\.md$/.test(p)).sort();
 
   const cText = at["constitution.md"] ? await blob(at["constitution.md"]) : null;
-  const tmpl  = at[".github/instrument-template.md"] ? await blob(at[".github/instrument-template.md"]) : null;
   const roles = at["roles.md"] ? await blob(at["roles.md"]) : null;
 
   // How the Constitution came to say what it says. Keyed on constitution.md's own
@@ -298,7 +352,7 @@ async function collect(){
   }
 
   return {
-    cfg, stale, checked:!!cText, instruments, roles, ends, amendments, merged, tmpl,
+    cfg, stale, checked:!!cText, instruments, roles, ends, amendments, merged, shas:at,
     props: prs.map(pr=>({pr,win:windowOf(pr,cfg.procedures||{}),
                          notes:notes[pr.number]||0, resolves:linkFor[pr.number]||[]})),
     issues: issues.filter(i=>!i.pull_request).map(i=>({...i,prs:linkedBy[i.number]||[]}))
@@ -328,9 +382,12 @@ function render(d){
       `<span class="tag ty">Instrument</span>${esc(e.why||"")}`,r.txt,fmt(e.at),r.cls)});
   }
   for(const {pr,win,notes,resolves} of d.props){
+    const tp=win.tier&&(d.cfg.procedures||{})["tier-"+win.tier];
+    const st=win.closes?null:stateOf(win);
     const tags=[`<span class="tag ty">Proposal</span>`,
-                win.layer?`<span class="tag">L${win.layer}</span>`:"",
-                win.tier?`<span class="tag">${win.tier.toUpperCase()}</span>`:"",
+                win.layer?`<span class="tag" title="${esc(LAYER[win.layer]||"")}">L${win.layer}</span>`:"",
+                win.tier?`<span class="tag" title="${esc(tp?tp.source+": “"+tp.quote+"”":"")}">${win.tier.toUpperCase()}</span>`:"",
+                st?`<span class="tag st" title="${esc(st.d)}">${esc(st.t)}</span>`:"",
                 ...(win.other||[]).map(l=>`<span class="tag">${esc(l)}</span>`)].join("");
     const lbl=`<span class="num">#${pr.number}</span><a href="${pr.html_url}">${esc(pr.title)}</a>`;
     const age=Math.floor((Date.now()-+new Date(pr.created_at))/DAY);
@@ -349,9 +406,10 @@ function render(d){
       const r=rem(win.closes);
       live.push({ms:r.ms,html:row(r.word,lbl,meta,r.txt,(win.minimum?"≥ ":"")+fmt(win.closes),r.cls)});
     } else {
-      // Every row carries its own reason, so the board needs no group headings.
-      const word={draft:"draft",unstarted:"awaiting",none:"none needed",unknown:"unknown"}[win.state]||"unknown";
-      noclock.push(row(word,lbl,meta,word,"","idle",win.why.join(" · ")));
+      // The state is a tag now, so the right column stays empty rather than
+      // carrying a word that needed decoding. sr keeps it for screen readers.
+      noclock.push(row(st?st.t:"",lbl,meta,"","","idle",
+        win.state==="none"?"":win.why.join(" · ")));
     }
   }
   live.sort((a,b)=>a.ms-b.ms);
@@ -371,7 +429,7 @@ function render(d){
     o.push(`<p class="note">Raised but not yet drafted. An issue is where a question lives before anyone
       has written the text that would answer it — it adopts nothing by itself.
       <a href="https://github.com/${REPO}/issues/new?template=proposal.yml">Raise one</a>,
-      or <a href="${newFileURL(d.tmpl)}">start a proposal</a> if you already have the text.</p>`);
+      or <a class="openpick" href="#">start a proposal</a> if you already have the text.</p>`);
     o.push(d.issues.map(i=>{
       const age=Math.floor((Date.now()-+new Date(i.created_at))/DAY);
       const m=[`@${esc(i.user.login)}`,`open ${age}d`];
@@ -437,10 +495,30 @@ function render(d){
     o.push(`<p class="note">${events.length-SHOW} older ${events.length-SHOW===1?"change is":"changes are"}
       not shown — <a href="https://github.com/${REPO}/pulls?q=is%3Apr+is%3Amerged">see them on GitHub</a>.</p>`);
 
-  $("#newprop").href=newFileURL(d.tmpl);
+  SHAS=d.shas;
   $("#out").innerHTML=o.join("");
   $("#stamp").textContent=new Date().toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
 }
+
+/* Filing a proposal does not depend on being able to read the Record, so the
+   picker is wired at load and keeps working when the page cannot see anything.
+   Without a template it opens an empty file, which is still a working route. */
+let SHAS={}, pickLoaded=false;
+$("#amendlink").href=`https://github.com/${REPO}/edit/main/constitution.md`;
+$("#pickopts").innerHTML=KINDS.map((k,i)=>
+  `<a class="pick" id="pick${i}" href="${newFileURL(k.path,null)}"><b>${esc(k.name)}</b><i>${esc(k.tag)}</i>
+    <span>${esc(k.desc)}</span></a>`).join("");
+document.addEventListener("click",async e=>{
+  const a=e.target.closest("#newprop,.openpick"); if(!a) return;
+  e.preventDefault(); $("#pick").showModal();
+  if(pickLoaded) return; pickLoaded=true;
+  // Read only when someone opens the picker: a visitor who never files
+  // anything never pays for the templates.
+  await Promise.all(KINDS.map(async (k,i)=>{
+    const sha=SHAS[k.file]; if(!sha) return;
+    try{ $("#pick"+i).href=newFileURL(k.path, await blob(sha)); }catch{}
+  }));
+});
 
 collect().then(render).catch(e=>{
   const rl = e.reset

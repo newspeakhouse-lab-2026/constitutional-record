@@ -112,7 +112,7 @@ Determined by **actual effect**, never by convenience. Where two layers are argu
 | 1 Coordination | Scheduling, logistics | No commit — the governance channel |
 | 0 Operational | Reversible action within existing rules | No commit |
 | — | A time-limited experiment at any layer | `exp-` prefix instead of `rule-` |
-| — | Adjudication precedent | `disputes/dispute-*.md` |
+| — | A recorded adjudication. **Applies to the parties only and creates no general rule** (§4). Where one reveals a flawed rule, that is a separate proposal at the rule's own layer | `disputes/dispute-*.md` |
 
 ## Procedures and thresholds
 

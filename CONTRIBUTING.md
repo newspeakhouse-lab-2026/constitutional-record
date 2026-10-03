@@ -296,13 +296,25 @@ Two things about the current settings do **not** match the Constitution, and bot
 
 ## Starting from the dashboard
 
-The **Start a proposal** button opens GitHub's file editor on a new file, prefilled from `.github/instrument-template.md`. You do not need git, a clone, or anything installed — you type the rule in the browser.
+You do not need git, a clone, or anything installed. The **Start a proposal** button on the dashboard asks what you are filing and opens GitHub's editor on a new file, already filled in:
 
-**Set the path before you commit.** It arrives as `rules/rule-untitled.md`, which is an Ordinary rule. A Policy belongs at `policies/{area}/policy.md`, an adjudication at `disputes/dispute-{name}.md`, and anything time-limited takes an `exp-` prefix instead of `rule-`. The filename box at the top of the editor is editable; the template's first comment lists the paths.
+| | | |
+|---|---|---|
+| An Ordinary rule | Layer 2 | `rules/rule-untitled.md` |
+| A Policy | Layer 3 | `policies/{area}/policy.md` — replace `{area}` |
+| A record of an adjudication | §4 | `disputes/dispute-untitled.md` |
 
-**When you press Commit changes**, GitHub offers to create a new branch and open a pull request. Take it. For most members it is the only option, because `main` is protected.
+Amending the Constitution is Layer 4 and **edits `constitution.md` itself** rather than adding a file, so it is a link in that dialog rather than one of the choices.
 
-**If you are a Record Keeper, you will also be offered "commit directly to the `main` branch". Never take it.** Organisation administrators bypass the branch protection, so the editor shows them a button nobody else has. Committing straight to `main` puts text in the Record with no proposal, no deliberation period and no diff for anyone to object to — which is the one thing the Record exists to prevent.
+**What you are filing decides the path, and the path decides the procedure.** Choose by what the instrument actually does, not by which route is quickest — where two layers are arguable, the more demanding one applies. Rename the file in the editor if you picked wrong; nothing is committed until you press the button.
+
+**Then what happens.** You press *Commit changes*, and GitHub offers to **create a new branch and start a pull request**. Take it. GitHub makes the branch, commits your file to it, and takes you straight to the pull request form with this repository's template already loaded — which is the thing that asks for the layer and its reasoning, `Observed by:`, and the rest. Fill it in, open the pull request, and a workflow labels it. Nothing has been adopted at this point: the deliberation period starts when you post it in the governance channel.
+
+**You will not be committing to `main`**, because `main` is protected and the option is not offered. With one exception:
+
+**If you are a Record Keeper, you will also see "commit directly to the `main` branch". Never take it.** Organisation administrators bypass the branch protection, so the editor shows them a button nobody else has. Committing straight to `main` puts text in the Record with no proposal, no deliberation period and no diff for anyone to object to — the one thing the Record exists to prevent.
+
+Opening the editor commits nothing, so it is safe to click through and look.
 
 ## Amending an existing rule
 
