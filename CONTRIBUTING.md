@@ -167,7 +167,7 @@ Without `gh` authenticated, an agent can read and draft but cannot open a pull r
 
 Nothing here mandates a tool. The Constitution's Communications Infrastructure section says platforms are "implementation details to be determined and updated by the laboratory from time to time" — so this is a note on what currently works, not a rule, and anyone adopting something else should say so and improve this list.
 
-#### Declaring it — which the Constitution requires and we have nowhere to put
+#### Declaring it — required by the Constitution, with nowhere yet to record it
 
 Section 1 says an agent must be **documented and communicated to the rest of the membership**. There is no register, and nothing in the Record records who is running what. Until there is — the AI policy is the obvious place to create one — the minimum that satisfies the clause is:
 
@@ -282,17 +282,23 @@ There is no separate GitHub approval step — the vote already happened. The mer
 
 The Record Keeper announces the result in the governance channel with a link to the merged pull request.
 
-## What GitHub currently enforces, and where it differs from the Constitution
+## What GitHub enforces, and what it cannot
 
-`main` is protected by a repository ruleset. Nobody can commit to it directly, delete it, or rewrite its history — every change arrives as a pull request. That is right, and it matches Constitution §1's requirement that the Record carry the exact adopted text.
+`main` is protected by a repository ruleset, recorded in `.github/ruleset-main.json` so the configuration is reviewable here rather than visible only to administrators. It enforces three things:
 
-Two things about the current settings do **not** match the Constitution, and both are being fixed rather than worked around:
+- **Every change arrives as a pull request.** Nobody commits to `main` directly.
+- **The branch cannot be deleted or force-pushed**, so the history cannot be quietly rewritten.
+- **Only organisation administrators can merge** — currently the two Record Keepers, which is what Constitution §3 means by *"the only members with merge access"*.
 
-**The ruleset requires one approving review before the merge button unlocks.** The Constitution requires no endorsement for a Layer 2 proposal, so a Tier A rule that passed properly — nobody objected for 48 hours — still waits for somebody to click Approve. If you are the Record Keeper making that click, say in the review that you are confirming the process ran and taking no position on the proposal. An approving review is **not** support, and the dashboard's `endorsed:` count cannot tell the difference.
+**No approving review is required, deliberately.** A Layer 2 proposal needs no endorsement, so requiring an approval would have forced a procedural click on a rule that passed by nobody objecting — and the dashboard would then have counted that click as an endorsement.
 
-**Write access also confers merge access.** Constitution §3 says Record Keepers are *"the only members with merge access"*. The Record Keepers hold repository admin, which is how that office is implemented — admin is what merge access *is*. But the ruleset adds no rule restricting who may update `main`, and on GitHub anyone with write access can merge an approved pull request. So the seven members holding write today can merge too, and the Constitution allows none of them to. Closing it means pointing the ruleset at a Record Keepers team, so that `roles.md` and the repository's settings say the same thing and rotating the office is a single edit in one place.
+Three things it does **not** do, all of which are why a Record Keeper verifies rather than rubber-stamps:
 
-**If you cannot push a branch, you have read access, and that is a bug, not a decision.** You cannot open a pull request without pushing a branch, so read access means you cannot propose anything. Constitution §1 says no member may lose a right because of the tooling. Ask in the governance channel and it will be raised to write.
+**It cannot enforce the endorsements a layer requires.** A Layer 4 amendment needs two endorsing reviews and a Layer 3 Policy needs one, and nothing here checks that before the merge button works. §1 describes protection that *"enforces approval requirements per path"*, but GitHub cannot vary a required review count by file, so no setting expresses it. The verification is the Record Keeper's, which is what their office is for.
+
+**It cannot see the governance channel**, where most deliberation actually runs. Absence of objection on a pull request is not proof of lazy consensus.
+
+**It does not constrain the Record Keepers themselves.** Organisation administrators bypass the ruleset — that is what makes merging possible for them and nobody else — so they can also commit straight to `main`. Nothing stops that except the person. If you are a Record Keeper, see the warning under *Starting from the dashboard*.
 
 ## Starting from the dashboard
 

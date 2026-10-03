@@ -180,7 +180,7 @@ Two further labels are written by a workflow, never by you:
 | `opened:2026-10-03T19:06:12Z` | When the proposal was submitted for deliberation — added when it leaves draft, removed if it returns to draft |
 | `endorsed:2` | How many members have endorsed it, recounted on every review |
 
-`endorsed:` counts approving reviews, and an approving review is not necessarily an endorsement. `main` is protected with a rule requiring one approval before the merge button unlocks, so a Record Keeper may approve purely to confirm the process ran. **Never report `endorsed:2` on a Layer 4 amendment as "the clock has started" without checking what those two reviews actually say** — the Constitution wants two members endorsing the amendment, not two clicks.
+`endorsed:` counts approving reviews, and an approving review is not necessarily an endorsement — someone may approve to say the text reads well, or that the process ran. **Never report `endorsed:2` on a Layer 4 amendment as "the clock has started" without reading what those two reviews actually say.** The Constitution wants two members endorsing the amendment, not two clicks.
 
 **Never add, edit or remove either by hand.** The `opened:` label is the evidence that a deliberation period began, and evidence an agent can write is not evidence. (A *proposed*, not yet adopted, rule would put this in the Record: `rules/rule-deliberation-clock.md`. Until it is merged, treat it as a convention, not a clause.) If one is wrong, say so and let a member fix it.
 

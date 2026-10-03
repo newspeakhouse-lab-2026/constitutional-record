@@ -4,10 +4,11 @@
 #   opened:<timestamp>   when the proposal was submitted for deliberation
 #   endorsed:<n>         how many members have endorsed it
 #
-# The opened: label is not a convenience. rules/rule-deliberation-clock.md says
-# "a period that cannot be shown to have begun has not begun" — this label is
-# that showing, visible on the proposal itself, with GitHub's own record of who
-# added it and when.
+# The opened: label is not a convenience: it is visible on the proposal itself,
+# with GitHub's own record of who added it and when, which is what showing that
+# a period began ought to mean. (A proposed but NOT adopted rule,
+# rules/rule-deliberation-clock.md, would put that principle in the Record. It
+# has no pull request, so until one is opened and merged this is a convention.)
 #
 # It never fails a check. rules/rule-drafting-tools.md says this tooling creates
 # no duty, and a workflow that blocked a proposal for a missing label would

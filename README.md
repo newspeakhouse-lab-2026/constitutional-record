@@ -18,7 +18,7 @@ The layer is determined by a decision's actual effect, not by the label its prop
 | **1** Coordination | Scheduling, logistics | Governance channel | Post it; no commit |
 | **0** Operational | Reversible action within existing rules | — | Just do it; no commit |
 
-A time-limited experiment takes the `exp-` prefix at whatever layer it belongs to, states a hypothesis, success criteria and an end date, and expires automatically unless adopted or extended. Adjudication precedent lives in `disputes/dispute-*.md` and binds only the parties to that dispute.
+A time-limited experiment takes the `exp-` prefix at whatever layer it belongs to, states a hypothesis, success criteria and an end date, and expires automatically unless adopted or extended. Adjudication decisions live in `disputes/dispute-*.md`. §1's file list calls them precedent and §4 says they bind only the parties and create no general rules; **the Constitution contradicts itself here**, and §4 is the operative provision on effect.
 
 ## What is here
 
@@ -53,4 +53,6 @@ The repository is **public**. Anything committed here — files, commit messages
 
 The authoritative history may not be rewritten to erase an adopted decision; errors are corrected by a new commit and superseded material is archived rather than deleted. Material may be removed where retaining it would disclose personal or confidential information or create a serious risk of harm, with the removal and its reason recorded.
 
-**Branch protection is not yet configured.** Constitution §1 requires it, so until it is set up the rules it would enforce — no direct pushes to `main`, no rewritten history, merge restricted to Record Keepers — hold as norms rather than technical guarantees. See CONTRIBUTING.md for what is and is not in place.
+**Branch protection is configured**, and `.github/ruleset-main.json` records it: every change to `main` arrives as a pull request, the branch cannot be deleted or force-pushed, and only organisation administrators — currently the two Record Keepers — can merge, as Constitution §3 requires.
+
+Two gaps remain, and both are human rather than technical. §1 describes protection that "enforces approval requirements per path"; nothing does that, because GitHub cannot vary a required review count by file. And no approving review is required at all, deliberately — a Layer 2 proposal needs no endorsement, so demanding one would have forced a procedural click. **So nothing technically prevents a Layer 4 amendment merging without its two endorsing reviews**; the Record Keeper verifying the process is what prevents it. See CONTRIBUTING.md.
