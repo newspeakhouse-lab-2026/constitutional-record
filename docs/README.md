@@ -4,7 +4,7 @@ Two files. Neither is an instrument, and neither has any force: nothing here cre
 
 | | |
 |---|---|
-| `index.html` | A page showing the state of the Record — deadlines, deliberation windows, adopted instruments, roles. It reads the Record live from the GitHub API each time someone opens it. |
+| `index.html` | A page showing the state of the Record in four sections: deadlines and open proposals, issues under discussion, what is in force, and how the Record got here. It reads the Record live from the GitHub API each time someone opens it. |
 | `data.json` | The handful of constitutional facts the page cannot work out for itself: how long each kind of deliberation runs, and the dates the Constitution names. |
 
 ## Why the folder is called `docs`
@@ -15,7 +15,7 @@ Not because it holds documents — the whole repository does. **GitHub Pages wil
 
 Everything other than `data.json` is read live: which proposals are open, what has been adopted, who holds which office. Two facts come from **labels a workflow writes** rather than from an events API — `opened:<timestamp>`, the moment a proposal left draft, and `endorsed:<n>`, how many members have endorsed it.
 
-That is partly cheaper and mostly better. `rules/rule-deliberation-clock.md` says a period that cannot be shown to have begun has not begun, and a label is that showing: visible on the proposal, with GitHub's own record of who added it and when.
+That is partly cheaper and mostly better: a label is visible on the proposal itself, with GitHub's own record of who added it and when, which is what showing that a period began ought to mean. (A proposed but **not adopted** rule, `rules/rule-deliberation-clock.md`, would put that principle in the Record. Until it is merged it is a convention, not a clause.)
 
 ## What is in `data.json`, and why
 
