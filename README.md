@@ -44,7 +44,8 @@ If GitHub is a barrier for you, it must not cost you a right: the Convener provi
 ## Current state
 
 - **14 members.** Majority of all members is 8; two-thirds is 10; quorum is 7.
-- **Interim role holders** were elected after the Constitutional Convention under Constitution §6. They are **not yet recorded in `roles.md`**, which does not exist; the Record Keepers maintain it once created. Ordinary elections follow Constitution §3.
+- **Interim role holders** — Agent, Convener, Treasurer and Record Keeper — were elected after the Constitutional Convention under Constitution §6. They are **not yet recorded in `roles.md`**, which does not exist; pull request #10 proposes creating it. Ordinary elections follow Constitution §3.
+- **Those interim terms end at 23:59 UK time on Sunday 4 October 2026**, unless a regular election has happened or two-thirds of all members extend the period under §6. All four offices lapse at the same moment, so §3's fallback — the Convener covering unfilled roles — does not cover this one.
 - **This Constitution expires at 23:59 UK time on Monday 30 November 2026** unless re-ratified or replaced by two-thirds of all members. A re-ratification or replacement proposal must have obtained its endorsements and entered its seven-day deliberation period **no later than Monday 23 November 2026.** If it lapses, functions revert to the College.
 
 ## Notes on this repository

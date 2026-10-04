@@ -30,7 +30,7 @@ Never state what a governing document says from memory or from an earlier summar
 |---|---|
 | `constitution.md` | The authority. Read it before anything else. |
 | `members.md` | Authoritative membership. Every threshold is a fraction of it. |
-| `roles.md` | Who holds which office. **Not yet created** — until it is, ask rather than assume. A commit confers no role. |
+| `roles.md` | Who holds which office. **Not yet created** — until it is, ask rather than assume, and never name an office holder from memory. A commit confers no role. The interim Agent, Convener, Treasurer and Record Keeper hold office only until **23:59 UK on 4 October 2026** under §6, unless extended, so check before relying on any of them. |
 | `rules/`, `policies/` | What is already adopted. |
 | The Charter | What is devolved, and what Charter §8 reserves to the College. **Check first** — legislating for what was never granted is the commonest way a draft turns out void. |
 

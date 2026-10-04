@@ -4,7 +4,7 @@
 
 The Constitutional Record is a **public** GitHub repository. It is the single source of truth for every rule, policy, and constitutional decision the Laboratory makes. Every decision that persists is a file in the repo. Every adoption is a merge. The history is immutable — nothing is deleted, only archived.
 
-All Laboratory members have write access. The repository is public, as Section 1 of the Constitution requires, so that the Laboratory's reasoning is legible to anyone — the College, future cohorts, and the field.
+Almost all Laboratory members have write access, which is what lets you push a branch and open a pull request. **If you find you cannot, say so in the governance channel** — at the time of writing one member is still on read-only access, which is an oversight rather than a decision, and Section 1 says no member may lose a right because of the tooling. The repository is public, as Section 1 requires, so that the Laboratory's reasoning is legible to anyone — the College, future cohorts, and the field.
 
 > **The repository is public. Write accordingly.** Anything you put in a file, a commit message, a pull request or a comment is visible to the world and stays in the history. Candid or sensitive discussion belongs in the governance channel, not here. Never commit personal data — contact details, third-party phone numbers, or anything identifying about guests or non-members. Refer to roles, not people.
 >
@@ -33,7 +33,9 @@ Key concepts:
 
 **Record Keepers (two people)** — the only members with merge access. They verify that the correct process was followed — that the vote happened, the outcome is recorded, and the PR text matches the decision — before merging. They are custodians, not gatekeepers: they check the process, not whether they personally agree. Having two means one being unavailable never blocks the record. The Constitution says either may merge; it does not expressly forbid merging your own proposal, but a verification carried out by the author verifies little, so **the practice is that the other Record Keeper merges**. Any member can create branches and pull requests; a Record Keeper is there to help members who'd rather not, and to perform the final merge.
 
-Current role holders are recorded in `roles.md`, maintained by the Record Keepers. A role is held only if it was conferred through the procedures the Constitution sets out — a repository edit does not confer it.
+Current role holders belong in `roles.md`, maintained by the Record Keepers. **That file is not yet in the Record** — pull request #10 proposes creating it — so for now ask in the governance channel rather than assuming. A role is held only if it was conferred through the procedures the Constitution sets out: a repository edit does not confer it, and neither does this guide.
+
+**All four interim offices are time-limited.** Section 6 appointed the interim Agent, Convener, Treasurer and Record Keeper only until **23:59 UK time on Sunday 4 October 2026**, unless a regular election has happened or two-thirds of all members extend the period. Until that is resolved, check who actually holds an office before relying on it.
 
 ## Repository structure
 
@@ -50,13 +52,16 @@ policies/
 rules/
   rule-{name}.md                     Layer 2 — Standalone rules, no policy area or crossing several
 disputes/
-  dispute-{date}-{name}.md           Adjudication precedent
+  dispute-{date}-{name}.md           A decision, binding on the parties only
 AGENTS.md                            Instructions for members' AI agents
 CLAUDE.md                            One line, pointing at AGENTS.md
 CONTRIBUTING.md                      This guide
 .github/
   ISSUE_TEMPLATE/                    The Proposal form
-  pull_request_template.md           The checks every pull request should pass
+  pull_request_template.md           What every pull request is asked for
+  instrument-templates/              Skeletons for a rule, a policy, an adjudication
+  workflows/, scripts/               Labelling, and checks that warn rather than block
+  ruleset-main.json                  A copy of the branch protection on main
 ```
 
 A policy area is a **folder**. The Layer 3 policy is `policy.md`; each Layer 2 rule in that area is its own `rule-*.md` file beside it. Keeping them separate is the point: the policy changes only by Policy resolution, while its rules and parameters change at Tier A in 48 hours.
@@ -101,7 +106,7 @@ Step 7 is the one people miss, and it is the only step with no trace on GitHub.
 
 Two things happen on their own as you go. When you fill in the Layer, Tier and Deliberation period, a workflow turns them into **labels**; and when you take the pull request out of draft it adds an **`opened:`** label recording the moment, which is what shows that a deliberation period began. A second label, **`endorsed:`**, counts endorsing reviews. Nobody writes these by hand.
 
-The [dashboard](https://newspeakhouse-lab-2026.github.io/constitutional-record/) reads them, so a proposal with no layer recorded shows as *cannot tell* rather than appearing to have no window running. If your proposal looks wrong there, the labels are the place to look.
+The dashboard in `docs/` reads them, so a proposal with no layer recorded is shown as **No layer recorded** rather than appearing to have no window running. If your proposal looks wrong there, the labels are the place to look. (The page is in the Record but **not yet published** — GitHub Pages has not been switched on, so there is no link to give you yet.)
 
 ### What starts the clock
 
@@ -157,7 +162,7 @@ Without `gh` authenticated, an agent can read and draft but cannot open a pull r
 | `AGENTS.md` | The instructions. Plain prose, no tool-specific commands — **any agent that reads `AGENTS.md` gets them** |
 | `CLAUDE.md` | One line pointing at `AGENTS.md`, for tools that look for that name instead |
 | `.claude/skills/` | `classify`, `draft-policy`, `review-agenda`. **Claude Code only** — there is no cross-tool equivalent |
-| `.claude/hooks/` | Stops an agent merging or pushing to `main`. **Claude Code only**, and it does not take effect until you trust the folder |
+| `.claude/hooks/` | Stops an agent merging or pushing to `main` **in this repository**, and steps aside elsewhere. **Claude Code only**, and it does not take effect until you trust the folder |
 
 **Tools members are using or might:**
 
@@ -202,11 +207,11 @@ A proposal is classified by its **actual effect**, not by the label you choose. 
 1. Open the folder where your instrument belongs (e.g. `rules/`) and choose **Add file → Create new file** — or open an existing file and use the edit (pencil) icon
 2. Name it in the **Name your file…** box, and write the text
 3. Click **Commit changes…**, the green button at the top right
-4. **In the dialog, change the branch option.** It opens on *"Commit directly to the `main` branch"* — see the warning below
-5. Choose **"Create a new branch for this commit and start a pull request"**. A branch name appears, auto-filled as something like `yourname-patch-1`; rename it to something meaningful, e.g. `rule-quiet-hours`
+4. The dialog offers **"Create a new branch for this commit and start a pull request"**. For almost everyone that is the only option, because `main` is protected
+5. A branch name appears, auto-filled as something like `yourname-patch-1`; rename it to something meaningful, e.g. `rule-quiet-hours`
 6. The dialog's title and button both change to **Propose changes**. Click it
 
-> **The branch option is a trap.** The dialog opens with *"Commit directly to the `main` branch"* already selected. Accept that default and your text lands in the Record immediately — no branch, no pull request, no deliberation, no vote. Branch protection is not configured (see below), so nothing stops it. It would not make your rule valid, since validity comes from the procedure and not from the commit, but it does put unadopted text in the Record and someone has to revert it.
+> **If you are a Record Keeper, you will also see *"Commit directly to the `main` branch"*. Never take it.** Organisation administrators bypass the branch protection, so the editor shows them an option nobody else has. It would not make your rule valid — validity comes from the procedure, not from the commit — but it puts unadopted text in the Record with no proposal, no window and no diff to object to, and somebody then has to revert it.
 
 GitHub relabels its buttons from time to time. The shape of the flow is stable: edit a file, commit to a **new branch**, open a pull request.
 
@@ -355,19 +360,19 @@ Nothing is deleted from the record. To retire a rule, change its status to **arc
 
 Section 1 provides that GitHub branch protection enforces approval requirements per path, that Record Keepers are the only members with merge access, and that the authoritative history may not be rewritten to erase an adopted decision.
 
-**Not all of this is configured yet.** As things stand:
-
 | Requirement | Status |
 |---|---|
-| No direct changes to `main` — everything through a pull request | **Not configured.** Anyone with write access can push to `main` |
-| No force-pushing or rewriting history | **Not configured** |
-| Only Record Keepers can merge | **Not configured** — enforced by convention only |
-| Per-path approval requirements | **Not configured** |
-| Issue forms and pull request template | Configured |
+| No direct changes to `main` — everything through a pull request | **Configured** |
+| No force-pushing, no deleting the branch | **Configured** |
+| Only Record Keepers can merge | **Configured**, as "only organisation administrators", which is how the office is implemented |
+| Per-path approval requirements | **Not configured, and not configurable.** GitHub cannot vary a required review count by file |
+| Issue forms, pull request template, instrument templates | Configured |
 
-Until branch protection is set up, these hold as **norms the Constitution already imposes**, not as technical guarantees — and note that the website's commit dialog *defaults* to committing straight to `main`, so the easiest path through the interface is the one that bypasses the process. Follow them anyway: pushing a rule straight to `main` does not make it a rule. Validity comes from the procedure, and Section 1 is explicit that a repository edit or commit does not itself create authority.
+`.github/ruleset-main.json` records the live configuration so a change to who can merge is something members can read and object to, rather than a setting two administrators can alter silently. If the file and the live settings disagree, the settings are what is in force and the file is wrong.
 
-Configuring branch protection implements an existing constitutional requirement rather than creating a new one, and falls to the Record Keepers. Two cautions: set it after any merge-ready proposals have been merged, and make sure restricting merge rights cannot lock the repository if the Record Keeper role falls vacant.
+**What is still carried by people, not by settings.** Nothing checks that a Layer 4 amendment has its two endorsing reviews, or that a Layer 3 Policy has its one, before the merge button works — the Record Keeper's verification is the only control, which is what their office is for. And pushing a rule straight to `main` would not make it a rule in any case: validity comes from the procedure, and Section 1 is explicit that a repository edit or commit does not itself create authority.
+
+> **One risk is live right now.** Merge rights are tied to organisation administrators because that is how the Record Keeper office is implemented. The interim Record Keepers' terms end at **23:59 on Sunday 4 October 2026** under Section 6. If they lapse without an election or an extension, the office is vacant while the access remains with whoever happens to hold it — and Section 3's fallback, that the Convener covers unfilled roles, does not help, because the Convener's interim term ends at the same moment. Whoever resolves this should make sure merge rights follow the office rather than the other way round.
 
 ## Quick reference
 
@@ -381,4 +386,5 @@ Configuring branch protection implements an existing constitutional requirement 
 | See the full history of a rule | Open the file → **History** |
 | See all current rules | Browse the repo on `main` |
 | Check thresholds and windows | `AGENTS.md` — or ask your agent |
+| See the state of the Record at a glance | The dashboard in `docs/`, once GitHub Pages is switched on |
 | See what is closing, and what is running | The [dashboard](https://newspeakhouse-lab-2026.github.io/constitutional-record/) |
