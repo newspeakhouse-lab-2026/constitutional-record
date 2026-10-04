@@ -102,7 +102,7 @@ Every amendment follows the same arc. The deliberation periods and thresholds di
 | 12 | Verify the process and merge | A Record Keeper — §3: either may merge | GitHub |
 | 13 | Announce the result | The merging Record Keeper | Governance channel |
 
-Step 7 is the one people miss, and it is the only step with no trace on GitHub.
+Step 7 is the one people miss. A webhook relays repository events to the governance channel, so taking a proposal out of draft announces it there automatically — but the relay posts a bare GitHub notification, not your framing. Say what tier you are claiming and when the window closes, so nobody has to reconstruct it later.
 
 Two things happen on their own as you go. When you fill in the Layer, Tier and Deliberation period, a workflow turns them into **labels**; and when you take the pull request out of draft it adds an **`opened:`** label recording the moment, which is what shows that a deliberation period began. A second label, **`endorsed:`**, counts endorsing reviews. Nobody writes these by hand.
 
