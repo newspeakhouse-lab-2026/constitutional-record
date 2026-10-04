@@ -155,6 +155,7 @@ Before filing, check these too, and report what is missing rather than quietly f
 |---|---|
 | `.github/pull_request_template.md` | Pre-fills every pull request. It asks for the layer and its reasoning, the tier, the deliberation period, `Observed by:`, conflicts searched, source of authority for Layers 3 and 4, experiment fields, and the amendment record. **Fill it rather than replacing it** — a member's proposal is judged on what it contains. |
 | `.github/ISSUE_TEMPLATE/proposal.yml` | One issue form for proposing before any text exists. Three required fields: layer, what is proposed, and why that layer. |
+| `.github/instrument-templates/` | Skeletons for a rule, a policy and a record of an adjudication, each naming the path it belongs at. The dashboard's *Start a proposal* button opens GitHub's editor prefilled with one. Read the right one before drafting rather than inventing a shape. |
 | `.github/workflows/label-proposals.yml` | Reads the pull request body and applies `layer-*`, `tier-*` and `days-*` labels; records `opened:` and `endorsed:`. It comments rather than failing when it cannot read a layer. |
 | `.github/workflows/check-record.yml` | Warns when the dashboard's figures no longer match the Record. Never fails a pull request. |
 | `docs/` | The dashboard, read live from the Record. `docs/data.json` holds the constitutional facts it cannot derive. |
@@ -191,14 +192,14 @@ A missing layer means the proposal is unlabelled and will not appear on the dash
 An instrument that expires says so in one line the dashboard can read:
 
 ```
-**Ends:** 23:59 UK time, Monday 30 November 2026 (`2026-11-30T23:59:00+00:00`) — when the proposal-process Policy is adopted, whichever is first
+**Ends:** 23:59 UK time, Monday 30 November 2026 (`2026-11-30T23:59:00+00:00`) — when the proposal-process Policy is adopted, or at the end of this Constitution, whichever comes first
 ```
 
 **The line says the instant twice on purpose** — in words for whoever reads the rule, and as a timestamp in backticks for the dashboard. A check compares them, so a disagreement is caught rather than silently believed: it will tell you if the weekday is wrong, if the words and the timestamp name different dates, or if the offset is wrong for that date.
 
 **Write the UTC offset explicitly.** The United Kingdom is on British Summer Time from late March to late October, so `23:59` on 4 October is `+01:00` and on 30 November is `+00:00`. Writing `Z` for a summer date puts the deadline an hour out — that has already happened once, which is why the check exists.
 
-This covers an instrument's **own expiry** and nothing else. A policy may also contain recurring obligations ("a retro each term") and event-triggered windows ("within 24 hours of posting); neither is expressible this way, and the second cannot be shown at all, because the triggering event lives outside the Record.
+This covers an instrument's **own expiry** and nothing else. A policy may also contain recurring obligations ("a retro each term") and event-triggered windows ("within 24 hours of posting"); neither is expressible this way, and the second cannot be shown at all, because the triggering event lives outside the Record.
 
 It is a convention, not a duty. An instrument without the line is perfectly valid; its expiry is simply invisible, and the check says so.
 

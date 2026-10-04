@@ -37,14 +37,14 @@ So both are copied into `data.json` by hand. **Each entry carries the exact sent
 The quote is not a parser. It is a tripwire. It makes no attempt to understand the Constitution — it only detects that the Constitution changed somewhere the page depends on.
 
 - **The page** checks every quote against `constitution.md` on each load, and shows a warning across the top if one has gone.
-- **A continuous-integration check** does the same on every pull request, so an amendment that changes one of these sentences fails on the pull request making the change, and whoever is amending the Constitution is told then — rather than the page quietly counting down to a number nobody voted for.
+- **A continuous-integration check** does the same on any pull request touching `constitution.md`, `docs/data.json`, `rules/` or `policies/`, so an amendment that changes one of these sentences is caught on the pull request making the change, and whoever is amending the Constitution is told then — rather than the page quietly counting down to a number nobody voted for. It warns; it never blocks.
 
 ## Instruments that expire
 
 A rule or policy with an end date declares it in one line, inside itself:
 
 ```
-**Ends:** 23:59 UK time, Monday 30 November 2026 (`2026-11-30T23:59:00+00:00`) — when the proposal-process Policy is adopted, whichever is first
+**Ends:** 23:59 UK time, Monday 30 November 2026 (`2026-11-30T23:59:00+00:00`) — when the proposal-process Policy is adopted, or at the end of this Constitution, whichever comes first
 ```
 
 The page reads these from the repository tree, so **a new expiry is discovered where it was written** rather than copied into this folder by someone who has to remember. It covers an instrument's own expiry only — recurring obligations and event-triggered windows are not expressible this way, and the latter cannot be shown at all.

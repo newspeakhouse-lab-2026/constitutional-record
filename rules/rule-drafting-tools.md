@@ -14,13 +14,14 @@ Tooling to help members draft and file proposals, held in this repository:
 | `AGENTS.md` | Instructions for a member's AI agent working in this repository. `CLAUDE.md` is a one-line pointer to the same file |
 | `.github/ISSUE_TEMPLATE/`, `.github/pull_request_template.md` | A proposal form and a pull request template, asking for what the Constitution requires |
 | `.claude/skills/` | Optional procedures an agent may load: `classify`, `draft-policy`, `review-agenda` |
-| `.claude/hooks/`, `.claude/settings.json` | A hook preventing an agent from merging, pushing to `main`, force-pushing or rewriting history |
+| `.claude/hooks/`, `.claude/settings.json` | A hook preventing an agent from merging, pushing to `main`, force-pushing or rewriting history **in this repository**. It identifies the repository first and steps aside in any other |
 | `.github/workflows/label-proposals.yml` | Reads the layer, tier and deliberation period from a pull request body and applies them as labels, and records when a proposal opened and how many members have endorsed it |
 | `.github/scripts/test-label-proposals.mjs` | Runs the labelling workflow's own logic against a stubbed GitHub API. That workflow uses `pull_request_target`, which GitHub always runs from the default branch, so it cannot be tested by the proposal that introduces it |
 | `.github/workflows/check-record.yml`, `.github/scripts/check-record.py` | Warns when the dashboard's figures no longer match the Record — a quoted clause that has been amended, a time that disagrees with its own quote, an instrument that expires without saying so |
 | `.github/instrument-templates/` | Skeletons for a rule, a policy and a record of an adjudication. The dashboard's *Start a proposal* button asks which you are filing and opens GitHub's editor at the right path with the right one. Held as files so they cannot drift from the templates beside them |
 | `.github/ruleset-main.json` | A copy of the branch protection applied to `main`, so the configuration is reviewable in the Record rather than visible only to repository admins |
-| `docs/` | A page showing the state of the Record: deadlines, open deliberation windows, adopted instruments, roles and thresholds |
+| `docs/` | A page showing the state of the Record: deadlines, open proposals and their deliberation windows, what is in force, who holds office, and how the Record changed |
+| `README.md` | Expanded: the layers, what is in the repository, and the Laboratory's current state |
 
 ## The `main` branch configuration
 
