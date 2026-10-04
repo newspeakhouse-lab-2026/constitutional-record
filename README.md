@@ -32,6 +32,7 @@ A time-limited experiment takes the `exp-` prefix at whatever layer it belongs t
 | `disputes/` | Adjudication decisions. **None yet.** |
 | `CONTRIBUTING.md` | **How to propose, deliberate and record a decision.** Start here. |
 | `AGENTS.md` | Instructions for members' AI agents working in this repository. `CLAUDE.md` is a one-line pointer to it, so tools looking for either name find the same file. |
+| `docs/` | The [dashboard](https://newspeakhouse-lab-2026.github.io/constitutional-record/) — deadlines, open proposals, what is in force, and how the Record changed. |
 
 ## Proposing something
 

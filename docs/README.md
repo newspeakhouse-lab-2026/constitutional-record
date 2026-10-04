@@ -1,5 +1,7 @@
 # `docs/` — the Record's dashboard
 
+Published at **<https://newspeakhouse-lab-2026.github.io/constitutional-record/>**.
+
 Two files. Neither is an instrument, and neither has any force: nothing here creates, amends or records a decision.
 
 | | |
@@ -10,6 +12,8 @@ Two files. Neither is an instrument, and neither has any force: nothing here cre
 ## Why the folder is called `docs`
 
 Not because it holds documents — the whole repository does. **GitHub Pages will only publish from the repository root or from a folder named `docs`** when serving from a branch, so the name is GitHub's constraint rather than a description. Publishing through a GitHub Actions workflow instead would allow any name, at the cost of a workflow.
+
+**Pages currently serves from the `drafting-tools` branch**, because that is where `docs/` exists while this is still a proposal. When it is merged, the source should be repointed at `main` — otherwise the published page keeps following a branch that has already been merged, and stops reflecting the Record.
 
 ## Where the rest comes from
 

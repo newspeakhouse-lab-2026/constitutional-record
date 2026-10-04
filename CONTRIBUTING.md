@@ -4,7 +4,7 @@
 
 The Constitutional Record is a **public** GitHub repository. It is the single source of truth for every rule, policy, and constitutional decision the Laboratory makes. Every decision that persists is a file in the repo. Every adoption is a merge. The history is immutable — nothing is deleted, only archived.
 
-Almost all Laboratory members have write access, which is what lets you push a branch and open a pull request. **If you find you cannot, say so in the governance channel** — at the time of writing one member is still on read-only access, which is an oversight rather than a decision, and Section 1 says no member may lose a right because of the tooling. The repository is public, as Section 1 requires, so that the Laboratory's reasoning is legible to anyone — the College, future cohorts, and the field.
+Almost all Laboratory members have write access, which is what lets you push a branch and open a pull request. **If you find you cannot, say so in the governance channel** and it will be fixed — Section 1 says no member may lose a right because of the tooling, and not being able to open a pull request is exactly that. The repository is public, as Section 1 requires, so that the Laboratory's reasoning is legible to anyone — the College, future cohorts, and the field.
 
 > **The repository is public. Write accordingly.** Anything you put in a file, a commit message, a pull request or a comment is visible to the world and stays in the history. Candid or sensitive discussion belongs in the governance channel, not here. Never commit personal data — contact details, third-party phone numbers, or anything identifying about guests or non-members. Refer to roles, not people.
 >
@@ -102,11 +102,11 @@ Every amendment follows the same arc. The deliberation periods and thresholds di
 | 12 | Verify the process and merge | A Record Keeper — §3: either may merge | GitHub |
 | 13 | Announce the result | The merging Record Keeper | Governance channel |
 
-Step 7 is the one people miss. A webhook relays repository events to the governance channel, so taking a proposal out of draft announces it there automatically — but the relay posts a bare GitHub notification, not your framing. Say what tier you are claiming and when the window closes, so nobody has to reconstruct it later.
+Step 7 is the one people miss, and nothing does it for you. A webhook relays repository events to a **feed** channel, which is useful but is not the governance channel Section 2 counts — and it posts a bare GitHub notification rather than your framing. **Post it to the governance channel yourself**, with the link, the tier you are claiming and when the window closes.
 
 Two things happen on their own as you go. When you fill in the Layer, Tier and Deliberation period, a workflow turns them into **labels**; and when you take the pull request out of draft it adds an **`opened:`** label recording the moment, which is what shows that a deliberation period began. A second label, **`endorsed:`**, counts endorsing reviews. Nobody writes these by hand.
 
-The dashboard in `docs/` reads them, so a proposal with no layer recorded is shown as **No layer recorded** rather than appearing to have no window running. If your proposal looks wrong there, the labels are the place to look. (The page is in the Record but **not yet published** — GitHub Pages has not been switched on, so there is no link to give you yet.)
+The [dashboard](https://newspeakhouse-lab-2026.github.io/constitutional-record/) reads them, so a proposal with no layer recorded is shown as **No layer recorded** rather than appearing to have no window running. If your proposal looks wrong there, the labels are the place to look.
 
 ### What starts the clock
 
@@ -388,5 +388,5 @@ Section 1 provides that GitHub branch protection enforces approval requirements 
 | See the full history of a rule | Open the file → **History** |
 | See all current rules | Browse the repo on `main` |
 | Check thresholds and windows | `AGENTS.md` — or ask your agent |
-| See the state of the Record at a glance | The dashboard in `docs/`, once GitHub Pages is switched on |
+| See the state of the Record at a glance | [The dashboard](https://newspeakhouse-lab-2026.github.io/constitutional-record/) |
 | See what is closing, and what is running | The [dashboard](https://newspeakhouse-lab-2026.github.io/constitutional-record/) |

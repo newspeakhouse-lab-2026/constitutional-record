@@ -2,7 +2,7 @@
 
 **Layer:** 2 — Ordinary
 **Tier:** A — 48 hours
-**Status:** live, interim
+**Status:** live
 
 ## What this adopts
 
@@ -53,9 +53,13 @@ Three things notice drift rather than prevent it. `check-record.py` warns when a
 
 **None of this may block an amendment.** A proposal is not invalid because the tooling was not updated alongside it, no check here fails a pull request, and nobody carries a duty to maintain these files. Tooling that has fallen behind the Constitution is a defect in the tooling, never in the instrument — and a Laboratory that could not amend its Constitution until a dashboard was updated would have the relationship exactly backwards.
 
-## Interim
+## This is the act that adopts the templates
 
-Section 2 provides that the first Policy to be issued will define the issue templates for each layer and the proposer's checklist. These templates are **interim**, adopted at Layer 2 so that members have something to file with before that Policy exists. That Policy supersedes this rule, and may change or discard anything here.
+Section 2 says the first Policy to be issued will define the issue templates for each layer and the proposer's checklist. That describes what a future Policy is expected to do. It does not reserve the job, and nothing in it makes templates a Layer 3 matter.
+
+**Layer follows effect.** These templates create no duty and bind no member: they prompt for what Section 2 already requires, and a proposal filed without them is exactly as valid as one filed with them. Adopting something optional is not creating or redesigning the governance of an area, so this is an Ordinary resolution — and this rule is the act that adopts them, not a placeholder for one.
+
+If the Laboratory later issues the Policy Section 2 anticipates, it supersedes this rule and may change or discard anything here. That is simply how a Policy relates to an Ordinary rule, and needs no special provision.
 
 ## Amendment
 
@@ -63,7 +67,7 @@ Any part of this rule may be amended by Ordinary resolution. Changes to files it
 
 ## Ends
 
-**Ends:** 23:59 UK time, Monday 30 November 2026 (`2026-11-30T23:59:00+00:00`) — when the proposal-process Policy is adopted, or at the end of this Constitution, whichever comes first
+**Ends:** 23:59 UK time, Monday 30 November 2026 (`2026-11-30T23:59:00+00:00`) — with this Constitution, which these tools exist to serve
 
 The line above is written in a form the Record dashboard can read, so this rule's expiry is visible rather than buried in prose. The offset is explicit because the United Kingdom is on British Summer Time from late March to late October, and a missing offset is how a deadline ends up an hour out.
 
