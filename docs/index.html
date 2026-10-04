@@ -458,7 +458,12 @@ function render(d){
   }
 
   // What exists now, which is a different question from how it got here.
-  const rrows=d.roles?d.roles.split("\n").filter(l=>/^\|/.test(l)&&!/^\|\s*-/.test(l)).slice(1):[];
+  // roles.md holds more than one table — a changelog follows the holders — so
+  // read only the section the holders are in, or the changelog leaks in as roles.
+  const rolesSection=(d.roles||"").split(/^##\s+/m).find(sec=>/^Current holders/i.test(sec))||"";
+  const rrows=rolesSection.split("\n")
+    .filter(l=>/^\|/.test(l) && !/^\|\s*:?-/.test(l))
+    .slice(1);
   o.push(`<h2>In force</h2>`);
   o.push(`<p class="note">What binds the Laboratory today — the instruments on <code>main</code>, and who
     holds office. This is the current state; the section below is the record of how it changed.</p>`);
