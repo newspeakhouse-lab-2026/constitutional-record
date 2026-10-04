@@ -148,7 +148,7 @@ left for you. Write what actually happened, not what was proposed. -->
 - [ ] Deliberation period elapsed, **verified in the governance channel as well as here** — absence of objection on this pull request is not by itself proof of lazy consensus
 - [ ] Endorsements obtained where the layer requires them
 - [ ] Recorded outcome matches what actually happened
-- [ ] Merged by a Record Keeper. **Recommended practice: not by the author** — the Constitution permits either Record Keeper to merge, but a verification performed by the author verifies little
+- [ ] Merged by a Record Keeper — Constitution §3: *"either may merge"*, the author included
 
 <!-- If an AI agent helped prepare this, say so and name the member responsible.
 Constitution §1 requires agents on Laboratory infrastructure to be clearly

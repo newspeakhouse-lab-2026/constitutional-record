@@ -31,7 +31,7 @@ Key concepts:
 
 **Members** — everyone in the Laboratory. You propose rules, discuss pull requests, and vote through the process defined in the Constitution.
 
-**Record Keepers (two people)** — the only members with merge access. They verify that the correct process was followed — that the vote happened, the outcome is recorded, and the PR text matches the decision — before merging. They are custodians, not gatekeepers: they check the process, not whether they personally agree. Having two means one being unavailable never blocks the record. The Constitution says either may merge; it does not expressly forbid merging your own proposal, but a verification carried out by the author verifies little, so **the practice is that the other Record Keeper merges**. Any member can create branches and pull requests; a Record Keeper is there to help members who'd rather not, and to perform the final merge.
+**Record Keepers (two people)** — the only members with merge access. They verify that the correct process was followed — that the vote happened, the outcome is recorded, and the PR text matches the decision — before merging. They are custodians, not gatekeepers: they check the process, not whether they personally agree. Having two means one being unavailable never blocks the record. **Constitution §3 says either may merge**, their own proposals included. If the other Record Keeper happens to be around, a second pair of eyes costs nothing — but it is not required, and it should never hold up a merge that is otherwise ready. Any member can create branches and pull requests; a Record Keeper is there to help members who'd rather not, and to perform the final merge.
 
 Current role holders belong in `roles.md`, maintained by the Record Keepers. **That file is not yet in the Record** — pull request #10 proposes creating it — so for now ask in the governance channel rather than assuming. A role is held only if it was conferred through the procedures the Constitution sets out: a repository edit does not confer it, and neither does this guide.
 
@@ -99,7 +99,7 @@ Every amendment follows the same arc. The deliberation periods and thresholds di
 | 9 | Endorsements, where the layer needs them | Other members. Never an agent | Pull request or channel |
 | 10 | Vote | Members. **Never an agent** | As the Constitution specifies — not GitHub |
 | 11 | Record the outcome on the pull request | You, or a Record Keeper | Pull request |
-| 12 | Verify the process and merge | A Record Keeper, ideally not the author | GitHub |
+| 12 | Verify the process and merge | A Record Keeper — §3: either may merge | GitHub |
 | 13 | Announce the result | The merging Record Keeper | Governance channel |
 
 Step 7 is the one people miss, and it is the only step with no trace on GitHub.

@@ -239,7 +239,7 @@ Good practice, not prohibitions. Say which is which.
 
 - **Reasoning goes in a companion `rationale.md`**, never in the operative instrument, where it becomes binding and a future reader cites your argument as law.
 - **Create `policies/{area}/` only as part of the Layer 3 proposal that establishes the area** — on the branch, which is exactly how a policy is proposed. What must not happen is an empty or orphaned policy folder reaching `main` with no adopted policy behind it.
-- **A Record Keeper should not merge their own proposal.** Constitution §3 says "either may merge" and does not forbid it, but a verification performed by the author verifies little. Recommend it; do not state it as a rule.
+- **Never suggest that a Record Keeper may not merge their own proposal.** Constitution §3 says *"either may merge"*, and there are only two of them — treating the author as disqualified invents a constraint the Constitution declined to impose and makes half of all merges wait on one person.
 
 ## Accessibility
 
