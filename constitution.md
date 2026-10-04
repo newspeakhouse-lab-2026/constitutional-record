@@ -173,7 +173,7 @@ The location and form of a communication may indicate whether it forms part of a
 
 **3.1 Nature of the Role.** The Agent is a clerical role responsible for the Laboratory's record-keeping and its internal and external communications. The Agent does not direct, decide for, or represent the Laboratory. Until accredited, the Laboratory's collective rights under the Charter are dormant.
 
-**3.2 Selection.** The Agent and the Deputy Agent are each elected by separate anonymous ranked-choice vote for a two-month term. Re-election is permitted.
+**3.2 Selection.** Each constitutional office, including each deputy, is filled by its own anonymous ranked-choice vote by secret ballot, for a two-month term. A member stands for the office they wish to hold. Each voter may rank up to three candidates; a first preference receives three points, a second preference two points, and a third preference one point. The candidate receiving the highest total is elected. A tie is broken by a further ballot between the tied candidates. Re-election is permitted. A Policy resolution may establish a rotation schedule for the Convener, Treasurer and Record Keepers in place of election; until one does, this section governs.
 
 **3.3 Agent and Deputy.** The Agent holds primary responsibility for all duties under this section. The Deputy assumes those duties only when the Agent is unable to fulfil them or the role is vacant.
 
@@ -303,3 +303,5 @@ This vote will take place on opavote
 Polls will close at 15:00 on the Wednesday 23nd of September with interim role holders elected according to the result. They will remain in place from that point until the period defined in 6. Expedited Constitutional amendments (Ending 23:59 (UK time) on Sunday, 4 October 2026.) The interim role holders will fill the roles with all the usual powers delegated to holders of those roles.
 
 If an election under our usual processes occurs prior to the end of this timeline the powers will transfer from the interim role holders to the regular role holders. In the event that this has not occurred a two thirds majority of all Laboratory members may extend this interim period superseding any other usual constitutional rules.
+
+This interim period is extended to 23:59 (UK time) on Monday, 2 November 2026, or until holders are elected under Section 3.2, whichever is earlier. The interim role holders continue with all the usual powers of those roles until then.
