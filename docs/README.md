@@ -13,8 +13,6 @@ Two files. Neither is an instrument, and neither has any force: nothing here cre
 
 Not because it holds documents — the whole repository does. **GitHub Pages will only publish from the repository root or from a folder named `docs`** when serving from a branch, so the name is GitHub's constraint rather than a description. Publishing through a GitHub Actions workflow instead would allow any name, at the cost of a workflow.
 
-**Pages currently serves from the `drafting-tools` branch**, because that is where `docs/` exists while this is still a proposal. When it is merged, the source should be repointed at `main` — otherwise the published page keeps following a branch that has already been merged, and stops reflecting the Record.
-
 ## Where the rest comes from
 
 Everything other than `data.json` is read live: which proposals are open, what has been adopted, who holds which office. Two facts come from **labels a workflow writes** rather than from an events API — `opened:<timestamp>`, the moment a proposal left draft, and `endorsed:<n>`, how many members have endorsed it.

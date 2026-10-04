@@ -94,7 +94,7 @@ Every amendment follows the same arc. The deliberation periods and thresholds di
 | 4 | Draft the instrument, and a `rationale.md` beside it | Your agent drafts; you own it | Your machine or GitHub |
 | 5 | Check it against what the Constitution requires | Your agent | — |
 | 6 | Branch, commit, open the pull request | You or your agent | GitHub |
-| 7 | **Post it to the governance channel**, with the link and the tier — **this starts the deliberation clock** | **You, personally** | Governance channel |
+| 7 | Take it out of draft — it is posted to Discord automatically, and **this starts the deliberation clock** | You | GitHub, relayed |
 | 8 | Deliberate | You. An agent may draft your words; it may never post a position | Channel, pull request, meetings |
 | 9 | Endorsements, where the layer needs them | Other members. Never an agent | Pull request or channel |
 | 10 | Vote | Members. **Never an agent** | As the Constitution specifies — not GitHub |
@@ -102,7 +102,7 @@ Every amendment follows the same arc. The deliberation periods and thresholds di
 | 12 | Verify the process and merge | A Record Keeper — §3: either may merge | GitHub |
 | 13 | Announce the result | The merging Record Keeper | Governance channel |
 
-Step 7 is the one people miss, and nothing does it for you. A webhook relays repository events to a **feed** channel, which is useful but is not the governance channel Section 2 counts — and it posts a bare GitHub notification rather than your framing. **Post it to the governance channel yourself**, with the link, the tier you are claiming and when the window closes.
+A webhook posts repository events to Discord, so taking a proposal out of draft announces it without you doing anything further — that is the visibility Section 2 asks for. The relay posts a bare GitHub notification though, so saying what tier you are claiming and when the window closes still saves everyone reconstructing it later.
 
 Two things happen on their own as you go. When you fill in the Layer, Tier and Deliberation period, a workflow turns them into **labels**; and when you take the pull request out of draft it adds an **`opened:`** label recording the moment, which is what shows that a deliberation period began. A second label, **`endorsed:`**, counts endorsing reviews. Nobody writes these by hand.
 
@@ -114,7 +114,7 @@ It differs by layer, and the Constitution is explicit for only two of them.
 
 | | What starts deliberation |
 |---|---|
-| **Tier A** | The 48 hours **is** the period the proposal is visible in the governance channel (Constitution §2). Post it there, or nothing is running. |
+| **Tier A** | The 48 hours **is** the period the proposal is visible in the governance channel (Constitution §2) — which the Discord relay does for you when you take it out of draft. |
 | **Tier B and C** | The stated period. **The Constitution does not say what triggers it.** |
 | **Layer 3 Policy** | Seven days, after an endorsing member and the preference-mapping step. The trigger is not stated. |
 | **Layer 4** | **"Two endorsing reviews start the 7-day deliberation clock"** — explicit, and those are reviews on the pull request. This clock runs on GitHub. |
@@ -240,7 +240,7 @@ You don't need everything immediately — the amendment record and the vote evid
 
 The pull request is visible to all members and to the public. Discussion happens in the pull request, in the governance channel, and in meetings as needed.
 
-For Tier A the window **is** the proposal's visibility in the governance channel (Constitution §2), so post it there with the link and the tier. For Layer 4 the clock starts when two endorsing reviews land on the pull request. See *What starts the clock* above — it is not the same rule for every layer. During it the proposal can be revised — the proposer or any member can push further commits to the branch. **A material change restarts any minimum deliberation period.** A correction that does not change the meaning does not.
+For Tier A the window **is** the proposal's visibility in the governance channel (Constitution §2), which the relay takes care of when you take it out of draft. For Layer 4 the clock starts when two endorsing reviews land on the pull request. See *What starts the clock* above — it is not the same rule for every layer. During it the proposal can be revised — the proposer or any member can push further commits to the branch. **A material change restarts any minimum deliberation period.** A correction that does not change the meaning does not.
 
 An objection is never a bare "no": it is stated with its reason and a suggested route forward. A single stated objection moves an Ordinary proposal **up** a tier. It can never move down.
 
