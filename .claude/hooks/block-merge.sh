@@ -33,7 +33,11 @@ norm=$(printf '%s' "$cmd" | tr -s '[:space:]' ' ')
 
 case "$norm" in
   *"gh pr merge"*)                       deny "gh pr merge" ;;
-  *"git merge"*)                         deny "git merge" ;;
+  *"git merge"*)
+    # Only a merge performed while on main writes to main. Bringing main into a
+    # working branch is routine and has nothing to do with adopting anything.
+    [ "$(git rev-parse --abbrev-ref HEAD 2>/dev/null)" = "main" ] && deny "a git merge while on main"
+    ;;
   *"gh api"*"/merge"*)                   deny "a merge through the GitHub API" ;;
   *"git push"*" main"*|*"git push"*":main"*) deny "a push to main" ;;
   *"git push --force"*|*"git push -f"*)  deny "a force push — the Record's history is append-only (Constitution §1)" ;;
