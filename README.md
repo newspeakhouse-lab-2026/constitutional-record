@@ -26,7 +26,7 @@ A time-limited experiment takes the `exp-` prefix at whatever layer it belongs t
 |---|---|
 | `constitution.md` | The Constitution. The authority. |
 | `members.md` | Authoritative membership. Every threshold is a fraction of this. |
-| `roles.md` | Current role holders, maintained by the Record Keepers. **Not yet created.** |
+| `roles.md` | Current role holders and when their terms end, maintained by the Record Keepers. |
 | `rules/` | Standalone Ordinary Rules. |
 | `policies/` | One folder per governed area. **None yet** — the first Policy resolution creates one. |
 | `disputes/` | Adjudication decisions. **None yet.** |
@@ -44,7 +44,7 @@ If GitHub is a barrier for you, it must not cost you a right: the Convener provi
 ## Current state
 
 - **14 members.** Majority of all members is 8; two-thirds is 10; quorum is 7.
-- **Interim role holders** — Agent, Convener, Treasurer and Record Keeper — were elected after the Constitutional Convention under Constitution §6. They are **not yet recorded in `roles.md`**, which does not exist; pull request #10 proposes creating it. Ordinary elections follow Constitution §3.
+- **Interim role holders** — Agent, Convener, Treasurer and Record Keeper — were elected after the Constitutional Convention under Constitution §6 and are recorded in `roles.md`. Ordinary elections follow Constitution §3.2, which #2 rewrote: each office, including each deputy, is filled by its own anonymous ranked-choice ballot for a two-month term.
 - **Those interim terms were extended to 23:59 UK time on Monday 2 November 2026** by pull request #2, adopted under §6 on 4 October, or until holders are elected under §3.2, whichever is earlier. All four offices still end at the same moment, so §3's fallback — the Convener covering unfilled roles — will not cover the next expiry either.
 - **§6's expedited amendment window was not extended** and closed at 23:59 on 4 October. An amendment is once again Layer 4: two endorsing reviews, seven days, and two-thirds of all members.
 - **This Constitution expires at 23:59 UK time on Monday 30 November 2026** unless re-ratified or replaced by two-thirds of all members. A re-ratification or replacement proposal must have obtained its endorsements and entered its seven-day deliberation period **no later than Monday 23 November 2026.** If it lapses, functions revert to the College.
