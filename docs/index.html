@@ -316,10 +316,14 @@ async function collect(){
     let hit=null; try{ hit=localStorage.getItem(hk) }catch{}
     if(hit!==null){ try{ amendments=JSON.parse(hit) }catch{} }
     else try{
-      // Bounded on purpose: each commit costs one further call to find its pull
-      // request, and that is the only cost on this page that grows with the
-      // Record. Cached against the Constitution's blob SHA, so it is paid once.
-      const cs=(await api("/commits?path=constitution.md&per_page=6")).slice(0,6);
+      // Each commit costs one further call to find the pull request it came
+      // through, which is the only cost here that grows with the Record. It is
+      // cached against the Constitution's blob SHA, so it is paid once per
+      // amendment rather than per visit, and bounded well above any real
+      // history. Merge commits are dropped: a branch catching up with main is
+      // not an amendment, and it would otherwise cost a call and render as one.
+      const cs=(await api("/commits?path=constitution.md&per_page=20"))
+        .filter(c=>(c.parents||[]).length<2).slice(0,20);
       amendments=await Promise.all(cs.map(async c=>{
         let prs=[];
         try{ prs=(await api(`/commits/${c.sha}/pulls`)).map(x=>x.number) }catch{}
