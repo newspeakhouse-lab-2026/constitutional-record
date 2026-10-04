@@ -319,7 +319,7 @@ async function collect(){
       // Bounded on purpose: each commit costs one further call to find its pull
       // request, and that is the only cost on this page that grows with the
       // Record. Cached against the Constitution's blob SHA, so it is paid once.
-      const cs=(await api("/commits?path=constitution.md&per_page=12")).slice(0,12);
+      const cs=(await api("/commits?path=constitution.md&per_page=6")).slice(0,6);
       amendments=await Promise.all(cs.map(async c=>{
         let prs=[];
         try{ prs=(await api(`/commits/${c.sha}/pulls`)).map(x=>x.number) }catch{}
