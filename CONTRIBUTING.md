@@ -295,6 +295,8 @@ The Record Keeper announces the result in the governance channel with a link to 
 - **The branch cannot be deleted or force-pushed**, so the history cannot be quietly rewritten.
 - **Only organisation administrators can merge** — currently the two Record Keepers, which is what Constitution §3 means by *"the only members with merge access"*.
 
+> **Merging will tell you the rules block it, and offer to bypass.** That is expected, and it is not a violation. The ruleset restricts who may update `main`, and organisation administrators are the exception that makes merging possible for the Record Keepers and nobody else — so GitHub presents the permission as an override. Take the bypass. What it does not excuse is skipping the verification the bypass exists for: that the deliberation period actually ran, and that the recorded outcome matches it.
+
 **No approving review is required, deliberately.** A Layer 2 proposal needs no endorsement, so requiring an approval would have forced a procedural click on a rule that passed by nobody objecting — and the dashboard would then have counted that click as an endorsement.
 
 Three things it does **not** do, all of which are why a Record Keeper verifies rather than rubber-stamps:

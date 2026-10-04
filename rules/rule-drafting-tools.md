@@ -28,6 +28,8 @@ Tooling to help members draft and file proposals, held in this repository:
 
 **This records the configuration; it does not create it.** The authority is Constitution §3, which makes Record Keepers *"the only members with merge access"*. The file exists so that a change to who can merge is something a member can read and object to, instead of a setting two administrators can alter silently. If the file and the live settings disagree, the live settings are what is in force and the file is wrong.
 
+Merging reports that the rules block it and offers a bypass. That is the permission working, not a violation: the ruleset restricts who may update `main`, and administrators are the exception that confines merging to the Record Keepers.
+
 Requiring no approving review is deliberate: a Layer 2 proposal needs no endorsement, so a required approval would have forced a procedural click that the dashboard would then have counted as an endorsement.
 
 ## What this does not do
