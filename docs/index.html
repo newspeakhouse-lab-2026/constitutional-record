@@ -165,6 +165,9 @@ const newFileURL=(path,t)=>{
 };
 // Where each kind of instrument goes. The path decides which procedure applies,
 // so choosing here is the same choice as choosing a layer.
+// What is in force changes rarely and filled a third of the page with rows
+// nobody was reading. Off for now; the Record itself is one click away.
+const SHOW_IN_FORCE=false;
 const LAYER={
   "0":"Layer 0 — Operational: a reversible action within existing rules. Nothing is committed and no period runs.",
   "1":"Layer 1 — Coordination: scheduling and logistics. Nothing is committed and no period runs.",
@@ -332,6 +335,36 @@ async function collect(){
     // would cost a call per file and grow with the Record.
     apiOrLast("/pulls?state=closed&sort=updated&direction=desc&per_page=100")]);
   const [prs,issues,tree,closed]=flat.map(f=>f.v);
+
+  /* Work that exists but is invisible: a branch nobody opened a pull request
+     for. AGENTS.md and CONTRIBUTING both tell members to check `git branch -a`
+     precisely because drafts hide here, and the page exists so they do not have
+     to. A branch adopts nothing — it is shown as started, never proposed.
+     Branches that had a pull request, merged or not, are already visible, and
+     drop out for free because merging closes one. */
+  let branches=[];
+  try{
+    const heads=new Set([...(prs||[]),...(closed||[])].map(x=>x.head&&x.head.ref).filter(Boolean));
+    const all=await api("/branches?per_page=100");
+    const mainSha=(all.find(b=>b.name==="main")||{}).commit?.sha;
+    const orphans=all.filter(b=>b.name!=="main"&&!heads.has(b.name)).slice(0,8);
+    branches=(await Promise.all(orphans.map(async b=>{
+      // Keyed by both ends, so it is read once and never again until one moves.
+      const k="cmp:"+mainSha+":"+b.commit.sha;
+      let c=null;
+      try{ c=JSON.parse(localStorage.getItem(k)||"null") }catch{}
+      if(!c){
+        try{
+          const r=await api(`/compare/main...${encodeURIComponent(b.name)}`);
+          c={files:(r.files||[]).map(f=>f.filename), at:r.commits?.length?r.commits[r.commits.length-1].commit.author.date:null};
+          try{ localStorage.setItem(k,JSON.stringify(c)) }catch{}
+        }catch{ return null }
+      }
+      // Behind main, or changing nothing, is not unseen work.
+      return c.files.length?{name:b.name, files:c.files, at:c.at}:null;
+    }))).filter(Boolean);
+  }catch{}
+
   // Oldest of whatever had to fall back, so the banner names the staleness a
   // reader is actually looking at rather than the most recent of it.
   const served=flat.map(f=>f.at).filter(Boolean);
@@ -412,7 +445,7 @@ async function collect(){
   }
 
   return {
-    cfg, stale, snapshot, checked:!!cText, instruments, roles, ends, amendments, merged, shas:at,
+    cfg, stale, snapshot, checked:!!cText, instruments, roles, ends, amendments, merged, branches, shas:at,
     props: prs.map(pr=>({pr,win:windowOf(pr,cfg.procedures||{}),
                          notes:notes[pr.number]||0, resolves:linkFor[pr.number]||[]})),
     issues: issues.filter(i=>!i.pull_request).map(i=>({...i,prs:linkedBy[i.number]||[]}))
@@ -495,6 +528,17 @@ function render(d){
     <strong>L2</strong> Ordinary · <strong>L3</strong> Policy · <strong>L4</strong> Constitutional —
     and within Layer 2, <strong>A</strong> 48 hours · <strong>B</strong> a stated period under 7 days ·
     <strong>C</strong> 7 days or more, with a vote.</p>`);
+  for(const b of d.branches||[]){
+    const age=b.at?Math.floor((Date.now()-+new Date(b.at))/DAY):null;
+    noclock.push(row("Not proposed",
+      `<a href="https://github.com/${REPO}/tree/${encodeURIComponent(b.name)}">${esc(b.name)}</a>`,
+      `<span class="tag ty">Branch</span><span class="tag st" title="Work pushed to a branch with no pull request. Nothing on a branch can be adopted — only a merged pull request puts text in the Record.">Not proposed</span>`
+      + (age!==null?`last touched ${age}d ago · `:"")
+      + b.files.slice(0,3).map(f=>`<code>${esc(f)}</code>`).join(" "),
+      "","","idle",
+      `drafted but never proposed — nothing here can be adopted until someone opens a <a href="https://github.com/${REPO}/blob/main/CONTRIBUTING.md#deciding-whether-you-need-an-issue">pull request</a>`));
+  }
+
   if(!live.length&&!noclock.length) o.push(`<p class="note">Nothing open and nothing pending.</p>`);
   o.push(live.map(x=>x.html).join(""));
   if(live.length&&noclock.length) o.push(`<div class="div">No countdown</div>`);
@@ -523,6 +567,7 @@ function render(d){
   const rrows=rolesSection.split("\n")
     .filter(l=>/^\|/.test(l) && !/^\|\s*:?-/.test(l))
     .slice(1);
+  if(SHOW_IN_FORCE){
   o.push(`<h2>In force</h2>`);
   o.push(`<p class="note">What binds the Laboratory today — the instruments on <code>main</code>, and who
     holds office. This is the current state; the section below is the record of how it changed.</p>`);
@@ -541,6 +586,7 @@ function render(d){
   if(!rrows.length) o.push(`<p class="note">No <code>roles.md</code> in the Record, so no office holder
     appears below. §3 requires one, maintained by the Record Keepers.</p>`);
   o.push(inforce.length?inforce.join(""):`<p class="note">Nothing adopted yet.</p>`);
+  }
 
   // One history. A change to the Constitution that arrived through a pull request
   // is an annotation on that pull request, not a second entry for the same event.
