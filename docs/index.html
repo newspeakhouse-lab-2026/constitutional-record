@@ -7,14 +7,14 @@
 <title>State of the Record — Newspeak House Governance Laboratory 2026</title>
 <style>
   :root {
-    --bg:#fbfaf8; --ink:#1a1a18; --muted:#5f5c56; --faint:#8a867e;
+    --bg:#fbfaf8; --ink:#1a1a18; --muted:#5f5c56; --faint:#726e66;
     --line:#e3e0da; --rule:#cfcbc3; --accent:#7a5a2a;
     --urgent:#a3301f; --soon:#8a5c08;
     --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
     --ui: system-ui, -apple-system, "Segoe UI", sans-serif;
   }
   @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-    --bg:#131312; --ink:#e9e7e2; --muted:#9a958c; --faint:#726d65;
+    --bg:#131312; --ink:#e9e7e2; --muted:#9a958c; --faint:#847e75;
     --line:#2a2927; --rule:#3a3835; --accent:#c9a876;
     --urgent:#e8806f; --soon:#d4a344;
   }}
@@ -49,7 +49,8 @@
     border:1px solid var(--line);border-radius:4px;background:var(--bg);color:var(--ink)}
   .areain:focus{outline:none;border-color:var(--accent)}
   .areapath{display:block;font:inherit;font-size:.68rem;color:var(--faint);margin-top:.3rem}
-  dialog form{margin-top:.9rem;text-align:right}
+  dialog form{margin-top:.9rem;text-align:right;position:sticky;bottom:-1.3rem;
+    background:linear-gradient(to top,var(--bg) 60%,transparent);padding-bottom:1.3rem}
   dialog button{font:inherit;font-size:.75rem;padding:.3rem .8rem;border:1px solid var(--rule);
     border-radius:999px;background:var(--bg);color:var(--muted);cursor:pointer}
   .div{display:flex;align-items:center;gap:.7rem;margin:1.6rem 0 .3rem;
@@ -79,7 +80,8 @@
   .urgent .rem{color:var(--urgent)}
   .soon .rem{color:var(--soon)}
   .idle .rem{color:var(--faint);font-weight:400;font-size:.76rem}
-  .q7{color:var(--soon);font-weight:500}
+  .q7{color:var(--soon);font-weight:500}      /* genuine staleness only */
+  .quiet{color:var(--muted)}                  /* informational, not a warning */
   /* Reference material is genuinely static; live signals a tier below the clocks
      — quiet counters, comment counts, endorsement progress — are not, and were
      styled as though they were. */
@@ -87,20 +89,28 @@
   .tag{font:0.63rem/1 var(--ui);letter-spacing:.04em;text-transform:uppercase;color:var(--muted);
     border:1px solid var(--line);border-radius:2px;padding:.08rem .28rem;margin-right:.25rem;
     white-space:nowrap}
-  .why{grid-column:1;font-size:.74rem;color:var(--soon);margin-top:.15rem}
+  /* Explanations are not urgency. --soon is reserved for clocks running out. */
+  .why{grid-column:1;font-size:.74rem;color:var(--muted);margin-top:.15rem}
   .why a{color:inherit;text-decoration:underline;text-underline-offset:2px}
   .why a:hover{color:var(--ink)}
+  .glossary{color:var(--muted);font-size:.72rem;line-height:1.6;padding:0 0 .7rem 1rem;max-width:46rem}
+  .glossary strong{color:var(--ink);font:600 .66rem/1 var(--ui);letter-spacing:.04em}
   .note{color:var(--muted);font-size:.76rem;line-height:1.55;padding:.1rem 0 .55rem 1rem;max-width:46rem}
   .note a{color:var(--accent)}
   footer{margin-top:2.6rem;padding-top:.75rem;border-top:1px solid var(--rule);
     color:var(--faint);font-size:.73rem;line-height:1.6;max-width:46rem}
   footer a{color:var(--accent)}
+  .budget{display:block;margin-top:.5rem;font:400 .66rem/1.4 var(--ui);color:var(--faint)}
+  .snap{border:1px solid var(--rule);border-left-width:3px;border-radius:2px;padding:.5rem .6rem;
+    margin-bottom:1.1rem;font-size:.76rem;line-height:1.55;color:var(--muted);background:var(--bg)}
   .warn{border:1px solid var(--urgent);border-left-width:3px;border-radius:2px;padding:.5rem .6rem;
     margin:.9rem 0 .2rem;font-size:.8rem;line-height:1.45;color:var(--ink)}
   .warn .q{display:block;font:0.72rem/1.5 var(--mono);color:var(--muted);margin-top:.3rem}
   .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
   @media (max-width:40rem){
-    .abs{display:none}
+    /* The absolute date is the only wall-clock anchor a countdown has.
+       Hiding it on phones left '1d 19h' with nothing to check it against. */
+    .abs{font-size:.64rem}
     .r{padding:.5rem .25rem}
   }
 </style>
@@ -115,7 +125,7 @@
       <span class="stamp" id="stamp">reading…</span>
     </nav>
   </header>
-  <main id="out"></main>
+  <main id="out" aria-live="polite" aria-busy="true"></main>
   <dialog id="pick">
     <h3>Start a proposal</h3>
     <p class="note" style="padding-left:0">What you are filing decides where it goes, and where it goes
@@ -134,12 +144,14 @@
     <strong>A countdown runs from the opening recorded on the proposal itself</strong>, which is posted to
     Discord automatically as it happens. What this page cannot see is the deliberation — who said what, and
     whether anyone objected. Where there is no countdown, the rows above say why.
+    <span class="budget" id="budget"></span>
   </footer>
 </div>
 
 <script>
 const REPO="newspeakhouse-lab-2026/constitutional-record", API="https://api.github.com/repos/"+REPO;
-const HOUR=36e5, DAY=24*HOUR, TTL=18e4;
+const HOUR=36e5, DAY=24*HOUR, TTL=6e5;   // 10 minutes
+let budget=null;                        // requests left this hour, read from GitHub's own header
 // The skeletons live in .github/instrument-templates/, read from the Record
 // like everything else so they cannot drift from the templates beside them.
 // Until they are on main the buttons still work — they open an empty file.
@@ -176,7 +188,7 @@ const KINDS=[
    desc:"Operates within a frame that already exists, or sets a parameter. Passes in 48 hours if nobody objects."},
   {file:".github/instrument-templates/policy.md", path:"policies/{area}/policy.md", area:true,
    name:"A Policy", tag:"Layer 3",
-   desc:"Creates or redesigns the governance of an area, or creates an office. One endorsement, seven days, 8 of 14."},
+   desc:"Creates or redesigns the governance of an area, or creates an office. One endorsement, seven days, and a majority of all members."},
   {file:".github/instrument-templates/dispute.md", path:"disputes/dispute-untitled.md",
    name:"A record of an adjudication", tag:"§4",
    desc:"Only after a Step 3 vote has already decided the matter. Filing this starts nothing — an adjudication begins by raising a concern in the governance channel or with the Agent."},
@@ -189,9 +201,16 @@ const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&g
    emptiness as though it were a finding. */
 class Unreadable extends Error{ constructor(msg,reset){ super(msg); this.reset=reset; } }
 
+/* One store, two ways to read it. Fresh reads respect the TTL; lastGood ignores
+   it, so a rate-limited load can still show the Record as it was rather than
+   nothing at all. localStorage rather than sessionStorage: closing a tab should
+   not make the next visit cost a full cold load against a 60/hour ceiling. */
+const cacheGet=p=>{ try{ return JSON.parse(localStorage.getItem("rec:"+p)||"null") }catch{ return null } };
+const lastGood=p=>cacheGet(p);
+
 async function api(p){
   const k="rec:"+p;
-  try{const h=JSON.parse(sessionStorage.getItem(k)||"null");if(h&&Date.now()-h.t<TTL)return h.v}catch{}
+  const hit=cacheGet(p); if(hit && Date.now()-hit.t<TTL) return hit.v;
   let r;
   try{ r=await fetch(API+p,{headers:{Accept:"application/vnd.github+json"}}); }
   catch(e){ throw new Unreadable("the network request failed"); }
@@ -203,9 +222,22 @@ async function api(p){
     throw new Unreadable("GitHub refused the request");
   }
   if(!r.ok) throw new Unreadable(`GitHub returned ${r.status} for ${p}`);
+  const left=r.headers.get("x-ratelimit-remaining");
+  if(left!==null) budget=+left;
   const v=await r.json();
-  try{sessionStorage.setItem(k,JSON.stringify({t:Date.now(),v}))}catch{}
+  try{localStorage.setItem(k,JSON.stringify({t:Date.now(),v}))}catch{}
   return v;
+}
+
+/* Falls back to the last good copy instead of rejecting. A timestamped stale
+   view is honest; a blank page implying nothing is happening is not. */
+async function apiOrLast(p){
+  try{ return {v:await api(p), at:null}; }
+  catch(e){
+    const l=lastGood(p);
+    if(!l) throw e;
+    return {v:l.v, at:l.t};
+  }
 }
 
 /* A blob SHA is content-addressed, so a blob never changes. Cache it for good:
@@ -291,14 +323,19 @@ async function collect(){
     .catch(()=>{throw new Unreadable("docs/data.json could not be read")});
 
   // Three calls, flat, however many proposals or instruments there are.
-  const [prs,issues,tree,closed]=await Promise.all([
-    api("/pulls?state=open&per_page=100"),
-    api("/issues?state=open&per_page=100"),
-    api("/git/trees/main?recursive=1"),
+  const flat=await Promise.all([
+    apiOrLast("/pulls?state=open&per_page=100"),
+    apiOrLast("/issues?state=open&per_page=100"),
+    apiOrLast("/git/trees/main?recursive=1"),
     // Every merge into main is an adoption. One flat call covers rules,
     // policies, roles and the Constitution together — per-instrument history
     // would cost a call per file and grow with the Record.
-    api("/pulls?state=closed&sort=updated&direction=desc&per_page=100")]);
+    apiOrLast("/pulls?state=closed&sort=updated&direction=desc&per_page=100")]);
+  const [prs,issues,tree,closed]=flat.map(f=>f.v);
+  // Oldest of whatever had to fall back, so the banner names the staleness a
+  // reader is actually looking at rather than the most recent of it.
+  const served=flat.map(f=>f.at).filter(Boolean);
+  const snapshot=served.length?{at:Math.min(...served)}:null;
   const merged=(closed||[]).filter(p=>p.merged_at)
     .sort((a,b)=>new Date(b.merged_at)-new Date(a.merged_at));
 
@@ -375,7 +412,7 @@ async function collect(){
   }
 
   return {
-    cfg, stale, checked:!!cText, instruments, roles, ends, amendments, merged, shas:at,
+    cfg, stale, snapshot, checked:!!cText, instruments, roles, ends, amendments, merged, shas:at,
     props: prs.map(pr=>({pr,win:windowOf(pr,cfg.procedures||{}),
                          notes:notes[pr.number]||0, resolves:linkFor[pr.number]||[]})),
     issues: issues.filter(i=>!i.pull_request).map(i=>({...i,prs:linkedBy[i.number]||[]}))
@@ -384,6 +421,14 @@ async function collect(){
 
 function render(d){
   const o=[], live=[], noclock=[];
+
+  // Shown when part of the Record could not be refreshed and is served from the
+  // last good copy. Deliberately not a .warn — nothing is wrong with the Record,
+  // only with this page's view of it.
+  if(d.snapshot) o.push(`<div class="snap"><strong>Showing the Record as of ${fmt(new Date(d.snapshot.at))}.</strong>
+    GitHub could not be reached just now — most likely the 60-requests-an-hour limit everyone here shares.
+    Anything merged since is not below. Countdowns are still correct: they are computed from the recorded
+    opening, not fetched.</div>`);
 
   if(d.stale.length) o.push(`<div class="warn"><strong>This page may be out of date.</strong>
     ${d.stale.length===1?"A figure below is":"Figures below are"} copied from
@@ -415,9 +460,10 @@ function render(d){
     const lbl=`<span class="num">#${pr.number}</span><a href="${pr.html_url}">${esc(pr.title)}</a>`;
     const age=Math.floor((Date.now()-+new Date(pr.created_at))/DAY);
     const quiet=Math.floor((Date.now()-+new Date(pr.updated_at))/DAY);
-    const bits=["@"+esc(pr.user.login), `open ${age}d`];
+    const bits=["@"+esc(pr.user.login), `filed ${age}d ago`];
     if(quiet>=7) bits.push(`<span class="q7">quiet ${quiet}d</span>`);
-    bits.push(notes?`${notes} note${notes>1?"s":""}`:`<span class="q7">no comment</span>`);
+    // A Tier A with no comments is passing normally, not stalling.
+    bits.push(notes?`${notes} note${notes>1?"s":""}`:`<span class="quiet">no comment</span>`);
     if(win.endorse) bits.push(`${win.endorse.have}/${win.endorse.need} endorsed`);
     const rev=(pr.requested_reviewers||[]).map(r=>"@"+esc(r.login));
     if(rev.length) bits.push(`review requested from ${rev.join(", ")}`);
@@ -431,8 +477,9 @@ function render(d){
     } else {
       // The state is a tag now, so the right column stays empty rather than
       // carrying a word that needed decoding. sr keeps it for screen readers.
-      noclock.push(row(st?st.t:"",lbl,meta,"","","idle",
-        win.state==="none"?"":win.why.join(" · ")));
+      // Every state tag keeps a visible reason. Suppressing it for "none" left
+      // NO PERIOD NEEDED explained only by a tooltip, like the layer tags were.
+      noclock.push(row(st?st.t:"",lbl,meta,"","","idle",win.why.join(" · ")));
     }
   }
   live.sort((a,b)=>a.ms-b.ms);
@@ -442,6 +489,12 @@ function render(d){
     sets, instruments that expire, and deliberation periods that can be shown to have started.
     Proposals with no countdown come after them, each saying why it has none.
     <a href="https://github.com/${REPO}/pulls">All open proposals on GitHub</a>.</p>`);
+  // The tags below are abbreviations. Spelling them out once, visibly, beats a
+  // title= tooltip that does not exist on a phone or under a screen reader.
+  o.push(`<p class="glossary"><strong>L0</strong> Operational · <strong>L1</strong> Coordination ·
+    <strong>L2</strong> Ordinary · <strong>L3</strong> Policy · <strong>L4</strong> Constitutional —
+    and within Layer 2, <strong>A</strong> 48 hours · <strong>B</strong> a stated period under 7 days ·
+    <strong>C</strong> 7 days or more, with a vote.</p>`);
   if(!live.length&&!noclock.length) o.push(`<p class="note">Nothing open and nothing pending.</p>`);
   o.push(live.map(x=>x.html).join(""));
   if(live.length&&noclock.length) o.push(`<div class="div">No countdown</div>`);
@@ -455,9 +508,9 @@ function render(d){
       or <a class="openpick" href="#">start a proposal</a> if you already have the text.</p>`);
     o.push(d.issues.map(i=>{
       const age=Math.floor((Date.now()-+new Date(i.created_at))/DAY);
-      const m=[`@${esc(i.user.login)}`,`open ${age}d`];
+      const m=[`@${esc(i.user.login)}`,`filed ${age}d ago`];
       m.push(i.prs.length?`being drafted in ${i.prs.map(n=>`#${n}`).join(", ")}`
-                         :`<span class="q7">no pull request — nothing can be adopted from it</span>`);
+                         :`<span class="quiet">no pull request — nothing can be adopted from it</span>`);
       return row("",`<span class="num">#${i.number}</span><a href="${i.html_url}">${esc(i.title)}</a>`,
         m.join(" · "),"","","idle");
     }).join(""));
@@ -525,7 +578,11 @@ function render(d){
 
   SHAS=d.shas;
   $("#out").innerHTML=o.join("");
+  $("#out").setAttribute("aria-busy","false");
   $("#stamp").textContent=new Date().toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
+  $("#budget").textContent = budget===null ? ""
+    : `${budget} of 60 GitHub requests left this hour, shared by everyone on this connection. `
+      + `A first visit costs about 15; coming back costs none.`;
 }
 
 /* Filing a proposal does not depend on being able to read the Record, so the
@@ -576,6 +633,7 @@ collect().then(render).catch(e=>{
     ${esc(e.message||"unknown error")}. ${rl}<br>
     <span class="q">This is not a statement that nothing is happening \u2014 it is a statement that this page cannot currently see. Open
     <a href="https://github.com/${REPO}/pulls">the pull requests</a> directly.</span></div>`;
+  $("#out").setAttribute("aria-busy","false");
   $("#stamp").textContent="could not read";
 });
 </script>

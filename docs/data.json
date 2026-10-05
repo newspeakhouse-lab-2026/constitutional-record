@@ -1,5 +1,5 @@
 {
-  "_comment": "Constitutional facts the page cannot derive. Each carries the sentence it came from, so a CI check can fail when an amendment changes the wording. Members and thresholds are NOT here — they are counted live from members.md.",
+  "_comment": "Constitutional facts the page cannot derive. Each carries the sentence it came from, so a CI check can fail when an amendment changes the wording. Thresholds are NOT here: the page shows no membership figure, because any figure it showed would go stale silently when members.md changed.",
   "repo": "newspeakhouse-lab-2026/constitutional-record",
   "procedures": {
     "tier-a": {

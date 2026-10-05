@@ -10,6 +10,23 @@ Almost all Laboratory members have write access, which is what lets you push a b
 >
 > Material may be removed where retaining it would disclose personal or confidential information or create a serious risk of harm. The removal and its reason are recorded without reproducing the removed material. But the authoritative history may **not** be rewritten merely to erase an adopted decision: errors are corrected by a new commit.
 
+## Quick reference
+
+| Action | How |
+|---|---|
+| Propose a new rule | Create a branch with the file → **Propose changes**. An issue first is optional, for proposing before the text exists |
+| Amend an existing rule | Open file → pencil icon → **Commit changes** → new branch → **Propose changes** |
+| Discuss a proposal | Comment on the pull request |
+| Record a vote result | Comment on the pull request with the evidence in step 6 |
+| See what's being proposed | Open pull requests, open issues, **and** `git branch -a` — drafts live in branches |
+| See the full history of a rule | Open the file → **History** |
+| See all current rules | Browse the repo on `main` |
+| Check thresholds and windows | `AGENTS.md` — or ask your agent |
+| See the state of the Record at a glance | [The dashboard](https://newspeakhouse-lab-2026.github.io/constitutional-record/) |
+| See what is closing, and what is running | The [dashboard](https://newspeakhouse-lab-2026.github.io/constitutional-record/) |
+
+---
+
 ## What is GitHub / git?
 
 Git is a version control system — it tracks every change ever made to a set of files, who made it, and when. GitHub is a website that hosts git repositories and adds a web interface for collaboration.
@@ -323,9 +340,7 @@ Amending the Constitution is Layer 4 and **edits `constitution.md` itself** rath
 
 **Then what happens.** You press *Commit changes*, and GitHub offers to **create a new branch and start a pull request**. Take it. GitHub makes the branch, commits your file to it, and takes you straight to the pull request form with this repository's template already loaded — which is the thing that asks for the layer and its reasoning, `Observed by:`, and the rest. Fill it in, open the pull request, and a workflow labels it. Nothing has been adopted at this point: the deliberation period starts when you post it in the governance channel.
 
-**You will not be committing to `main`**, because `main` is protected and the option is not offered. With one exception:
-
-**If you are a Record Keeper, you will also see "commit directly to the `main` branch". Never take it.** Organisation administrators bypass the branch protection, so the editor shows them a button nobody else has. Committing straight to `main` puts text in the Record with no proposal, no deliberation period and no diff for anyone to object to — the one thing the Record exists to prevent.
+**You will not be committing to `main`**, because `main` is protected and the option is not offered — unless you are a Record Keeper, in which case see the warning under *Creating a branch and drafting the text* above.
 
 Opening the editor commits nothing, so it is safe to click through and look.
 
@@ -375,18 +390,3 @@ Section 1 provides that GitHub branch protection enforces approval requirements 
 **What is still carried by people, not by settings.** Nothing checks that a Layer 4 amendment has its two endorsing reviews, or that a Layer 3 Policy has its one, before the merge button works — the Record Keeper's verification is the only control, which is what their office is for. And pushing a rule straight to `main` would not make it a rule in any case: validity comes from the procedure, and Section 1 is explicit that a repository edit or commit does not itself create authority.
 
 > **Merge rights and the office can come apart.** Merge rights are tied to organisation administrators, because that is how the Record Keeper office is implemented. The interim terms now run to **23:59 on Monday 2 November 2026**. If they lapse again without an election, the office is vacant while the access stays with whoever happens to hold it — and Section 3's fallback, that the Convener covers unfilled roles, does not help, because the Convener's term ends at the same moment. Whoever fills these offices should make sure merge rights follow the office rather than the other way round.
-
-## Quick reference
-
-| Action | How |
-|---|---|
-| Propose a new rule | Create a branch with the file → **Propose changes**. An issue first is optional, for proposing before the text exists |
-| Amend an existing rule | Open file → pencil icon → **Commit changes** → new branch → **Propose changes** |
-| Discuss a proposal | Comment on the pull request |
-| Record a vote result | Comment on the pull request with the evidence in step 6 |
-| See what's being proposed | Open pull requests, open issues, **and** `git branch -a` — drafts live in branches |
-| See the full history of a rule | Open the file → **History** |
-| See all current rules | Browse the repo on `main` |
-| Check thresholds and windows | `AGENTS.md` — or ask your agent |
-| See the state of the Record at a glance | [The dashboard](https://newspeakhouse-lab-2026.github.io/constitutional-record/) |
-| See what is closing, and what is running | The [dashboard](https://newspeakhouse-lab-2026.github.io/constitutional-record/) |
