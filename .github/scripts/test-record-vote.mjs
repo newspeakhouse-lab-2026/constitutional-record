@@ -67,6 +67,13 @@ const voteFile = (rows = { Ada: '—', Blaise: '—', Carl: '—' }, closes = '2
 
 const b64 = s => Buffer.from(s, 'utf8').toString('base64');
 
+/* Octokit puts the HTTP status on the error it throws, and the workflow now
+   branches on it: only a 404 is a fact about the Record. A stub that throws a
+   bare Error carries no status, so it would exercise the fault branch while the
+   test believed it was exercising the refusal — which is how a stub comes to
+   assert the opposite of what it names. */
+const err = status => Object.assign(new Error(`HTTP ${status}`), { status });
+
 /* An objection on the single form: the position dropdown says objection, and the
    two boxes Section 2 requires are filled in or not. */
 const OBJ = (reason, route) =>
@@ -81,6 +88,8 @@ async function run({
   body = '### Pull request number\n\n14\n\n### Your position\n\npreference — I support this outcome. THE ONLY ANSWER THAT COUNTS AS A YES\n',
   file = voteFile(),
   fileMissing = false,
+  fileStatus = 404,         // what GitHub answered: 404 is "no vote", anything else is a fault
+  pullStatus = 404,
   pull = { state: 'open', draft: false, head: { ref: 'feature', repo: { full_name: 'o/r' } }, html_url: 'PRURL' },
   pullMissing = false,
   putFails = [],            // statuses to throw before succeeding
@@ -101,11 +110,11 @@ async function run({
       addLabels: async ({ labels }) => added.push(...labels),
       update: async () => {},
     },
-    pulls: { get: async () => { if (pullMissing) throw new Error('404'); return { data: pull }; } },
+    pulls: { get: async () => { if (pullMissing) throw err(pullStatus); return { data: pull }; } },
     repos: {
       getContent: async ({ path }) => {
         if (path === 'members.md') return { data: { content: b64(MEMBERS) } };
-        if (fileMissing) throw new Error('404');
+        if (fileMissing) throw err(fileStatus);
         return { data: { content: b64(current), sha: 'sha' + puts } };
       },
       createOrUpdateFileContents: async (args) => {
@@ -161,9 +170,27 @@ check('and names when it closed', has(r.comments[0], '2020-01-01T12:00:00+00:00'
 r = await run({ fileMissing: true });
 check('no vote file means refusal, not creation', r.writes.length, 0);
 check('and it will not open a vote itself', has(r.comments[0], "will not create one"), true);
+check('and a 404 is not a red run', r.failed, []);
+
+/* A rate limit, a permissions blip or a 500 is not evidence about the Record.
+   Saying "no vote is open" on that evidence tells a member something false, and
+   a member who believes no vote is open stops trying to vote. */
+r = await run({ fileMissing: true, fileStatus: 429 });
+check('a rate-limited file read is not reported as "no vote is open"',
+  has(r.comments[0], 'no vote is open to record'), false);
+check('it says the workflow could not find out', has(r.comments[0], 'could not find out'), true);
+check('and it is a red run, because a maintainer should look', r.failed.length, 1);
+check('and still writes nothing', r.writes.length, 0);
 
 r = await run({ pullMissing: true });
 check('an unknown pull request is refused', r.writes.length, 0);
+check('and a 404 is not a red run', r.failed, []);
+
+r = await run({ pullMissing: true, pullStatus: 403 });
+check('a refused pull request lookup is not reported as "there is no pull request"',
+  has(r.comments[0], 'There is no pull request'), false);
+check('it names the status GitHub answered with', has(r.comments[0], '`403`'), true);
+check('and it is a red run', r.failed.length, 1);
 
 r = await run({ pull: { state: 'closed', merged: true, draft: false, head: { ref: 'f', repo: { full_name: 'o/r' } } } });
 check('a merged proposal is refused', r.writes.length, 0);

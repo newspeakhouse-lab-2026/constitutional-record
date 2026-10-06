@@ -257,7 +257,17 @@ jobs:
             let pull;
             try {
               pull = (await github.rest.pulls.get({ owner, repo, pull_number: n })).data;
-            } catch {
+            } catch (e) {
+              /* Only a 404 means what the refusal says it means. A 403, 429 or
+                 500 is GitHub being unavailable, and reporting that to a member
+                 as "there is no pull request #14" tells them something false
+                 about the Record on the strength of a transient fault. */
+              if (e.status !== 404) {
+                return brokenTooling(`I could not read pull request #${n} — GitHub answered ` +
+                  `\`${e.status || 'with an error'}\`. **This is not a statement that #${n} does not exist**; ` +
+                  `it is a statement that this workflow could not find out. Nothing has been written. ` +
+                  `Submit the form again in a few minutes, or edit the vote file directly.`);
+              }
               return refuse(`There is no pull request #${n} in this repository. A vote belongs to the ` +
                 `pull request carrying the text — an issue adopts nothing (Section 1).`);
             }
@@ -415,7 +425,17 @@ jobs:
               try {
                 const r = await github.rest.repos.getContent({ owner, repo, path, ref: branch });
                 got = { text: Buffer.from(r.data.content, 'base64').toString('utf8'), sha: r.data.sha };
-              } catch {
+              } catch (e) {
+                /* Same distinction as the pull request lookup. "No vote is open"
+                   is a fact about the Record; a 403, 429 or 500 is a fact about
+                   GitHub, and a member told the first on the evidence of the
+                   second may stop trying to vote at all. */
+                if (e.status !== 404) {
+                  return brokenTooling(`I could not read \`${path}\` on branch \`${branch}\` — GitHub answered ` +
+                    `\`${e.status || 'with an error'}\`. **This is not a statement that no vote is open**; it is ` +
+                    `a statement that this workflow could not find out. Nothing has been written. Submit the ` +
+                    `form again in a few minutes, or edit the file directly: ${hand(branch, n)}`);
+                }
                 return refuse(`There is no \`${path}\` on branch \`${branch}\`, so no vote is open to record a ` +
                   `position in. This workflow will not create one: opening a vote means naming the procedure, ` +
                   `freezing who may vote and writing out the threshold, which are a member's decisions. ` +
