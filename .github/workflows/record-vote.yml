@@ -42,9 +42,16 @@ jobs:
           script: |
             const issue = context.payload.issue;
             const { owner, repo } = context.repo;
+            /* Either signal will do, and both come from the form. A label alone
+               is not enough: GitHub only applies a template's labels if they
+               already exist in the repository, so on a fresh repository — or
+               ours, before anyone creates them — every submission would be
+               ignored in silence. The title prefix is set by the template and
+               needs nothing to exist first. */
             const labels = (issue.labels || []).map(l => l.name);
-            const isVote = labels.includes('vote');
-            const isObjection = labels.includes('objection');
+            const title = issue.title || '';
+            const isVote = labels.includes('vote') || /^Vote:\s*PR\s*#/i.test(title);
+            const isObjection = labels.includes('objection') || /^Objection:\s*PR\s*#/i.test(title);
             if (!isVote && !isObjection) return;          // not ours; say nothing
 
             const POS = ['preference', 'toleration', 'abstention', 'objection'];
@@ -118,6 +125,20 @@ jobs:
             const need = isObjection ? ['pr', 'reason', 'route'] : ['pr', 'position'];
             const missingHeading = need.find(k => !(LABELS[k] in f));
             if (missingHeading) {
+              /* A label is applied by the form, so its presence means the form
+                 was used and the two have drifted — a defect to fix. Matching
+                 only on the title means somebody wrote the issue by hand, which
+                 is not an error on their part and must not read like one. */
+              const cameFromForm = labels.includes('vote') || labels.includes('objection');
+              if (!cameFromForm) {
+                return refuse(
+                  `This issue looks like a vote, but it was not filed through the form, so the fields ` +
+                  `needed to record a position are not here.\n\n` +
+                  `Use **Record a position on a vote** or **Raise an objection** from ` +
+                  `[New issue](https://github.com/${owner}/${repo}/issues/new/choose) — ` +
+                  `the form asks for the pull request number and your position, and this workflow writes ` +
+                  `your row. Nothing is wrong with what you did; there is just nothing here to record yet.`);
+              }
               return brokenTooling(
                 `This workflow could not find the **${LABELS[missingHeading]}** field it expects from ` +
                 `the issue form. The form and the workflow have drifted, which is a defect in the ` +
@@ -405,6 +426,15 @@ jobs:
                   branch, n);
               }
 
+              /* Nothing to verify when nothing changed, and the invariants
+                 would reject it: "exactly one row differs" is false of an
+                 identical file. This must come first. */
+              if (next === got.text) {
+                await say(`**${position}** is already recorded for **${me.name}** on #${n}, with today's `
+                  + `date — nothing to change. Your position stands as it is.`);
+                return close('vote-recorded');
+              }
+
               const bad = invariants(got.text, next);
               if (bad) {
                 return brokenTooling(`I built a new version of \`${path}\` and then refused to write it, ` +
@@ -412,11 +442,6 @@ jobs:
                   `**Your position has not been recorded, and nothing in the file has changed.** That is ` +
                   `intended: writing anyway could overwrite a position another member already recorded, ` +
                   `and a position quietly destroyed may never be noticed.\n\nEdit the file directly: ${hand(branch, n)}`);
-              }
-
-              if (next === got.text) {
-                await say(`**${position}** was already recorded for **${me.name}** on #${n} — nothing to change.`);
-                return close('vote-recorded');
               }
 
               try {

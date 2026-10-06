@@ -38,16 +38,16 @@ A header, one table, a result, and the objections in full. The template is
 `.github/instrument-templates/vote.md`.
 
 - **Every member is listed, including those who said nothing.** Every threshold in
-  the Constitution is a fraction of the roll, so the roll has to be visible for
-  the arithmetic to be checkable. Section 2 also distinguishes an abstention —
+  the Constitution is a fraction of everyone entitled to vote, so the arithmetic
+  cannot be checked unless they are all visible. Section 2 also distinguishes an abstention —
   "does not take a position" — from never answering, and a list of only those who
   answered could not show the difference.
-- **The roll is frozen when the vote opens.** Section 2 counts "all members
+- **Who may vote is frozen when the vote opens.** Section 2 counts "all members
   entitled to vote when the vote opens", so the file cites the `members.md`
   commit it was taken from. The freeze is then a fact anyone can check rather
   than something someone remembers.
 - **`Carries if:` writes out the number.** Safe here, unlike elsewhere in the
-  Record: because the roll is frozen at open, the figure is a fact about this
+  Record: because that list is frozen at open, the figure is a fact about this
   vote rather than a global that silently goes stale when membership changes.
 - **No free-text column in the table.** A reason or a note belongs under
   *Objections*. One newline in a table cell ends the row and lets a single edit

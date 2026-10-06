@@ -130,7 +130,7 @@ Determined by **actual effect**, never by convenience. Where two layers are argu
 | Removal from membership (§4) | **two-thirds of all members other than the respondent** |
 | Adjudication remedy (§4) | **two-thirds of the other members who vote**, quorum **half of all other members** |
 
-**Two rounding rules, and they differ on an even roll.** A named fraction rounds up — two-thirds of 14 is 10. A **majority is more than half** — a majority of 14 is 8, not 7, so a 7–7 split fails. §2's "fractions round up" sentence reaches only the first, and using `ceil` for a majority is the mistake that carries a tied vote.
+**Two rounding rules, and they differ when the membership is an even number.** A named fraction rounds up — two-thirds of 14 is 10. A **majority is more than half** — a majority of 14 is 8, not 7, so a 7–7 split fails. §2's "fractions round up" sentence reaches only the first, and using `ceil` for a majority is the mistake that carries a tied vote.
 
 `.github/scripts/tally.py` does this arithmetic and shows its working; the fractions it uses live in `docs/data.json`, each carrying the sentence it was read from. Run it rather than counting by hand, and report what it prints.
 

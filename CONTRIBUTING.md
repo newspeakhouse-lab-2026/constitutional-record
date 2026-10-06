@@ -290,7 +290,7 @@ A position may be stated anywhere — in the governance channel, in person, by m
 
 In **`votes/pr-{number}.md`, on the proposal's own branch**, so the evidence merges into the Record beside the text it adopted. Start it from `.github/instrument-templates/vote.md`; the dashboard's *Start a vote* button opens it prefilled.
 
-One table, one row per member — **all of them, including anyone who has said nothing**, because every threshold is a fraction of the roll and the roll has to be visible for the arithmetic to be checkable.
+One table, one row per member — **all of them, including anyone who has said nothing**, because every threshold is a fraction of everyone entitled to vote, and you cannot check the arithmetic unless you can see them all.
 
 To record your own position, change your row to `preference`, `toleration`, `abstention` or `objection`, with the date. The dashboard links straight to your file.
 

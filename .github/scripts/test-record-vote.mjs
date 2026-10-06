@@ -70,6 +70,7 @@ const b64 = s => Buffer.from(s, 'utf8').toString('base64');
 async function run({
   user = { id: 111, login: 'ada' },
   labels = ['vote'],
+  title = 'Vote: PR #14',
   body = '### Pull request number\n\n14\n\n### Your position\n\npreference — I support this outcome. THE ONLY ANSWER THAT COUNTS AS A YES\n',
   file = voteFile(),
   fileMissing = false,
@@ -82,7 +83,7 @@ async function run({
   let current = file, puts = 0;
   const context = {
     payload: {
-      issue: { number: 7, body, user, labels: labels.map(name => ({ name })), created_at: '2026-06-01T10:00:00Z' },
+      issue: { number: 7, title, body, user, labels: labels.map(name => ({ name })), created_at: '2026-06-01T10:00:00Z' },
       repository: { default_branch: 'main' },
     },
     repo: { owner: 'o', repo: 'r' },
@@ -209,7 +210,14 @@ check('injection: the table still has three rows',
    is a real difference and must be written. */
 r = await run({ file: voteFile().replace('| Ada Lovelace | — | |', '| Ada Lovelace | preference | 2026-06-01 |') });
 check('re-submitting the same position writes nothing', r.writes.length, 0);
-check('and says so rather than failing', has(r.comments[0], 'already recorded'), true);
+/* Assert on the run colour, not on a phrase. The earlier version matched
+   "already recorded" — which also appears inside the invariant-failure message
+   ("could overwrite a position another member already recorded"), so the test
+   passed while the workflow was failing closed. A substring that appears in
+   both the success and the failure path tests nothing. */
+check('and is not a failure', [r.failed.length, r.added], [0, ['vote-recorded']]);
+check('and says the position already stands', has(r.comments[0], 'is already recorded for'), true);
+check('and does not claim anything was refused', has(r.comments[0], 'refused to write'), false);
 
 /* THE ONE THAT MATTERS. A 409 means someone wrote between our read and our
    write. The retry must re-read and reapply — not resend the stale bytes,
@@ -228,8 +236,31 @@ r = await run({ putFails: [409, 409, 409, 409, 409] });
 check('five conflicts give up loudly rather than silently', r.failed.length, 1);
 check('and write nothing', r.writes.length, 0);
 
-r = await run({ labels: ['proposal'] });
+r = await run({ labels: ['proposal'], title: 'Can we talk about the kitchen?', body: '### Nothing\n\nx\n' });
 check('an unrelated issue is ignored entirely', [r.comments.length, r.writes.length], [0, 0]);
+
+/* Titled like a vote but written by hand. Not the member's mistake, and it must
+   not be reported as a broken tool. */
+r = await run({ labels: [], title: 'Vote: PR #5', body: 'I vote yes on this one\n' });
+check('a hand-written vote issue is pointed at the form', r.failed, []);
+check('and is not told the tooling is broken', has(r.comments[0], 'Use **Record a position'), true);
+check('and writes nothing', r.writes.length, 0);
+
+/* Whereas the form's own label plus missing fields really is drift. */
+r = await run({ labels: ['vote'], title: 'Vote: PR #5', body: 'no headings at all\n' });
+check('a form submission missing its fields is a tooling failure', r.failed.length, 1);
+
+/* GitHub applies a template's labels only if they already exist, so a fresh
+   repository drops them silently and the workflow would never fire. The title
+   prefix the template sets needs nothing to exist first. */
+r = await run({ labels: [], title: 'Vote: PR #14' });
+check('an unlabelled submission is recognised by its title', r.writes.length, 1);
+r = await run({ labels: [], title: 'Objection: PR #14',
+  body: '### Pull request number\n\n14\n\n### Your reason\n\nr\n\n### A suggested route forward\n\nq\n' });
+check('an unlabelled objection is recognised too', r.writes.length, 1);
+r = await run({ labels: [], title: 'Can we discuss the newsletter?' });
+check('an ordinary issue with no label and no prefix is still ignored',
+  [r.comments.length, r.writes.length], [0, 0]);
 
 const passed = results.filter(Boolean).length;
 console.log(`\n${passed}/${results.length} passed`);
