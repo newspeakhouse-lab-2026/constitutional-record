@@ -46,9 +46,9 @@ If GitHub is a barrier for you, it must not cost you a right: the Convener provi
 
 - **`members.md` is the list of who may vote**, and every threshold is a fraction of it, so none is written down as a number here. `.github/scripts/tally.py` computes one and shows its working. Two rules: a named fraction rounds up, and a majority is *more than half* — so a tie fails.
 - **Interim role holders** — Agent, Convener, Treasurer and Record Keeper — were elected after the Constitutional Convention under Constitution §6 and are recorded in `roles.md`. Ordinary elections follow Constitution §3.2, which #2 rewrote: each office, including each deputy, is filled by its own anonymous ranked-choice ballot for a two-month term.
-- **Those interim terms were extended to 23:59 UK time on Monday 2 November 2026** by pull request #2, adopted under §6 on 4 October, or until holders are elected under §3.2, whichever is earlier. All four offices still end at the same moment, so §3's fallback — the Convener covering unfilled roles — will not cover the next expiry either.
+- **Those interim terms were extended by pull request #2**, adopted under §6, and end either on the date `roles.md` records or when holders are elected under §3.2, whichever is earlier. All four offices still end at the same moment, so §3's fallback — the Convener covering unfilled roles — will not cover the next expiry either.
 - **§6's expedited amendment window was not extended** and closed at 23:59 on 4 October. An amendment is once again Layer 4: two endorsing reviews, seven days, and two-thirds of all members.
-- **This Constitution expires at 23:59 UK time on Monday 30 November 2026** unless re-ratified or replaced by two-thirds of all members. A re-ratification or replacement proposal must have obtained its endorsements and entered its seven-day deliberation period **no later than Monday 23 November 2026.** If it lapses, functions revert to the College.
+- **This Constitution expires**, on the date §5 states, unless re-ratified or replaced by two-thirds of all members. A re-ratification or replacement proposal must have obtained its endorsements and entered its seven-day deliberation period by the date §5 sets. If it lapses, functions revert to the College.
 
 ## Notes on this repository
 

@@ -24,7 +24,7 @@ For each: its end date, its stated hypothesis and success criteria, and what its
 
 ## 2. Instruments approaching an end date
 
-Including the Constitution itself: it expires **23:59 UK time on Monday 30 November 2026** unless re-ratified or replaced, and a re-ratification proposal must have obtained its endorsements and entered seven-day deliberation **no later than Monday 23 November 2026**. Count the days and say so plainly.
+Including the Constitution itself. Read its expiry and the re-ratification deadline out of §5 — never from memory — and read the interim terms out of `roles.md`. Then count the days and say so plainly.
 
 Interim arrangements, time-limited rules and recurring bookings that lapse unless reaffirmed belong here too.
 

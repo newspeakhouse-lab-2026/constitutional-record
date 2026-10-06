@@ -52,7 +52,7 @@ Key concepts:
 
 Current role holders are recorded in [`roles.md`](https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/roles.md), maintained by the Record Keepers. A role is held only if it was conferred through the procedures the Constitution sets out: a repository edit does not confer it, and neither does this guide, so if the file and the proceedings disagree the proceedings win and the file needs fixing.
 
-**All four interim offices are time-limited.** Section 6 appointed the interim Agent, Convener, Treasurer and Record Keeper, and pull request #2 extended their terms to **23:59 UK time on Monday 2 November 2026**, or until holders are elected under §3.2, whichever is earlier. Check who actually holds an office before relying on it.
+**All four interim offices are time-limited, and they end at the same moment.** `roles.md` records when each term ends, and the [dashboard](https://newspeakhouse-lab-2026.github.io/constitutional-record/) counts down to it. Check who actually holds an office before relying on it — a term that has lapsed leaves the office vacant whatever the file says.
 
 ## Repository structure
 
@@ -397,4 +397,4 @@ Section 1 provides that GitHub branch protection enforces approval requirements 
 
 **What is still carried by people, not by settings.** Nothing checks that a Layer 4 amendment has its two endorsing reviews, or that a Layer 3 Policy has its one, before the merge button works — the Record Keeper's verification is the only control, which is what their office is for. And pushing a rule straight to `main` would not make it a rule in any case: validity comes from the procedure, and Section 1 is explicit that a repository edit or commit does not itself create authority.
 
-> **Merge rights and the office can come apart.** Merge rights are tied to organisation administrators, because that is how the Record Keeper office is implemented. The interim terms now run to **23:59 on Monday 2 November 2026**. If they lapse again without an election, the office is vacant while the access stays with whoever happens to hold it — and Section 3's fallback, that the Convener covers unfilled roles, does not help, because the Convener's term ends at the same moment. Whoever fills these offices should make sure merge rights follow the office rather than the other way round.
+> **Merge rights and the office can come apart.** Merge rights are tied to organisation administrators, because that is how the Record Keeper office is implemented. The interim terms end at the date `roles.md` records. If they lapse without an election, the office is vacant while the access stays with whoever happens to hold it — and Section 3's fallback, that the Convener covers unfilled roles, does not help, because the Convener's term ends at the same moment. Whoever fills these offices should make sure merge rights follow the office rather than the other way round.
