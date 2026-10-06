@@ -69,6 +69,12 @@ the two apart afterwards. Section 1 also requires an agent working on Laboratory
 infrastructure to be identifiable as that member's agent, which for a commit
 means saying so in it.
 
+A member may also submit their own position through a form and have a tool
+transcribe it. That is still the member writing their row: the commit names them
+as its author, names the tool as committer, and says which submission it came
+from. A tool may transcribe a position; it may not decide one, and no tool can
+check that — the same line the paragraph above draws for an agent.
+
 Where a member does not or cannot use GitHub, **the Convener writes the row and
 says so in the commit message.** Section 1 requires a reasonably equivalent route
 for any member who cannot use the tooling, and this is it. It is never recorded
@@ -141,4 +147,6 @@ with this Constitution, whose votes it exists to record.
 `Observed by:` A vote's existence and outcome are visible in the file and its
 history. A vote held with no file recorded is visible as a merged proposal with
 no `votes/` entry. A row written by someone other than the member it names is
-visible in `git log`, which records who made every commit.
+visible in `git log`, which records who made every commit — and where a tool
+transcribed a submission, the commit names the member as author, the tool as
+committer, and the submission it came from.

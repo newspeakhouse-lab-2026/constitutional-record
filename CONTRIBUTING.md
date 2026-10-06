@@ -76,10 +76,10 @@ AGENTS.md                            Instructions for members' AI agents
 CLAUDE.md                            One line, pointing at AGENTS.md
 CONTRIBUTING.md                      This guide
 .github/
-  ISSUE_TEMPLATE/                    The Proposal form
+  ISSUE_TEMPLATE/                    Two forms: Proposal, and Record a position on a vote
   pull_request_template.md           What every pull request is asked for
   instrument-templates/              Skeletons for a rule, a policy, an adjudication, a vote
-  workflows/, scripts/               Labelling, and checks that warn rather than block
+  workflows/, scripts/               Labelling, recording a vote, and checks that warn rather than block
   ruleset-main.json                  A copy of the branch protection on main
 ```
 
@@ -116,7 +116,7 @@ Every amendment follows the same arc. The deliberation periods and thresholds di
 | 7 | Take it out of draft — it is posted to Discord automatically, and **this starts the deliberation clock** | You | GitHub, relayed |
 | 8 | Deliberate | You. An agent may draft your words; it may never post a position | Channel, pull request, meetings |
 | 9 | Endorsements, where the layer needs them | Other members. Never an agent | Pull request or channel |
-| 10 | Vote | Members. **Never an agent** | As the Constitution specifies — not GitHub |
+| 10 | Vote, and record it | Members. **Never an agent** | Stating it is the vote, wherever you state it; `votes/pr-{number}.md` is the evidence |
 | 11 | Write the result into `votes/pr-{number}.md`, arithmetic shown | You, or a Record Keeper | The proposal's branch |
 | 12 | Verify the process and merge | A Record Keeper — §3: either may merge | GitHub |
 | 13 | Announce the result | The merging Record Keeper | Governance channel |
@@ -292,7 +292,11 @@ In **`votes/pr-{number}.md`, on the proposal's own branch**, so the evidence mer
 
 One table, one row per member — **all of them, including anyone who has said nothing**, because every threshold is a fraction of everyone entitled to vote, and you cannot check the arithmetic unless you can see them all.
 
-To record your own position, change your row to `preference`, `toleration`, `abstention` or `objection`, with the date. The dashboard links straight to your file.
+Two routes, and both record the same thing.
+
+**The form.** Issues → New issue → **Record a position on a vote**, or the button on the dashboard, which fills in the pull request number. One form for all four positions; the reason and route forward an objection needs are asked of everyone and required only from an objection. A workflow writes your row as you and replies with a link to the commit, or says why it could not. It needs only read access, so it is the route that works if you cannot push.
+
+**By hand.** Change your row to `preference`, `toleration`, `abstention` or `objection`, with the date. The dashboard links straight to your file.
 
 > **When you commit, choose "Commit directly to the `{branch}` branch".** The other option — *"Create a new branch for this commit and start a pull request"* — is the right one for a proposal and the wrong one for a vote. It puts your position on a branch of its own, where nothing reads it, and then shows you a green success page. You will believe you have voted and nothing in the Record will have changed. This is the one way to lose a vote without being told, which is why the workflow names the same radio in every message that offers a hand edit.
 
