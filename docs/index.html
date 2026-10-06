@@ -254,6 +254,34 @@ async function blob(sha){
   return txt;
 }
 
+const b64=s=>new TextDecoder().decode(Uint8Array.from(atob(s.replace(/\n/g,"")),c=>c.charCodeAt(0)));
+
+/* A vote file carries its own threshold, written out when the vote opened and
+   frozen with the roll (§2). So nothing here computes it: the page reads the
+   number the file already states and counts rows. The arithmetic lives once, in
+   .github/scripts/tally.py, and this cannot drift from it because it does none.
+   The page also never says a vote carried — that is §3's word, not a web page's. */
+const POS=["preference","toleration","abstention","objection"];
+function voteOf(text){
+  text=text.replace(/<!--[\s\S]*?-->/g,"");
+  const need=text.match(/^\*\*Carries if:\*\*[^\n]*?(\d+)\s+of\s+\d+/m);
+  const iso=(text.match(/^\*\*Closes:\*\*[^\n]*?`([^`]+)`/m)||[])[1];
+  const counts={preference:0,toleration:0,abstention:0,objection:0};
+  const awaiting=[]; let rows=0;
+  for(const line of text.split("\n")){
+    if(!line.trimStart().startsWith("|")) continue;
+    const cells=line.trim().replace(/^\||\|$/g,"").split("|").map(s=>s.trim());
+    if(cells.length<2 || /^[:\-\s]+$/.test(cells[0]||"-") || cells[0].toLowerCase()==="member") continue;
+    const p=cells[1].toLowerCase();
+    if(p==="excluded") continue;            // §4: the respondent does not vote
+    rows++;
+    if(POS.includes(p)) counts[p]++; else awaiting.push(cells[0]);
+  }
+  if(!rows) return null;
+  return {counts, roll:rows, required:need?+need[1]:null,
+          affirmative:counts.preference, awaiting, closes:iso?new Date(iso):null};
+}
+
 /* Deliberation arithmetic comes from data.json, which cites the clause it came
    from — so amending the Constitution is a reviewable diff, not a silent change
    in a script. Opening times and endorsement counts come from labels the
@@ -444,9 +472,36 @@ async function collect(){
     if(m.length){ linkFor[pr.number]=m; for(const n of m) (linkedBy[n]=linkedBy[n]||[]).push(pr.number); }
   }
 
+  /* A vote lives on the proposal's own branch, so reading one costs a call per
+     proposal that has one. Tier A and Tier B hold no vote, so only Tier C and
+     Layers 3 and 4 are read — and most proposals are never any of those, so most
+     loads add nothing. Keyed on the pull request's updated_at, which moves when
+     its branch does: recording a vote invalidates the entry and nothing else
+     does. An empty string is cached too, so a proposal with no vote is asked
+     about once. */
+  const votes={};
+  const wins=new Map(prs.map(p=>[p.number,windowOf(p,cfg.procedures||{})]));
+  await Promise.all(prs.filter(p=>{
+    const w=wins.get(p.number);
+    return w.layer==="3"||w.layer==="4"||w.tier==="c";
+  }).map(async p=>{
+    const k=`vote:${p.number}:${p.updated_at}`;
+    let t=null;
+    try{ t=localStorage.getItem(k) }catch{}
+    if(t===null){
+      try{
+        const r=await api(`/contents/votes/pr-${p.number}.md?ref=${encodeURIComponent(p.head.ref)}`);
+        t=b64(r.content);
+      }catch{ t=""; }   // a 404 is the ordinary case: no vote has been opened
+      try{ localStorage.setItem(k,t) }catch{}
+    }
+    if(t){ try{ const v=voteOf(t); if(v) votes[p.number]=v; }catch{} }
+  }));
+
   return {
     cfg, stale, snapshot, checked:!!cText, instruments, roles, ends, amendments, merged, branches, shas:at,
-    props: prs.map(pr=>({pr,win:windowOf(pr,cfg.procedures||{}),
+    props: prs.map(pr=>({pr,win:wins.get(pr.number),
+                         vote:votes[pr.number]||null,
                          notes:notes[pr.number]||0, resolves:linkFor[pr.number]||[]})),
     issues: issues.filter(i=>!i.pull_request).map(i=>({...i,prs:linkedBy[i.number]||[]}))
   };
@@ -482,10 +537,11 @@ function render(d){
     live.push({ms:r.ms,html:row(r.word,esc(e.name),
       `<span class="tag ty">Instrument</span>${esc(e.why||"")}`,r.txt,fmt(e.at),r.cls)});
   }
-  for(const {pr,win,notes,resolves} of d.props){
+  for(const {pr,win,notes,resolves,vote} of d.props){
     const tp=win.tier&&(d.cfg.procedures||{})["tier-"+win.tier];
     const st=win.closes?null:stateOf(win);
     const tags=[`<span class="tag ty">Proposal</span>`,
+                vote?`<span class="tag st" title="A vote is recorded in votes/pr-${pr.number}.md on this proposal's branch">VOTE OPEN</span>`:"",
                 win.layer?`<span class="tag" title="${esc(LAYER[win.layer]||"")}">L${win.layer}</span>`:"",
                 win.tier?`<span class="tag" title="${esc(tp?tp.source+": “"+tp.quote+"”":"")}">${win.tier.toUpperCase()}</span>`:"",
                 st?`<span class="tag st" title="${esc(st.d)}">${esc(st.t)}</span>`:"",
@@ -504,15 +560,34 @@ function render(d){
     if(resolves.length) bits.push("resolves "+resolves.map(n=>`#${n}`).join(", "));
     const meta=tags+bits.join(" · ");
 
+    /* What the page says about a vote: the counts the file holds, the gap to the
+       threshold the file states, and who has not answered. Never a verdict.
+       The sentence about preference is the one thing here that changes outcomes:
+       at Layer 3, Layer 4 and re-ratification, toleration and abstention and
+       silence are the same number, and a member who picks toleration believing
+       it helps has done nothing. */
+    let voteWhy="";
+    if(vote){
+      const c=vote.counts, p=[];
+      p.push(vote.required!=null
+        ? `<strong>${vote.affirmative} toward the ${vote.required} needed</strong>`
+        : `<strong>${vote.affirmative} preference</strong> — this vote states no threshold`);
+      p.push(POS.map(k=>`${k} ${c[k]}`).join(" · "));
+      if(vote.awaiting.length) p.push("awaiting "+vote.awaiting.slice(0,4).map(esc).join(", ")
+        +(vote.awaiting.length>4?` and ${vote.awaiting.length-4} more`:""));
+      p.push(`<a href="https://github.com/${REPO}/edit/${encodeURIComponent(pr.head.ref)}/votes/pr-${pr.number}.md">record your position</a>`);
+      voteWhy=p.join(" · ")+` · <span class="quiet">only preference counts as a yes</span>`;
+    }
+
     if(win.closes){
       const r=rem(win.closes);
-      live.push({ms:r.ms,html:row(r.word,lbl,meta,r.txt,(win.minimum?"≥ ":"")+fmt(win.closes),r.cls)});
+      live.push({ms:r.ms,html:row(r.word,lbl,meta,r.txt,(win.minimum?"≥ ":"")+fmt(win.closes),r.cls,voteWhy)});
     } else {
       // The state is a tag now, so the right column stays empty rather than
       // carrying a word that needed decoding. sr keeps it for screen readers.
       // Every state tag keeps a visible reason. Suppressing it for "none" left
       // NO PERIOD NEEDED explained only by a tooltip, like the layer tags were.
-      noclock.push(row(st?st.t:"",lbl,meta,"","","idle",win.why.join(" · ")));
+      noclock.push(row(st?st.t:"",lbl,meta,"","","idle",[voteWhy,...win.why].filter(Boolean).join(" · ")));
     }
   }
   live.sort((a,b)=>a.ms-b.ms);

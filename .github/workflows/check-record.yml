@@ -13,7 +13,7 @@ on:
   pull_request:
     paths:
       - 'constitution.md'
-      - 'docs/data.json'
+      - 'docs/**'
       - 'rules/**'
       - 'policies/**'
       - 'votes/**'
@@ -44,3 +44,9 @@ jobs:
       # so unlike the Record check it fails the pull request.
       - name: Test the vote arithmetic
         run: python3 .github/scripts/test-tally.py
+
+      # The dashboard reads a vote file too. Its reader is extracted from
+      # index.html rather than copied, so a change to the page that broke the
+      # reading would fail here rather than misreport a live vote.
+      - name: Test the dashboard's vote reader
+        run: node .github/scripts/test-vote-parse.mjs
