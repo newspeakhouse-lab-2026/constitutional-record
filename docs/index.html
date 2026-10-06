@@ -75,29 +75,20 @@
   .num{font:0.78rem/1.5 var(--mono);color:var(--faint);margin-right:.3rem}
   .meta{grid-column:1;font-size:.75rem;color:var(--muted);margin-top:.1rem}
   .rt{grid-column:2;grid-row:1/span 2;text-align:right;white-space:nowrap}
-  .rem{display:block;font:600 .85rem/1.3 var(--mono);font-variant-numeric:tabular-nums}
+  /* Stepped down from 600/.85rem. It was the largest, most coloured thing on
+     every row, and a clock affords nothing: knowing a vote closes in 19 hours
+     tells a member nothing about whether to act. The gap to the threshold does,
+     so that is now the largest live figure on a row and this is the second.
+     The colours stay — --urgent and --soon on a countdown are exactly what the
+     style block reserves them for. */
+  .rem{display:block;font:500 .8rem/1.3 var(--mono);font-variant-numeric:tabular-nums}
   .abs{display:block;font:0.71rem/1.3 var(--mono);color:var(--faint);font-variant-numeric:tabular-nums}
   .urgent .rem{color:var(--urgent)}
   .soon .rem{color:var(--soon)}
   .idle .rem{color:var(--faint);font-weight:400;font-size:.76rem}
   .q7{color:var(--soon);font-weight:500}      /* genuine staleness only */
   .quiet{color:var(--muted)}                  /* informational, not a warning */
-  /* Toleration, abstention and silence are arithmetically identical at Layer 3
-     and above. A member who picks toleration believing it helps has done nothing,
-     and five of those end the Laboratory — so this is the one line on the page
-     that changes outcomes, and it is not styled as metadata. */
-  .yesonly{color:var(--ink);font-weight:600}
-  /* The one action this page exists to produce. It was an inline text link in
-     the middle of a sentence — the smallest target on the page for the thing
-     most worth tapping. */
-  .act{display:inline-block;border:1px solid var(--accent);border-radius:999px;
-    padding:.25rem .7rem;margin:.15rem .2rem .15rem 0;color:var(--accent);
-    text-decoration:none;font-weight:600;min-height:1.9rem;line-height:1.4}
-  .act:hover,.act:focus-visible{background:var(--accent);color:var(--bg);outline:none}
-  .actalt{display:inline-block;padding:.25rem .3rem;color:var(--muted);
-    text-decoration:underline;text-underline-offset:2px;min-height:1.9rem;line-height:1.4}
-  .actalt:hover{color:var(--ink)}
-  .await{color:var(--ink)}                    /* who has not answered is the actionable part */
+  .await{color:var(--ink);font-size:.75rem}   /* who has not answered is the actionable part */
   /* --urgent, and it earns it: two closing times that disagree means a member
      can read "running" here and be refused by the workflow, or the reverse.
      That is a real problem with the Record, not a clock running out. */
@@ -113,6 +104,75 @@
   .why{grid-column:1;font-size:.74rem;color:var(--muted);margin-top:.15rem}
   .why a{color:inherit;text-decoration:underline;text-underline-offset:2px}
   .why a:hover{color:var(--ink)}
+  /* There was no focus-visible style here at all, so a keyboard reader got the
+     browser default — 3.11:1 on this dark background, under the 3:1 a focus
+     indicator has to clear with nothing in hand to prove it. The ring is
+     --accent on --bg: 6.06:1 light, 8.27:1 dark. */
+  .why a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+  .why p{margin:.25rem 0 0}
+
+  /* ---- a vote on a row ---------------------------------------------------
+     This was one run of about 300 characters joined by middots: the round, why
+     it restarted, the count toward the threshold, four tallies, every name that
+     had not answered, the action, and for Tier C a sentence about two
+     denominators. Everything carried the same weight, so nothing carried any,
+     and the one thing a member had to read before choosing sat three clauses
+     after the button.
+     It is now four things, each its own line, in the order a member needs them:
+     where the vote stands, who is missing, what counts as a yes, and only then
+     what to do.
+     Scoped under .why because `.why a` (0,1,1) beat a bare `.act` (0,1,0) and
+     was quietly undoing the button's own colour and underline. */
+  /* A left rule, so a row carrying a live vote reads as one thing rather than
+     as more sentences under the title. --rule is a hairline against --bg and
+     that is the point: it groups, it does not inform, and nothing here depends
+     on seeing it. */
+  .vote{margin-top:.45rem;display:grid;gap:.3rem;
+    border-left:2px solid var(--rule);padding-left:.75rem}
+  .vote p{margin:0}
+  /* The largest live figure on the row, because it is the one that affords
+     something: it answers "does my position change this". */
+  .vhead{font:600 .82rem/1.35 var(--ui);color:var(--ink)}
+  .vtally{font:0.72rem/1.4 var(--mono);color:var(--muted)}
+  .vnote{font:0.73rem/1.45 var(--ui);color:var(--muted)}
+  /* Toleration, abstention and silence are arithmetically identical at Layer 3
+     and above. A member who picks toleration believing it helps has done
+     nothing, and five of those end the Laboratory — so this is the one line on
+     the page that changes outcomes, and it is not styled as metadata. */
+  .yesonly{font:0.76rem/1.45 var(--ui);color:var(--ink)}
+  .yesonly strong{font-weight:600}
+  /* "7 of 8" and "5 of 10" read identically in running text, and the difference
+     between them is the entire question a member is answering. A bar is the
+     cheapest thing that shows a ratio, and on a page this deliberately plain it
+     earns its place only because the ratio IS the page's subject — one per
+     vote, no axis, no animation, no label of its own. The numbers are already
+     stated in words directly above, which is why it is aria-hidden rather than
+     given a role: a screen reader should hear them once.
+     Drawn as an --accent outline with the reached part filled in --accent,
+     rather than a tinted track. Every boundary is then accent against --bg,
+     6.06:1 light and 8.27:1 dark. A filled track cannot work: it would have to
+     clear 3:1 against both --bg and --accent at once, and --accent is only
+     6.06:1 from --bg, so there is no room between them. No new token. */
+  .gauge{display:block;height:.5rem;max-width:20rem;background:var(--bg);
+    border:1px solid var(--accent);border-radius:999px;overflow:hidden}
+  .gauge i{display:block;height:100%;background:var(--accent)}
+  /* The one action this page exists to produce. It was a 112x13px text link in
+     the middle of a sentence: under WCAG 2.5.8's 24px minimum and far under
+     2.5.5's 44px, for the thing most worth tapping. Now 2.25rem (36px), and a
+     full-width 2.75rem (44px) on a phone where the thumb is.
+     The focus ring is --accent offset onto the page, not --ink inside the
+     filled pill: --ink on --accent is 2.76:1 light and 1.82:1 dark, which is
+     not a focus indicator. */
+  .acts{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem;margin-top:.15rem}
+  .why a.act{display:inline-flex;align-items:center;justify-content:center;min-height:2.25rem;
+    padding:0 1.1rem;border:1px solid var(--accent);border-radius:999px;background:var(--bg);
+    color:var(--accent);text-decoration:none;font:600 .8rem/1 var(--ui)}
+  .why a.act:hover{background:var(--accent);color:var(--bg)}
+  .why a.act:focus-visible{background:var(--accent);color:var(--bg);
+    outline:2px solid var(--accent);outline-offset:2px}
+  .why a.actalt{display:inline-flex;align-items:center;min-height:2.25rem;padding:0 .15rem;
+    color:var(--muted);text-decoration:underline;text-underline-offset:2px;font-size:.75rem}
+  .why a.actalt:hover{color:var(--ink)}
   .glossary{color:var(--muted);font-size:.72rem;line-height:1.6;padding:0 0 .7rem 1rem;max-width:46rem}
   .glossary strong{color:var(--ink);font:600 .66rem/1 var(--ui);letter-spacing:.04em}
   .note{color:var(--muted);font-size:.76rem;line-height:1.55;padding:.1rem 0 .55rem 1rem;max-width:46rem}
@@ -132,6 +192,23 @@
        Hiding it on phones left '1d 19h' with nothing to check it against. */
     .abs{font-size:.64rem}
     .r{padding:.5rem .25rem}
+    /* One column at 375px. The two-column grid left the content about 245px
+       wide while the countdown held a column of its own, so every title wrapped
+       three times and the list of who has not answered wrapped five. The time
+       drops onto its own line under the title, where it reads as a sentence
+       rather than as a sidebar. */
+    .r{grid-template-columns:minmax(0,1fr)}
+    .rt{grid-column:1;grid-row:auto;text-align:left;margin-top:.1rem}
+    .rem,.abs{display:inline}
+    .abs::before{content:" · "}
+    /* Full width and 44px, so the thing the page exists to produce is the
+       easiest thing on it to hit. At 375px the row's left column is about
+       280px, and a pill sized to its text was a quarter of that. */
+    .acts{display:block}
+    .acts>*{margin-top:.45rem}
+    .why a.act{display:flex;width:100%;min-height:2.75rem;font-size:.85rem}
+    .why a.actalt{display:flex;width:100%;min-height:2.75rem;justify-content:center}
+    .gauge{max-width:none}
   }
 </style>
 </head>
@@ -142,10 +219,15 @@
     <nav>
       <a href="https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/CONTRIBUTING.md">Contributing guide</a>
       <a class="btn" id="newprop" href="#">Start a proposal</a>
-      <span class="stamp" id="stamp">reading…</span>
+      <!-- aria-live sits here, on the one element that says whether the page has
+           read the Record, and not on <main>. On <main> a screen reader announced
+           the whole page — about 5,277 characters — the moment it rendered, which
+           is not an announcement, it is a wall. Both completion paths write this
+           element last, so it is still the thing that says the load finished. -->
+      <span class="stamp" id="stamp" aria-live="polite">reading the Record…</span>
     </nav>
   </header>
-  <main id="out" aria-live="polite" aria-busy="true"></main>
+  <main id="out" aria-busy="true"></main>
   <dialog id="pick">
     <h3>Start a proposal</h3>
     <p class="note" style="padding-left:0">What you are filing decides where it goes, and where it goes
@@ -758,46 +840,11 @@ function render(d){
        it helps has done nothing. */
     let voteWhy="";
     if(vote){
-      const c=vote.counts, p=[];
-      if(vote.quorumOnly)
-        p.push(`<strong>${vote.responded} of ${vote.roll} have answered</strong>`
-          +(vote.required!=null?`, quorum ${vote.required} — ${vote.responded>=vote.required?"met":"not met"}`:"")
-          +` · the majority is counted over preference and objection only, when the window closes`);
-      else p.push(vote.required!=null
-        ? `<strong>${vote.affirmative} toward the ${vote.required} needed</strong>`
-        : `<strong>${vote.affirmative} preference</strong> — this vote states no threshold`);
-      p.push(POS.map(k=>`${k} ${c[k]}`).join(" · "));
-      /* Every name, never "and N more". Silence is the failure mode, so the
-         list of who has not answered is the most actionable thing on the row —
-         and truncating it hides exactly the people who need chasing. Fourteen
-         names is the worst case. */
-      if(vote.awaiting.length) p.push(`<span class="await">awaiting ${vote.awaiting.map(esc).join(", ")}</span>`);
-      /* The form first, the file second. Opening an issue needs only read
-         access, so it is the one route that works for a member who cannot push
-         — and those are the members §1 most owes a usable route to. The file
-         stays linked because it works when nothing else does. */
-      /* Which window decides is the one the workflow enforces — the Closes: line
-         in the file — because that is what refuses a submission. The computed
-         countdown is the fallback only when the file states nothing readable. */
-      const enforced=vote.closes||win.closes||null;
-      const over=enforced?+enforced<=Date.now():false;
-      if(over){
-        /* The action used to stay live after the window closed, inviting
-           somebody to fill in a form the workflow would refuse. What replaces it
-           is what actually happens next, rather than nothing. */
-        p.push(`<span class="quiet">The window closed ${fmt(enforced)}, so a position submitted now is refused.
-          Next: a Record Keeper writes the result into the file with the arithmetic shown, and verifies it
-          before merging (§3).</span> <a class="actalt" href="https://github.com/${REPO}/blob/${encodeURIComponent(pr.head.ref)}/votes/pr-${pr.number}.md">read votes/pr-${pr.number}.md</a>`);
-      } else {
-        p.push(`<a class="act" href="https://github.com/${REPO}/issues/new`
-          +`?template=vote.yml&title=${encodeURIComponent("Vote: PR #"+pr.number)}&pr=${pr.number}">record your position</a>`
-          +` <a class="actalt" href="https://github.com/${REPO}/edit/${encodeURIComponent(pr.head.ref)}/votes/pr-${pr.number}.md">or edit votes/pr-${pr.number}.md yourself</a>`);
-      }
-      /* A member whose row was cleared by a restart reads "awaiting you" and has
-         no way to know their earlier position was wiped, unless the page says so. */
-      if(vote.rounds>1) p.unshift(`<span class="q7">round ${vote.rounds}</span>`
-        +(vote.restarted?` · restarted ${esc(vote.restarted)}`:"")
-        +` · earlier positions cleared`);
+      /* Four things, each its own line, in the order a member needs them.
+         Anything wrong with the vote itself comes first, because it changes what
+         the rest of the block means. */
+      const c=vote.counts, L=[];
+
       /* Two clocks, and until now nothing compared them. The countdown on this
          row is computed from the opened: label and the period the layer or tier
          requires. The workflow enforces the Closes: line inside the vote file
@@ -811,32 +858,103 @@ function render(d){
          tolerance because the file writes the instant to the minute while the
          label carries seconds. */
       if(win.closes&&vote.closes&&Math.abs(+win.closes-+vote.closes)>6e4)
-        p.unshift(`<span class="clash">Two closing times.</span> This countdown runs to
+        L.push(`<p class="vnote"><span class="clash">Two closing times.</span> This countdown runs to
           <strong>${fmt(win.closes)}</strong>, computed from the recorded opening;
           <code>votes/pr-${pr.number}.md</code> says <strong>${fmt(vote.closes)}</strong>, and that is the one
-          the workflow enforces. One of them is wrong — nothing here can say which.`);
+          the workflow enforces. One of them is wrong — nothing here can say which.</p>`);
       else if(!win.closes&&vote.closes)
-        p.unshift(`<span class="clash">No countdown here, but a window in the file.</span>
+        L.push(`<p class="vnote"><span class="clash">No countdown here, but a window in the file.</span>
           <code>votes/pr-${pr.number}.md</code> says this closes <strong>${fmt(vote.closes)}</strong>, and the
-          workflow enforces that. This page shows none because the proposal records no opening it can read.`);
+          workflow enforces that. This page shows none because the proposal records no opening it can read.</p>`);
+      /* A member whose row was cleared by a restart reads "awaiting you" and has
+         no way to know their earlier position was wiped, unless the page says so. */
+      if(vote.rounds>1) L.push(`<p class="vnote"><span class="q7">Round ${vote.rounds}</span>`
+        +(vote.restarted?` · restarted ${esc(vote.restarted)}`:"")
+        +` · earlier positions cleared</p>`);
+
+      /* ---- 1. where the vote stands. The gap to the threshold, not the clock:
+         a countdown affords nothing, and this answers the only question a member
+         is actually weighing — does my position change this. Never a verdict:
+         what carries is §3's word and a Record Keeper's to write. */
+      let head, done=null, need=null;
+      if(vote.quorumOnly){
+        done=vote.responded; need=vote.required;
+        const short=vote.required!=null?vote.required-vote.responded:null;
+        head=`${vote.responded} of ${vote.roll} have answered`
+          +(vote.required==null?``
+            :short>0?` · quorum ${vote.required} — ${short} more to reach it`
+            :` · quorum ${vote.required}, reached`);
+      }else if(vote.required!=null){
+        done=vote.affirmative; need=vote.required;
+        const short=vote.required-vote.affirmative;
+        head=`${vote.affirmative} of the ${vote.required} needed`
+          +(short>0?` · ${short} more preference${short>1?"s":""}`
+                   :` · the stated number is reached — whether it carries is a Record Keeper's to verify (§3)`);
+      }else{
+        head=`${vote.affirmative} preference — this vote states no threshold`;
+      }
+      L.push(`<p class="vhead">${head}</p>`);
+      if(need!=null&&need>0){
+        const pct=Math.max(0,Math.min(100,Math.round(done/need*100)));
+        L.push(`<span class="gauge" aria-hidden="true"><i style="width:${pct}%"></i></span>`);
+      }
+      L.push(`<p class="vtally">${POS.map(k=>`${k} ${c[k]}`).join(" · ")}</p>`);
+      /* Tier C's two denominators, on their own line rather than as a sixth
+         clause. Quorum counts everyone; the majority counts preference and
+         objection only. It is the commonest way to get a tally wrong. */
+      if(vote.quorumOnly) L.push(`<p class="vnote">Tier C counts twice: quorum over everyone who answered,
+        the majority over preference and objection only, and not until the window has closed.</p>`);
+      /* Every name, never "and N more". Silence is the failure mode, so the
+         list of who has not answered is the most actionable thing on the row —
+         and truncating it hides exactly the people who need chasing. Fourteen
+         names is the worst case. */
+      if(vote.awaiting.length) L.push(`<p class="await">Not yet answered: ${vote.awaiting.map(esc).join(", ")}</p>`);
       /* A submission whose issue is still open never reached the file. Every
          handled failure closes its issue and comments, so one still open means
          nobody was told anything — which is why it belongs here rather than
          only on the issue. */
       const failed=(d.stuckVotes||[]).filter(i=>+((i.title.match(/#(\d+)/)||[])[1])===pr.number);
-      if(failed.length) p.push(`<span class="q7">${failed.length} submission${failed.length>1?"s":""} did not record: `
-        +failed.map(i=>`<a href="${i.html_url}">#${i.number}</a>`).join(", ")+`</span>`);
-      /* Not .quiet — that class is for information, and this is the sentence a
-         member most needs to read before choosing. Toleration, abstention and
-         silence are the same number at Layer 3 and above. */
-      voteWhy=p.join(" · ")+` · <strong class="yesonly">only preference counts as a yes</strong>`;
+      if(failed.length) L.push(`<p class="vnote"><span class="q7">${failed.length} submission${failed.length>1?"s":""} did not record:</span> `
+        +failed.map(i=>`<a href="${i.html_url}">#${i.number}</a>`).join(", ")+`</p>`);
+
+      /* ---- 2. what counts as a yes. It sat three clauses AFTER the button, so
+         a member could act on the page before reading the one sentence on it
+         that changes outcomes. The button now follows it. */
+      L.push(`<p class="yesonly"><strong>Only <code>preference</code> counts as a yes.</strong>
+        At Layer 3, Layer 4 and re-ratification, toleration, abstention and never answering
+        are the same number.</p>`);
+
+      /* ---- 3. the action. Which window decides is the one the workflow
+         enforces — the Closes: line in the file — because that is what refuses a
+         submission. The computed countdown is the fallback only when the file
+         states nothing readable. */
+      const enforced=vote.closes||win.closes||null;
+      const over=enforced?+enforced<=Date.now():false;
+      if(over){
+        /* The action used to stay live after the window closed, inviting
+           somebody to fill in a form the workflow would refuse. What replaces it
+           is what actually happens next, rather than nothing. */
+        L.push(`<p class="vnote">The window closed ${fmt(enforced)}, so a position submitted now is refused.
+          Next: a Record Keeper writes the result into the file with the arithmetic shown, and verifies it
+          before merging (§3).</p>`);
+        L.push(`<div class="acts"><a class="actalt" href="https://github.com/${REPO}/blob/${encodeURIComponent(pr.head.ref)}/votes/pr-${pr.number}.md">Read votes/pr-${pr.number}.md</a></div>`);
+      }else{
+        /* The form first, the file second. Opening an issue needs only read
+           access, so it is the one route that works for a member who cannot push
+           — and those are the members §1 most owes a usable route to. The file
+           stays linked because it works when nothing else does. */
+        L.push(`<div class="acts"><a class="act" href="https://github.com/${REPO}/issues/new`
+          +`?template=vote.yml&title=${encodeURIComponent("Vote: PR #"+pr.number)}&pr=${pr.number}">Record your position</a>`
+          +`<a class="actalt" href="https://github.com/${REPO}/edit/${encodeURIComponent(pr.head.ref)}/votes/pr-${pr.number}.md">or edit votes/pr-${pr.number}.md yourself</a></div>`);
+      }
+      voteWhy=`<div class="vote">${L.join("")}</div>`;
     }else if((d.roll||[]).length){
       /* This procedure votes and no file exists yet, so offer to open one —
          prefilled with the procedure, the threshold computed once from the
          frozen roll, the window already running, and every member's row. */
       const f=voteFileFor(pr,win,d.cfg.thresholds||{},d.roll,d.rollSha);
-      if(f) voteWhy=`<a href="${newVoteURL(pr.head.ref,`votes/pr-${pr.number}.md`,f)}">start a vote</a>`
-        +` · <span class="quiet">this procedure votes, and no positions are recorded yet</span>`;
+      if(f) voteWhy=`<div class="vote"><p class="vnote">This procedure votes, and no positions are recorded yet.</p>`
+        +`<div class="acts"><a class="act" href="${newVoteURL(pr.head.ref,`votes/pr-${pr.number}.md`,f)}">Start a vote</a></div></div>`;
     }
 
     if(win.closes){
@@ -847,7 +965,11 @@ function render(d){
       // carrying a word that needed decoding. sr keeps it for screen readers.
       // Every state tag keeps a visible reason. Suppressing it for "none" left
       // NO PERIOD NEEDED explained only by a tooltip, like the layer tags were.
-      noclock.push(row(st?st.t:"",lbl,meta,"","","idle",[voteWhy,...win.why].filter(Boolean).join(" · ")));
+      // The vote block is now block-level, so the reason this row has no
+      // countdown becomes its own paragraph beneath it rather than a middot
+      // joined onto the end of a <div>.
+      noclock.push(row(st?st.t:"",lbl,meta,"","","idle",
+        voteWhy+(win.why.length?`<p class="vnote">${win.why.join(" · ")}</p>`:"")));
     }
   }
   live.sort((a,b)=>a.ms-b.ms);
@@ -982,7 +1104,8 @@ function render(d){
   SHAS=d.shas;
   $("#out").innerHTML=o.join("");
   $("#out").setAttribute("aria-busy","false");
-  $("#stamp").textContent=new Date().toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
+  // Announced on its own now, so it says what it is rather than a bare time.
+  $("#stamp").textContent="read at "+new Date().toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
   $("#budget").textContent = budget===null ? ""
     : `${budget} of 60 GitHub requests left this hour, shared by everyone on this connection. `
       + `A first visit costs about 15; coming back costs none.`;
@@ -1037,7 +1160,7 @@ collect().then(render).catch(e=>{
     <span class="q">This is not a statement that nothing is happening \u2014 it is a statement that this page cannot currently see. Open
     <a href="https://github.com/${REPO}/pulls">the pull requests</a> directly.</span></div>`;
   $("#out").setAttribute("aria-busy","false");
-  $("#stamp").textContent="could not read";
+  $("#stamp").textContent="could not read the Record";
 });
 </script>
 </body></html>
