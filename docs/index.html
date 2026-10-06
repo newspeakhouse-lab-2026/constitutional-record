@@ -98,6 +98,10 @@
     text-decoration:underline;text-underline-offset:2px;min-height:1.9rem;line-height:1.4}
   .actalt:hover{color:var(--ink)}
   .await{color:var(--ink)}                    /* who has not answered is the actionable part */
+  /* --urgent, and it earns it: two closing times that disagree means a member
+     can read "running" here and be refused by the workflow, or the reverse.
+     That is a real problem with the Record, not a clock running out. */
+  .clash{color:var(--urgent);font-weight:600}
   /* Reference material is genuinely static; live signals a tier below the clocks
      — quiet counters, comment counts, endorsement progress — are not, and were
      styled as though they were. */
@@ -780,6 +784,27 @@ function render(d){
       if(vote.rounds>1) p.unshift(`<span class="q7">round ${vote.rounds}</span>`
         +(vote.restarted?` · restarted ${esc(vote.restarted)}`:"")
         +` · earlier positions cleared`);
+      /* Two clocks, and until now nothing compared them. The countdown on this
+         row is computed from the opened: label and the period the layer or tier
+         requires. The workflow enforces the Closes: line inside the vote file
+         and refuses anything submitted after it. They can disagree — a period
+         extended in the file but not restarted on the label, a label edited, a
+         vote opened by hand with a different window — and when they do, this
+         page can show a vote running while every position submitted to it is
+         refused, or the reverse.
+         Neither is preferred. The page cannot know which is wrong, and guessing
+         would turn a visible contradiction into an invisible one. 60 seconds of
+         tolerance because the file writes the instant to the minute while the
+         label carries seconds. */
+      if(win.closes&&vote.closes&&Math.abs(+win.closes-+vote.closes)>6e4)
+        p.unshift(`<span class="clash">Two closing times.</span> This countdown runs to
+          <strong>${fmt(win.closes)}</strong>, computed from the recorded opening;
+          <code>votes/pr-${pr.number}.md</code> says <strong>${fmt(vote.closes)}</strong>, and that is the one
+          the workflow enforces. One of them is wrong — nothing here can say which.`);
+      else if(!win.closes&&vote.closes)
+        p.unshift(`<span class="clash">No countdown here, but a window in the file.</span>
+          <code>votes/pr-${pr.number}.md</code> says this closes <strong>${fmt(vote.closes)}</strong>, and the
+          workflow enforces that. This page shows none because the proposal records no opening it can read.`);
       /* A submission whose issue is still open never reached the file. Every
          handled failure closes its issue and comments, so one still open means
          nobody was told anything — which is why it belongs here rather than
