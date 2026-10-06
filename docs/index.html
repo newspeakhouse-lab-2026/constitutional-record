@@ -776,9 +776,23 @@ function render(d){
          access, so it is the one route that works for a member who cannot push
          — and those are the members §1 most owes a usable route to. The file
          stays linked because it works when nothing else does. */
-      p.push(`<a class="act" href="https://github.com/${REPO}/issues/new`
-        +`?template=vote.yml&title=${encodeURIComponent("Vote: PR #"+pr.number)}&pr=${pr.number}">record your position</a>`
-        +` <a class="actalt" href="https://github.com/${REPO}/edit/${encodeURIComponent(pr.head.ref)}/votes/pr-${pr.number}.md">or edit votes/pr-${pr.number}.md yourself</a>`);
+      /* Which window decides is the one the workflow enforces — the Closes: line
+         in the file — because that is what refuses a submission. The computed
+         countdown is the fallback only when the file states nothing readable. */
+      const enforced=vote.closes||win.closes||null;
+      const over=enforced?+enforced<=Date.now():false;
+      if(over){
+        /* The action used to stay live after the window closed, inviting
+           somebody to fill in a form the workflow would refuse. What replaces it
+           is what actually happens next, rather than nothing. */
+        p.push(`<span class="quiet">The window closed ${fmt(enforced)}, so a position submitted now is refused.
+          Next: a Record Keeper writes the result into the file with the arithmetic shown, and verifies it
+          before merging (§3).</span> <a class="actalt" href="https://github.com/${REPO}/blob/${encodeURIComponent(pr.head.ref)}/votes/pr-${pr.number}.md">read votes/pr-${pr.number}.md</a>`);
+      } else {
+        p.push(`<a class="act" href="https://github.com/${REPO}/issues/new`
+          +`?template=vote.yml&title=${encodeURIComponent("Vote: PR #"+pr.number)}&pr=${pr.number}">record your position</a>`
+          +` <a class="actalt" href="https://github.com/${REPO}/edit/${encodeURIComponent(pr.head.ref)}/votes/pr-${pr.number}.md">or edit votes/pr-${pr.number}.md yourself</a>`);
+      }
       /* A member whose row was cleared by a restart reads "awaiting you" and has
          no way to know their earlier position was wiped, unless the page says so. */
       if(vote.rounds>1) p.unshift(`<span class="q7">round ${vote.rounds}</span>`
