@@ -36,6 +36,8 @@ Merging reports that the rules block it and offers a bypass. That is the permiss
 
 Requiring no approving review is deliberate: a Layer 2 proposal needs no endorsement, so a required approval would have forced a procedural click that the dashboard would then have counted as an endorsement.
 
+**Merge is the only method allowed.** A vote is recorded one commit per position, each authored by the member whose position it is — that authorship is half of how a vote is attributed, and `git log` on the vote file is what Section 3 gives a Record Keeper to verify against. Squash collapses every one of those commits into a single commit authored by whoever pressed the button, and rebase rewrites them onto new hashes. Merge is also the only method that keeps the branch's own history, which is where a restarted vote's earlier rounds live.
+
 ## What this does not do
 
 **It creates no duty.** Every requirement the templates ask for — the layer and its reasoning, the `Observed by:` line, hypothesis and success criteria for experiments — is already imposed by Section 2. Nothing here adds a requirement, and no proposal is invalid for having been filed without these tools. Blank issues remain enabled.

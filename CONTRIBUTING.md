@@ -320,11 +320,12 @@ The Record Keeper announces the result in the governance channel with a link to 
 
 ## What GitHub enforces, and what it cannot
 
-`main` is protected by a repository ruleset, recorded in `.github/ruleset-main.json` so the configuration is reviewable here rather than visible only to administrators. It enforces three things:
+`main` is protected by a repository ruleset, recorded in `.github/ruleset-main.json` so the configuration is reviewable here rather than visible only to administrators. It enforces four things:
 
 - **Every change arrives as a pull request.** Nobody commits to `main` directly.
 - **The branch cannot be deleted or force-pushed**, so the history cannot be quietly rewritten.
 - **Only organisation administrators can merge** — currently the two Record Keepers, which is what Constitution §3 means by *"the only members with merge access"*.
+- **Merge is the only merge method.** Squash would collapse every per-position commit on a vote into one, authored by whoever pressed the button. That authorship is half of how a vote is attributed, and `git log` on the vote file is what a Record Keeper verifies against.
 
 > **Merging will tell you the rules block it, and offer to bypass.** That is expected, and it is not a violation. The ruleset restricts who may update `main`, and organisation administrators are the exception that makes merging possible for the Record Keepers and nobody else — so GitHub presents the permission as an override. Take the bypass. What it does not excuse is skipping the verification the bypass exists for: that the deliberation period actually ran, and that the recorded outcome matches it.
 
