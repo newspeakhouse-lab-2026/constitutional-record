@@ -57,6 +57,9 @@ A header, one table, a result, and the objections in full. The template is
 
 The member it belongs to.
 
+An AI agent is not on that list: Section 1 gives it "no membership, no vote, and
+no standing", so it may draft a row and never write one.
+
 Where a member does not or cannot use GitHub, **the Convener writes the row and
 says so in the commit message.** Section 1 requires a reasonably equivalent route
 for any member who cannot use the tooling, and this is it. It is never recorded

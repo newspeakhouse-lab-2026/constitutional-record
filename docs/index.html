@@ -787,6 +787,13 @@ function render(d){
       const parts=[`@${esc(e.m.user?e.m.user.login:"unknown")}`];
       if(e.amends.length) parts.push(`<span class="warnish">amended the Constitution</span> `
         + e.amends.map(a=>`<a href="${a.url}">${a.sha}</a>`).join(", "));
+      /* Whether a vote was recorded alongside what merged. Free: the tree of
+         main is already in hand, so this is a lookup rather than a request —
+         and the file itself is one click away, which is where the arithmetic
+         should be read rather than restated here. */
+      const vpath=`votes/pr-${e.m.number}.md`;
+      if((d.shas||{})[vpath])
+        parts.push(`<a href="https://github.com/${REPO}/blob/main/${vpath}">vote recorded</a>`);
       const meta=parts.join(" &middot; ");
       return row("",`<span class="num">#${e.m.number}</span><a href="${e.m.html_url}">${esc(e.m.title)}</a>`,
         meta,"",fmt(e.at),"idle");
