@@ -1,0 +1,3 @@
+# check-record.py imports tally.py, so Python caches bytecode beside them.
+__pycache__/
+*.pyc

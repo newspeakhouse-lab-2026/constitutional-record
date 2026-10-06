@@ -16,6 +16,7 @@ on:
       - 'docs/data.json'
       - 'rules/**'
       - 'policies/**'
+      - 'votes/**'
       - '.github/workflows/label-proposals.yml'
       - '.github/scripts/**'
   workflow_dispatch:
@@ -37,3 +38,9 @@ jobs:
       # means the workflow would mislabel a proposal.
       - name: Test the labelling workflow's logic
         run: node .github/scripts/test-label-proposals.mjs
+
+      # The arithmetic every vote depends on, against the worked cases in
+      # vote-cases.json. A failure here means a vote would be counted wrongly,
+      # so unlike the Record check it fails the pull request.
+      - name: Test the vote arithmetic
+        run: python3 .github/scripts/test-tally.py

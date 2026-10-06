@@ -98,7 +98,10 @@ def main():
 
     # 1 — quotes still present
     entries = [("procedures." + k, v) for k, v in data.get("procedures", {}).items()]
+    entries += [("thresholds." + k, v) for k, v in data.get("thresholds", {}).items()]
     entries += [("fixed[%d]" % i, v) for i, v in enumerate(data.get("fixed", []))]
+    if "rounding" in data:
+        entries.append(("rounding", data["rounding"]))
     for name, e in entries if cn else []:
         if "quote" not in e:
             warn("docs/data.json", f"{name} has no quote, so nothing can verify it against the Constitution")
@@ -170,6 +173,35 @@ def main():
                        "so its expiry will not appear on the dashboard. Add one, for example: "
                        "**Ends:** 23:59 UK time, Monday 30 November 2026 "
                        "(`2026-11-30T23:59:00+00:00`) — reason")
+
+    # 4 — a vote's written result still matches its own rows
+    #
+    # Warns, never decides. Section 3 gives the outcome to a Record Keeper; this
+    # only makes a disagreement visible, because the likeliest failure here is
+    # two people counting Tier C differently in good faith, not an attack.
+    import tally
+    for path in sorted(glob.glob("votes/*.md")):
+        text = read(path)
+        if text is None:
+            continue
+        parsed, err = tally.parse(text)
+        if err:
+            warn(path, f"this vote cannot be recounted: {err}")
+            continue
+        got = tally.tally(parsed["procedure"], parsed["roll"], parsed["counts"],
+                          data.get("thresholds", {}), parsed["excluded"])
+        stated = re.search(r"^\*\*(Carried|Did not carry)\b", re.sub(r"<!--.*?-->", "", text, flags=re.S), re.M)
+        if not stated:
+            continue  # no result written yet: an open vote, not a defect
+        said = stated.group(1) == "Carried"
+        if got.get("verdict") == "none":
+            warn(path, f'the result says "{stated.group(1)}", but {got["note"]} for this procedure, '
+                       f"so no arithmetic can confirm it. Record who decided and on what reading.")
+        elif got.get("carried") is not None and said != got["carried"]:
+            warn(path, f'the result says "{stated.group(1)}" but recounting the rows gives '
+                       f'"{"Carried" if got["carried"] else "Did not carry"}" — '
+                       f"{got['counts']['preference']} preference of {got.get('denominator')}, "
+                       f"needed {got.get('required')}. One of the two is wrong.")
 
     print(f"\n{len(warnings)} warning(s).")
     summary = __import__("os").environ.get("GITHUB_STEP_SUMMARY")
