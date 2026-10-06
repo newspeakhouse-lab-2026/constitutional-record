@@ -97,6 +97,7 @@
   .actalt{display:inline-block;padding:.25rem .3rem;color:var(--muted);
     text-decoration:underline;text-underline-offset:2px;min-height:1.9rem;line-height:1.4}
   .actalt:hover{color:var(--ink)}
+  .await{color:var(--ink)}                    /* who has not answered is the actionable part */
   /* Reference material is genuinely static; live signals a tier below the clocks
      — quiet counters, comment counts, endorsement progress — are not, and were
      styled as though they were. */
@@ -733,17 +734,18 @@ function render(d){
         ? `<strong>${vote.affirmative} toward the ${vote.required} needed</strong>`
         : `<strong>${vote.affirmative} preference</strong> — this vote states no threshold`);
       p.push(POS.map(k=>`${k} ${c[k]}`).join(" · "));
-      if(vote.awaiting.length) p.push("awaiting "+vote.awaiting.slice(0,4).map(esc).join(", ")
-        +(vote.awaiting.length>4?` and ${vote.awaiting.length-4} more`:""));
+      /* Every name, never "and N more". Silence is the failure mode, so the
+         list of who has not answered is the most actionable thing on the row —
+         and truncating it hides exactly the people who need chasing. Fourteen
+         names is the worst case. */
+      if(vote.awaiting.length) p.push(`<span class="await">awaiting ${vote.awaiting.map(esc).join(", ")}</span>`);
       /* The form first, the file second. Opening an issue needs only read
          access, so it is the one route that works for a member who cannot push
          — and those are the members §1 most owes a usable route to. The file
          stays linked because it works when nothing else does. */
       p.push(`<a class="act" href="https://github.com/${REPO}/issues/new`
         +`?template=vote.yml&title=${encodeURIComponent("Vote: PR #"+pr.number)}&pr=${pr.number}">record your position</a>`
-        +` <a class="actalt" href="https://github.com/${REPO}/issues/new`
-        +`?template=objection.yml&title=${encodeURIComponent("Objection: PR #"+pr.number)}&pr=${pr.number}">or object</a>`
-        +` <a class="actalt" href="https://github.com/${REPO}/edit/${encodeURIComponent(pr.head.ref)}/votes/pr-${pr.number}.md">or edit the file</a>`);
+        +` <a class="actalt" href="https://github.com/${REPO}/edit/${encodeURIComponent(pr.head.ref)}/votes/pr-${pr.number}.md">or edit votes/pr-${pr.number}.md yourself</a>`);
       /* A member whose row was cleared by a restart reads "awaiting you" and has
          no way to know their earlier position was wiped, unless the page says so. */
       if(vote.rounds>1) p.unshift(`<span class="q7">round ${vote.rounds}</span>`

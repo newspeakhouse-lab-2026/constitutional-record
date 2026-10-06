@@ -1,5 +1,4 @@
-# Writes a member's position into votes/pr-{n}.md when they submit the vote or
-# objection form.
+# Writes a member's position into votes/pr-{n}.md when they submit the vote form.
 #
 # The issue proves it was you, at the time — GitHub generated the author id and
 # the submitter cannot forge it. Git carries the claim forever. Nothing
@@ -51,8 +50,7 @@ jobs:
             const labels = (issue.labels || []).map(l => l.name);
             const title = issue.title || '';
             const isVote = labels.includes('vote') || /^Vote:\s*PR\s*#/i.test(title);
-            const isObjection = labels.includes('objection') || /^Objection:\s*PR\s*#/i.test(title);
-            if (!isVote && !isObjection) return;          // not ours; say nothing
+            if (!isVote) return;                          // not ours; say nothing
 
             const POS = ['preference', 'toleration', 'abstention', 'objection'];
             const DEFAULT_BRANCH = context.payload.repository.default_branch;
@@ -107,8 +105,8 @@ jobs:
               pr: 'Pull request number',
               position: 'Your position',
               note: 'Anything that would move your position',
-              reason: 'Your reason',
-              route: 'A suggested route forward',
+              reason: 'Your reason — required if you are objecting',
+              route: 'A suggested route forward — required if you are objecting',
               discussion: 'Link to the discussion',
             };
             function fields(body) {
@@ -122,7 +120,11 @@ jobs:
               return out;
             }
             const f = fields(issue.body);
-            const need = isObjection ? ['pr', 'reason', 'route'] : ['pr', 'position'];
+            // One form now, so one shape. Reason and route are asked for from
+            // everyone and required only from an objection — a form cannot make
+            // a field conditionally required, but this can, and has to anyway:
+            // an issue created through the API arrives with whatever it likes.
+            const need = ['pr', 'position'];
             const missingHeading = need.find(k => !(LABELS[k] in f));
             if (missingHeading) {
               /* A label is applied by the form, so its presence means the form
@@ -134,10 +136,11 @@ jobs:
                 return refuse(
                   `This issue looks like a vote, but it was not filed through the form, so the fields ` +
                   `needed to record a position are not here.\n\n` +
-                  `Use **Record a position on a vote** or **Raise an objection** from ` +
+                  `Use **Record a position on a vote** from ` +
                   `[New issue](https://github.com/${owner}/${repo}/issues/new/choose) — ` +
-                  `the form asks for the pull request number and your position, and this workflow writes ` +
-                  `your row. Nothing is wrong with what you did; there is just nothing here to record yet.`);
+                  `it asks for the pull request number and your position, and for an objection the two ` +
+                  `things Section 2 requires. This workflow then writes your row. Nothing is wrong with ` +
+                  `what you did; there is just nothing here to record yet.`);
               }
               return brokenTooling(
                 `This workflow could not find the **${LABELS[missingHeading]}** field it expects from ` +
@@ -260,9 +263,14 @@ jobs:
             }
 
             // --- position ---------------------------------------------------
-            let position;
+            const picked = String(f[LABELS.position] || '').trim().split(/\s+[—-]\s+/)[0].toLowerCase();
+            if (!POS.includes(picked)) {
+              return brokenTooling(`The form offered a position this workflow does not recognise ` +
+                `(\`${picked.slice(0, 40)}\`). The dropdown and the workflow have drifted.`);
+            }
+            const position = picked;
+            const isObjection = position === 'objection';
             if (isObjection) {
-              position = 'objection';
               const reason = String(f[LABELS.reason] || '').trim();
               const route = String(f[LABELS.route] || '').trim();
               // Requiredness in an issue form is a web-UI constraint only: an
@@ -281,18 +289,6 @@ jobs:
                   `route forward, so that raising a concern moves the cohort closer to a decision rather`,
                   `than simply halting it."*`,
                 ].join('\n'), branch, n);
-              }
-            } else {
-              const picked = String(f[LABELS.position] || '').trim().split(/\s+[—-]\s+/)[0].toLowerCase();
-              if (!POS.includes(picked)) {
-                return brokenTooling(`The form offered a position this workflow does not recognise ` +
-                  `(\`${picked.slice(0, 40)}\`). The dropdown and the workflow have drifted.`);
-              }
-              position = picked;
-              if (position === 'objection') {
-                return refuse(`An objection needs a reason and a suggested route forward, which Section 2 ` +
-                  `requires and the vote form does not ask for. Please use the **Raise an objection** form ` +
-                  `instead — nothing has been written, and your objection is not weakened by this.`, branch, n);
               }
             }
 
@@ -469,6 +465,12 @@ jobs:
                   '**Nothing has carried.** What carries is decided by the Constitution and verified by a',
                   'Record Keeper (Section 3). This is a transcription and nothing more.',
                 ].join('\n'));
+                /* One form means everything arrives labelled `vote`. An
+                   objection moves an Ordinary proposal up a tier (§2), so it has
+                   to stay findable. */
+                if (isObjection) await github.rest.issues.addLabels({
+                  owner, repo, issue_number: issue.number, labels: ['objection'],
+                }).catch(() => {});
                 return close('vote-recorded');
               } catch (e) {
                 const stale = e.status === 409 || (e.status === 422 && /sha|does not match|expected/i.test(e.message || ''));

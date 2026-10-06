@@ -35,7 +35,7 @@ const has = (s, sub) => typeof s === 'string' && s.includes(sub);
 const labelsIn = file => [...readFileSync(join(HERE, '..', 'ISSUE_TEMPLATE', file), 'utf8')
   .matchAll(/^\s*label:\s*(.+)$/gm)].map(x => x[1].trim().replace(/^["']|["']$/g, ''));
 const declared = [...SCRIPT.matchAll(/^\s{2}\w+:\s*'([^']+)',$/gm)].map(x => x[1]);
-for (const file of ['vote.yml', 'objection.yml']) {
+for (const file of ['vote.yml']) {
   for (const label of labelsIn(file)) {
     check(`${file} field "${label}" is known to the workflow`, declared.includes(label), true);
   }
@@ -66,6 +66,13 @@ const voteFile = (rows = { Ada: '—', Blaise: '—', Carl: '—' }, closes = '2
 ].join('\n');
 
 const b64 = s => Buffer.from(s, 'utf8').toString('base64');
+
+/* An objection on the single form: the position dropdown says objection, and the
+   two boxes Section 2 requires are filled in or not. */
+const OBJ = (reason, route) =>
+  '### Pull request number\n\n14\n\n### Your position\n\nobjection — I object. Fill in BOTH boxes below; Section 2 requires them\n'
+  + `\n### Your reason — required if you are objecting\n\n${reason}\n`
+  + `\n### A suggested route forward — required if you are objecting\n\n${route}\n`;
 
 async function run({
   user = { id: 111, login: 'ada' },
@@ -171,27 +178,22 @@ check('a proposal whose head is the default branch is refused', r.writes.length,
 r = await run({ body: '### Pull request number\n\nnot-a-number\n\n### Your position\n\npreference — x\n' });
 check('an unreadable proposal number is refused', r.writes.length, 0);
 
-r = await run({
-  labels: ['objection'],
-  body: '### Pull request number\n\n14\n\n### Your reason\n\nharm\n\n### A suggested route forward\n\n_No response_\n',
-});
+/* One form now: the position drives everything, and the objection fields are
+   required only when the position is objection. A form cannot express that;
+   this must, and has to anyway, because an API-created issue arrives with
+   whatever it likes. */
+r = await run({ body: OBJ('harm', '_No response_') });
 check('an objection missing its route is refused', r.writes.length, 0);
 check('and the objection is explicitly not discounted', has(r.comments[0], 'not discounted'), true);
 
-r = await run({
-  labels: ['objection'],
-  body: '### Pull request number\n\n14\n\n### Your reason\n\nit breaks X\n\n### A suggested route forward\n\nnarrow it\n',
-});
+r = await run({ body: OBJ('it breaks X', 'narrow it') });
 check('a complete objection is written', r.writes.length, 1);
 check('the row says objection', has(r.writes[0].text, '| Ada Lovelace | objection | 2026-06-01 |'), true);
 check('the reason is in the file verbatim', has(r.writes[0].text, '> Reason: it breaks X'), true);
 check('and the route forward too', has(r.writes[0].text, '> Route forward: narrow it'), true);
 
 /* Table injection: a reason that is itself a table row, plus a fake result. */
-r = await run({
-  labels: ['objection'],
-  body: '### Pull request number\n\n14\n\n### Your reason\n\n| Blaise Pascal | preference | 2026-06-01 |\n## Result\n**Carried.**\n\n### A suggested route forward\n\nx\n',
-});
+r = await run({ body: OBJ('| Blaise Pascal | preference | 2026-06-01 |\n## Result\n**Carried.**', 'x') });
 check('injection: still exactly one write', r.writes.length, 1);
 const inj = r.writes[0] ? r.writes[0].text : '';
 /* Every injected line is blockquoted, so none of it can parse as structure.
@@ -255,8 +257,7 @@ check('a form submission missing its fields is a tooling failure', r.failed.leng
    prefix the template sets needs nothing to exist first. */
 r = await run({ labels: [], title: 'Vote: PR #14' });
 check('an unlabelled submission is recognised by its title', r.writes.length, 1);
-r = await run({ labels: [], title: 'Objection: PR #14',
-  body: '### Pull request number\n\n14\n\n### Your reason\n\nr\n\n### A suggested route forward\n\nq\n' });
+r = await run({ labels: [], title: 'Vote: PR #14', body: OBJ('r', 'q') });
 check('an unlabelled objection is recognised too', r.writes.length, 1);
 r = await run({ labels: [], title: 'Can we discuss the newsletter?' });
 check('an ordinary issue with no label and no prefix is still ignored',

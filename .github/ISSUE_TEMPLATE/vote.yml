@@ -1,22 +1,20 @@
 name: "Record a position on a vote"
-description: State preference, toleration or abstention on an open vote. A workflow writes your row for you.
+description: Say preference, toleration, abstention or objection on an open vote. A workflow writes your row for you.
 title: "Vote: PR #"
 labels: ["vote"]
 body:
   - type: markdown
     attributes:
       value: |
-        **Only `preference` counts as a yes.** At Layer 3, Layer 4 and re-ratification, the Constitution asks for affirmative support from a fraction of *all* members — so toleration, abstention and never answering are the same number. None of them is a yes.
+        **Only `preference` counts as a yes.** At Layer 3, Layer 4 and re-ratification the Constitution asks for affirmative support from a fraction of *all* members — so toleration, abstention and never answering are the same number. None of them is a yes.
 
-        This form does not decide anything. A workflow writes your row into `votes/pr-{number}.md` on the proposal's own branch, as you, and replies with a link to the commit. If it cannot, it says so and you edit the file directly — that always works.
-
-        **To object, use the other form.** An objection has to carry a reason and a suggested route forward (Section 2), which this one does not ask for.
+        A workflow writes your row into `votes/pr-{number}.md` on the proposal's own branch, as you, and replies with a link to the commit. If it cannot, it says why, and you can edit the file directly — that always works.
 
   - type: input
     id: pr
     attributes:
       label: Pull request number
-      description: Digits only. The proposal you are voting on — a vote belongs to the pull request carrying the text, because an issue adopts nothing.
+      description: Digits only. A vote belongs to the pull request carrying the text, because an issue adopts nothing.
       placeholder: "14"
     validations:
       required: true
@@ -30,19 +28,37 @@ body:
         - "preference — I support this outcome. THE ONLY ANSWER THAT COUNTS AS A YES"
         - "toleration — I may not be in favour, but I have no reasoned objection. Counted as an abstention, not a yes"
         - "abstention — I do not take a position. Not a yes"
-        - "objection — I object. USE THE OBJECTION FORM INSTEAD: Section 2 requires a reason and a route forward"
+        - "objection — I object. Fill in BOTH boxes below; Section 2 requires them"
     validations:
       required: true
 
   - type: textarea
-    id: note
+    id: reason
     attributes:
-      label: Anything that would move your position
-      description: "Optional. Section 2 invites this, especially alongside a toleration: saying what would make it a preference, or an objection, is how a proposal gets better before it closes. Written into the vote file under Notes."
+      label: Your reason — required if you are objecting
+      description: "Leave empty unless you chose **objection**. Section 2 asks for an objection on the basis of potential harm to the Laboratory: what is the harm, and to whom? Written into the vote file word for word."
+    validations:
+      required: false
+
+  - type: textarea
+    id: route
+    attributes:
+      label: A suggested route forward — required if you are objecting
+      description: "Leave empty unless you chose **objection**. Section 2: an objection is offered alongside a route forward, *\"so that raising a concern moves the cohort closer to a decision rather than simply halting it.\"* It need not be a solution you are confident in — it has to be something the cohort can act on."
+    validations:
+      required: false
+
+  - type: input
+    id: discussion
+    attributes:
+      label: Link to the discussion
+      description: Optional. Where this was argued, for context. The operative sentences still go above, in the file.
     validations:
       required: false
 
   - type: markdown
     attributes:
       value: |
-        Changed your mind? Submit this again while the window is open — your row is updated, not duplicated, and the earlier one stays in the file's history.
+        **An objection missing a part is never discounted.** If something is incomplete you will be asked for the rest; nobody may treat your concern as absent because a box was blank. It stands as deliberation from the moment you raise it, and one objection moves an Ordinary proposal up a tier — never down.
+
+        Changed your mind? Submit this again while the window is open. Your row is updated, not duplicated, and the earlier one stays in the file's history.
