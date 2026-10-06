@@ -86,7 +86,10 @@
   .urgent .rem{color:var(--urgent)}
   .soon .rem{color:var(--soon)}
   .idle .rem{color:var(--faint);font-weight:400;font-size:.76rem}
-  .q7{color:var(--soon);font-weight:500}      /* genuine staleness only */
+  /* Staleness, and nothing else. A misconfiguration is .clash, a lost vote is
+     .clash, and a round number is a fact needing no colour at all — this class
+     meant all four at once while its comment said it meant one. */
+  .q7{color:var(--soon);font-weight:500}
   .quiet{color:var(--muted)}                  /* informational, not a warning */
   .await{color:var(--ink);font-size:.75rem}   /* who has not answered is the actionable part */
   /* --urgent, and it earns it: two closing times that disagree means a member
@@ -828,7 +831,7 @@ function render(d){
     if(win.endorse) bits.push(`${win.endorse.have}/${win.endorse.need} endorsed`);
     const rev=(pr.requested_reviewers||[]).map(r=>"@"+esc(r.login));
     if(rev.length) bits.push(`review requested from ${rev.join(", ")}`);
-    if(pr.base&&pr.base.ref!=="main") bits.push(`<span class="q7">targets ${esc(pr.base.ref)}, not main</span>`);
+    if(pr.base&&pr.base.ref!=="main") bits.push(`<span class="clash">targets ${esc(pr.base.ref)}, not main</span>`);
     if(resolves.length) bits.push("resolves "+resolves.map(n=>`#${n}`).join(", "));
     const meta=tags+bits.join(" · ");
 
@@ -868,7 +871,7 @@ function render(d){
           workflow enforces that. This page shows none because the proposal records no opening it can read.</p>`);
       /* A member whose row was cleared by a restart reads "awaiting you" and has
          no way to know their earlier position was wiped, unless the page says so. */
-      if(vote.rounds>1) L.push(`<p class="vnote"><span class="q7">Round ${vote.rounds}</span>`
+      if(vote.rounds>1) L.push(`<p class="vnote"><strong>Round ${vote.rounds}</strong>`
         +(vote.restarted?` · restarted ${esc(vote.restarted)}`:"")
         +` · earlier positions cleared</p>`);
 
@@ -914,7 +917,7 @@ function render(d){
          nobody was told anything — which is why it belongs here rather than
          only on the issue. */
       const failed=(d.stuckVotes||[]).filter(i=>+((i.title.match(/#(\d+)/)||[])[1])===pr.number);
-      if(failed.length) L.push(`<p class="vnote"><span class="q7">${failed.length} submission${failed.length>1?"s":""} did not record:</span> `
+      if(failed.length) L.push(`<p class="vnote"><span class="clash">${failed.length} submission${failed.length>1?"s":""} did not record:</span> `
         +failed.map(i=>`<a href="${i.html_url}">#${i.number}</a>`).join(", ")+`</p>`);
 
       /* ---- 2. what counts as a yes. It sat three clauses AFTER the button, so
@@ -1089,7 +1092,7 @@ function render(d){
           /* A proposal that failed once and passed after amendment is a different
              thing from one that passed first time, and §1's amendment record asks
              how a decision was made. The detail is in the file. */
-          if(mv.rounds>1) bits.push(`<span class="q7">after ${mv.rounds} rounds</span>`);
+          if(mv.rounds>1) bits.push(`after ${mv.rounds} rounds`);
         } else bits.push(`<strong>vote recorded</strong>, with no result written into it`);
         bits.push(`<a href="https://github.com/${REPO}/blob/main/${vpath}">the vote</a>`);
         voteLine=bits.join(" · ");
