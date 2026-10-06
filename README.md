@@ -28,6 +28,7 @@ A time-limited experiment takes the `exp-` prefix at whatever layer it belongs t
 | `members.md` | Authoritative membership. Every threshold is a fraction of this. |
 | `roles.md` | Current role holders and when their terms end, maintained by the Record Keepers. |
 | `rules/` | Standalone Ordinary Rules. |
+| `votes/` | One file per proposal that voted, named for its pull request. Every member listed, the result with its arithmetic, objections in full. |
 | `policies/` | One folder per governed area. **None yet** — the first Policy resolution creates one. |
 | `disputes/` | Adjudication decisions. **None yet.** |
 | `CONTRIBUTING.md` | **How to propose, deliberate and record a decision.** Start here. |
@@ -38,7 +39,7 @@ A time-limited experiment takes the `exp-` prefix at whatever layer it belongs t
 
 Put the text on a branch and open a pull request — that is the proposal of record, and its template asks for everything the Constitution requires, including the reasoning behind your layer classification. If you want to propose something before drafting the text, open an issue with the Proposal form first. Full walkthrough in [CONTRIBUTING.md](CONTRIBUTING.md) — no command line needed.
 
-Deliberation happens here, in the governance channel, and in meetings. Voting happens as the Constitution specifies for the layer; **GitHub is not the voting platform.** A Record Keeper merges once the process has been verified, which is a clerical act and not a second vote.
+Deliberation happens here, in the governance channel, and in meetings. **A position may be stated anywhere** — in the channel, in person, by message — and stating it is the vote. Where a procedure votes, the positions are then written into `votes/pr-{number}.md` on the proposal's branch, so the evidence sits beside the text it decided. A Record Keeper merges once the process has been verified, which is a clerical act and not a second vote.
 
 If GitHub is a barrier for you, it must not cost you a right: the Convener provides a reasonably equivalent route, and anything submitted that way is recorded as the Constitution otherwise requires.
 

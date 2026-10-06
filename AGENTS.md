@@ -126,7 +126,7 @@ Determined by **actual effect**, never by convenience. Where two layers are argu
 | Layer 3 Policy | 1 endorsement + preference mapping + 7 days; **majority of all members** |
 | Layer 4 Constitutional | 2 endorsing reviews + 7 days; **two-thirds of all members** |
 | Emergency | Majority of those voting within 12h, quorum of **half**; expires after 7 days unless confirmed |
-| Re-ratification (§5) | 7 days, entered no later than 23 November; **two-thirds of all members** |
+| Re-ratification (§5) | 7 days, entered by the date §5 sets; **two-thirds of all members** |
 | Removal from membership (§4) | **two-thirds of all members other than the respondent** |
 | Adjudication remedy (§4) | **two-thirds of the other members who vote**, quorum **half of all other members** |
 
