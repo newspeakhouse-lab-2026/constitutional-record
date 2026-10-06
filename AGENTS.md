@@ -116,17 +116,23 @@ Determined by **actual effect**, never by convenience. Where two layers are argu
 
 ## Procedures and thresholds
 
-**14 members** (`members.md`, 2026-09-20). Fractions of all members **round up**. Recompute if membership changes.
+**Never state a threshold as a number from memory.** Count the rows in `members.md` and compute, every time. A count written down goes stale the moment membership changes; a fraction does not.
 
 | Procedure | Requirement |
 |---|---|
 | Tier A (Ordinary) | 48h **visible in the governance channel**; passes absent a stated objection |
 | Tier B (Ordinary) | Stated period under 7 days; passes absent a stated objection |
-| Tier C (Ordinary) | ≥7 days; simple majority of those voting; **quorum 7** |
-| Layer 3 Policy | 1 endorsement + preference mapping + 7 days; **8 affirmative** |
-| Layer 4 Constitutional | 2 endorsing reviews + 7 days; **10 affirmative** |
-| Emergency | Majority of those voting within 12h; **quorum 7**; expires after 7 days unless confirmed |
-| Removal from membership | **9 affirmative** (two-thirds of all but the respondent) |
+| Tier C (Ordinary) | ≥7 days; **simple majority of those voting**, quorum of **half of all members** |
+| Layer 3 Policy | 1 endorsement + preference mapping + 7 days; **majority of all members** |
+| Layer 4 Constitutional | 2 endorsing reviews + 7 days; **two-thirds of all members** |
+| Emergency | Majority of those voting within 12h, quorum of **half**; expires after 7 days unless confirmed |
+| Re-ratification (§5) | 7 days, entered no later than 23 November; **two-thirds of all members** |
+| Removal from membership (§4) | **two-thirds of all members other than the respondent** |
+| Adjudication remedy (§4) | **two-thirds of the other members who vote**, quorum **half of all other members** |
+
+**Two rounding rules, and they differ on an even roll.** A named fraction rounds up — two-thirds of 14 is 10. A **majority is more than half** — a majority of 14 is 8, not 7, so a 7–7 split fails. §2's "fractions round up" sentence reaches only the first, and using `ceil` for a majority is the mistake that carries a tied vote.
+
+`.github/scripts/tally.py` does this arithmetic and shows its working; the fractions it uses live in `docs/data.json`, each carrying the sentence it was read from. Run it rather than counting by hand, and report what it prints.
 
 One stated objection moves an Ordinary proposal **up** a tier, never down. "Those who vote" means Preference or Objection; Toleration and Abstention count toward quorum, not the denominator. At Layers 3 and 4, **prefer** is affirmative, **tolerate** is abstention, **object** is opposition; non-response and abstention never count toward an affirmative threshold. "All members" means those entitled to vote **when the vote opens**. A material change restarts a deliberation period; a correction that does not change meaning does not.
 
@@ -155,7 +161,7 @@ Before filing, check these too, and report what is missing rather than quietly f
 |---|---|
 | `.github/pull_request_template.md` | Pre-fills every pull request. It asks for the layer and its reasoning, the tier, the deliberation period, `Observed by:`, conflicts searched, source of authority for Layers 3 and 4, experiment fields, and the amendment record. **Fill it rather than replacing it** — a member's proposal is judged on what it contains. |
 | `.github/ISSUE_TEMPLATE/proposal.yml` | One issue form for proposing before any text exists. Three required fields: layer, what is proposed, and why that layer. |
-| `.github/instrument-templates/` | Skeletons for a rule, a policy and a record of an adjudication, each naming the path it belongs at. The dashboard's *Start a proposal* button opens GitHub's editor prefilled with one. Read the right one before drafting rather than inventing a shape. |
+| `.github/instrument-templates/` | Skeletons for a rule, a policy, a record of an adjudication and a vote, each naming the path it belongs at. The dashboard's *Start a proposal* button opens GitHub's editor prefilled with one. Read the right one before drafting rather than inventing a shape. |
 | `.github/workflows/label-proposals.yml` | Reads the pull request body and applies `layer-*`, `tier-*` and `days-*` labels; records `opened:` and `endorsed:`. It comments rather than failing when it cannot read a layer. |
 | `.github/workflows/check-record.yml` | Warns when the dashboard's figures no longer match the Record. Never fails a pull request. |
 | `docs/` | The dashboard, read live from the Record. `docs/data.json` holds the constitutional facts it cannot derive. |

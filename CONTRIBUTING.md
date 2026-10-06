@@ -17,7 +17,7 @@ Almost all Laboratory members have write access, which is what lets you push a b
 | Propose a new rule | Create a branch with the file → **Propose changes**. An issue first is optional, for proposing before the text exists |
 | Amend an existing rule | Open file → pencil icon → **Commit changes** → new branch → **Propose changes** |
 | Discuss a proposal | Comment on the pull request |
-| Record a vote result | Comment on the pull request with the evidence in step 6 |
+| Record a vote | Your row in `votes/pr-{number}.md` on the proposal's branch — step 6 |
 | See what's being proposed | Open pull requests, open issues, **and** `git branch -a` — drafts live in branches |
 | See the full history of a rule | Open the file → **History** |
 | See all current rules | Browse the repo on `main` |
@@ -68,6 +68,8 @@ policies/
     rationale.md                     Reasoning, explicitly not operative
 rules/
   rule-{name}.md                     Layer 2 — Standalone rules, no policy area or crossing several
+votes/
+  pr-{number}.md                     Positions on one proposal, beside the text it decides
 disputes/
   dispute-{date}-{name}.md           A decision, binding on the parties only
 AGENTS.md                            Instructions for members' AI agents
@@ -76,7 +78,7 @@ CONTRIBUTING.md                      This guide
 .github/
   ISSUE_TEMPLATE/                    The Proposal form
   pull_request_template.md           What every pull request is asked for
-  instrument-templates/              Skeletons for a rule, a policy, an adjudication
+  instrument-templates/              Skeletons for a rule, a policy, an adjudication, a vote
   workflows/, scripts/               Labelling, and checks that warn rather than block
   ruleset-main.json                  A copy of the branch protection on main
 ```
@@ -115,7 +117,7 @@ Every amendment follows the same arc. The deliberation periods and thresholds di
 | 8 | Deliberate | You. An agent may draft your words; it may never post a position | Channel, pull request, meetings |
 | 9 | Endorsements, where the layer needs them | Other members. Never an agent | Pull request or channel |
 | 10 | Vote | Members. **Never an agent** | As the Constitution specifies — not GitHub |
-| 11 | Record the outcome on the pull request | You, or a Record Keeper | Pull request |
+| 11 | Write the result into `votes/pr-{number}.md`, arithmetic shown | You, or a Record Keeper | The proposal's branch |
 | 12 | Verify the process and merge | A Record Keeper — §3: either may merge | GitHub |
 | 13 | Announce the result | The merging Record Keeper | Governance channel |
 
@@ -280,19 +282,25 @@ In practice an endorsement is an **approving review** on the pull request. The C
 
 ### Voting
 
-Voting happens as the Constitution specifies for the layer — in the governance channel, by show of hands, by anonymous poll, however the Laboratory decides. **GitHub is not the voting platform.**
+Tier A and Tier B hold no vote: they pass unless someone objects. Tier C, Layer 3, Layer 4, re-ratification and the Section 4 procedures do vote.
 
-### Recording the result
+A position may be stated anywhere — in the governance channel, in person, by message. **Stating it is the vote; the file is the evidence of it.** Nobody loses a vote for not using GitHub.
 
-Once the vote concludes, the proposer or a Record Keeper updates the pull request with:
+### Recording a vote
 
-- the vote result and tallies
-- any objections, and how they were addressed
-- any abstentions, in aggregate where the ballot was anonymous
-- a link to the discussion or meeting notes
-- the assumptions the decision rests on, and its status (live, experimental, archived)
+In **`votes/pr-{number}.md`, on the proposal's own branch**, so the evidence merges into the Record beside the text it adopted. Start it from `.github/instrument-templates/vote.md`; the dashboard's *Start a vote* button opens it prefilled.
 
-These are the amendment record fields Section 1 requires. Add them as a comment or in the pull request description.
+One table, one row per member — **all of them, including anyone who has said nothing**, because every threshold is a fraction of the roll and the roll has to be visible for the arithmetic to be checkable.
+
+To record your own position, change your row to `preference`, `toleration`, `abstention` or `objection`, with the date. The dashboard links straight to your file.
+
+> **Only `preference` counts as affirmative support.** At Layer 3, Layer 4 and re-ratification, toleration, abstention and never answering are the same number. None of them is a yes.
+
+**An objection goes in the file, in full** — its reason *and* a suggested route forward, both of which Section 2 requires. A reason that lives only in a pull request comment is not in the Record: `git clone` retrieves none of it. Link the discussion for context; put the operative sentences in the file.
+
+When the window closes, write the result in with the arithmetic shown, so a Record Keeper verifying it under Section 3 has something to verify *against*. `python3 .github/scripts/tally.py votes/pr-{number}.md` recomputes it and prints the working; it is advisory, and a check warns if the written result and the rows disagree.
+
+Section 1's amendment record — the assumptions the decision rests on, its status, explanatory notes — belongs in the same file. **Not in the pull request description:** a merge commit carries only the title, so a description never enters the repository at all.
 
 ### Merging
 

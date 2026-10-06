@@ -19,7 +19,7 @@ convenience. Where two layers are arguable, the more demanding process applies. 
 
 <!-- A — 48h, passes absent a stated objection
      B — a stated period under 7 days, passes absent a stated objection
-     C — 7 days or more, simple majority of those voting, quorum 7
+     C — 7 days or more, simple majority of those voting, quorum of half of all members
 A proposal may enter at any tier. One stated objection moves it up a tier; it
 never moves down. -->
 

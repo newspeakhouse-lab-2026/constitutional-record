@@ -11,8 +11,8 @@ A proposal is classified by its **actual effect**, never by the label its propos
 
 Work down. The first match wins.
 
-1. **Does it change `constitution.md`, or alter rights, thresholds, procedures, or the allocation of authority?** → **Layer 4.** Two endorsing reviews, 7 days, 10 affirmative of 14.
-2. **Does it create or redesign governance for an area?** Creates an office or role, builds a mechanism, establishes an ongoing financial flow, or sets up a standing decision body. → **Layer 3.** One endorsement, preference mapping, 7 days, 8 affirmative of 14.
+1. **Does it change `constitution.md`, or alter rights, thresholds, procedures, or the allocation of authority?** → **Layer 4.** Two endorsing reviews, 7 days, affirmative support from two-thirds of all members.
+2. **Does it create or redesign governance for an area?** Creates an office or role, builds a mechanism, establishes an ongoing financial flow, or sets up a standing decision body. → **Layer 3.** One endorsement, preference mapping, 7 days, affirmative support from a majority of all members.
 3. **Does it change who holds admin access to shared platforms?** → **Layer 3.**
 4. **Does it set or change a specific rule, or a parameter, within an existing frame?** → **Layer 2.** Tier A, B or C.
 5. **Is it short-lived coordination — scheduling, logistics?** → **Layer 1.** Post in the governance channel. No commit.
