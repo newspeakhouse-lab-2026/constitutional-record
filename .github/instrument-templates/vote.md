@@ -27,7 +27,7 @@ Then delete this comment.
 
 # Vote — PR #NNN: <proposal title>
 
-**Procedure:** <Tier C | Layer 3 Policy | Layer 4 Constitutional | Emergency | Re-ratification | §4 remedy | §4 removal>
+**Procedure:** <Tier C | Layer 3 Policy | Layer 4 Constitutional | Emergency | Re-ratification | §3.9 recall | §4 remedy | §4 removal>
 **Carries if:** <the Constitution's own words> — **N of 14**
 **Opened:** 2026-10-06 12:00 UK (`2026-10-06T12:00:00+01:00`)
 **Closes:** 2026-10-13 12:00 UK (`2026-10-13T12:00:00+01:00`)

@@ -82,6 +82,11 @@
   .idle .rem{color:var(--faint);font-weight:400;font-size:.76rem}
   .q7{color:var(--soon);font-weight:500}      /* genuine staleness only */
   .quiet{color:var(--muted)}                  /* informational, not a warning */
+  /* Toleration, abstention and silence are arithmetically identical at Layer 3
+     and above. A member who picks toleration believing it helps has done nothing,
+     and five of those end the Laboratory — so this is the one line on the page
+     that changes outcomes, and it is not styled as metadata. */
+  .yesonly{color:var(--ink);font-weight:600}
   /* Reference material is genuinely static; live signals a tier below the clocks
      — quiet counters, comment counts, endorsement progress — are not, and were
      styled as though they were. */
@@ -733,7 +738,10 @@ function render(d){
       const failed=(d.stuckVotes||[]).filter(i=>+((i.title.match(/#(\d+)/)||[])[1])===pr.number);
       if(failed.length) p.push(`<span class="q7">${failed.length} submission${failed.length>1?"s":""} did not record: `
         +failed.map(i=>`<a href="${i.html_url}">#${i.number}</a>`).join(", ")+`</span>`);
-      voteWhy=p.join(" · ")+` · <span class="quiet">only preference counts as a yes</span>`;
+      /* Not .quiet — that class is for information, and this is the sentence a
+         member most needs to read before choosing. Toleration, abstention and
+         silence are the same number at Layer 3 and above. */
+      voteWhy=p.join(" · ")+` · <strong class="yesonly">only preference counts as a yes</strong>`;
     }else if((d.roll||[]).length){
       /* This procedure votes and no file exists yet, so offer to open one —
          prefilled with the procedure, the threshold computed once from the
