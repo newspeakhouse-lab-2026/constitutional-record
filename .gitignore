@@ -1,3 +1,6 @@
 # check-record.py imports tally.py, so Python caches bytecode beside them.
 __pycache__/
 *.pyc
+
+# Built by tools/preview/build.py. A harness aimed at the sandbox, never committed.
+tools/preview/out/
