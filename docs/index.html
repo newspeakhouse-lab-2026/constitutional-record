@@ -218,7 +218,10 @@ const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&g
 /* A failed read must never look like an empty Record. Everything here either
    returns data or throws; nothing returns null and lets the page render
    emptiness as though it were a finding. */
-class Unreadable extends Error{ constructor(msg,reset){ super(msg); this.reset=reset; } }
+/* Carries the HTTP status, because callers have to tell "GitHub says this does
+   not exist" from "GitHub did not answer". Those mean opposite things about the
+   Record and only one of them is safe to remember. */
+class Unreadable extends Error{ constructor(msg,reset,status){ super(msg); this.reset=reset; this.status=status; } }
 
 /* One store, two ways to read it. Fresh reads respect the TTL; lastGood ignores
    it, so a rate-limited load can still show the Record as it was rather than
@@ -236,11 +239,11 @@ async function api(p){
   if(r.status===403||r.status===429){
     if(r.headers.get("x-ratelimit-remaining")==="0"){
       const reset=new Date(+r.headers.get("x-ratelimit-reset")*1000);
-      throw new Unreadable("rate-limited by GitHub",reset);
+      throw new Unreadable("rate-limited by GitHub",reset,r.status);
     }
-    throw new Unreadable("GitHub refused the request");
+    throw new Unreadable("GitHub refused the request",null,r.status);
   }
-  if(!r.ok) throw new Unreadable(`GitHub returned ${r.status} for ${p}`);
+  if(!r.ok) throw new Unreadable(`GitHub returned ${r.status} for ${p}`,null,r.status);
   const left=r.headers.get("x-ratelimit-remaining");
   if(left!==null) budget=+left;
   const v=await r.json();
@@ -602,6 +605,11 @@ async function collect(){
      does. An empty string is cached too, so a proposal with no vote is asked
      about once. */
   const votes={};
+  /* Reads that failed for a reason that is not "no such file". Counted so the
+     banner can say so: a row whose vote could not be read looks exactly like a
+     row with no vote, and that is the difference between a member seeing an open
+     vote and a member seeing nothing to do. */
+  let voteUnread=0;
   const wins=new Map(prs.map(p=>[p.number,windowOf(p,cfg.procedures||{})]));
   await Promise.all(prs.filter(p=>{
     const w=wins.get(p.number);
@@ -611,11 +619,22 @@ async function collect(){
     let t=null;
     try{ t=localStorage.getItem(k) }catch{}
     if(t===null){
+      let keep=true;
       try{
         const r=await api(`/contents/votes/pr-${p.number}.md?ref=${encodeURIComponent(p.head.ref)}`);
         t=b64(r.content);
-      }catch{ t=""; }   // a 404 is the ordinary case: no vote has been opened
-      try{ localStorage.setItem(k,t) }catch{}
+      }catch(e){
+        /* ONLY a 404 is evidence that no vote has been opened, and only that may
+           be remembered. The empty string used to be cached for any failure at
+           all, keyed on the pull request's updated_at — so one rate-limited
+           response hid an open vote until somebody pushed to the branch, and
+           nothing on the page said a word about it. A cold load costs 25-30 calls
+           against a ceiling of 60 an hour that everyone in the building shares,
+           so being rate-limited is the ordinary case, not the rare one. */
+        t="";
+        if(e.status!==404){ keep=false; voteUnread++; }
+      }
+      if(keep){ try{ localStorage.setItem(k,t) }catch{} }
     }
     if(t){ try{ const v=voteOf(t); if(v) votes[p.number]=v; }catch{} }
   }));
@@ -649,7 +668,7 @@ async function collect(){
   }));
 
   return {
-    cfg, stale, snapshot, checked:!!cText, instruments, roles, ends, amendments, merged, branches, shas:at,
+    cfg, stale, snapshot, voteUnread, checked:!!cText, instruments, roles, ends, amendments, merged, branches, shas:at,
     roll, rollSha, mergedVotes,
     props: prs.map(pr=>({pr,win:wins.get(pr.number),
                          vote:votes[pr.number]||null,
@@ -670,10 +689,20 @@ function render(d){
   // Shown when part of the Record could not be refreshed and is served from the
   // last good copy. Deliberately not a .warn — nothing is wrong with the Record,
   // only with this page's view of it.
-  if(d.snapshot) o.push(`<div class="snap"><strong>Showing the Record as of ${fmt(new Date(d.snapshot.at))}.</strong>
-    GitHub could not be reached just now — most likely the 60-requests-an-hour limit everyone here shares.
-    Anything merged since is not below. Countdowns are still correct: they are computed from the recorded
-    opening, not fetched.</div>`);
+  if(d.snapshot||d.voteUnread){
+    const bits=[];
+    if(d.snapshot) bits.push(`<strong>Showing the Record as of ${fmt(new Date(d.snapshot.at))}.</strong>
+      GitHub could not be reached just now — most likely the 60-requests-an-hour limit everyone here shares.
+      Anything merged since is not below. Countdowns are still correct: they are computed from the recorded
+      opening, not fetched.`);
+    // A vote that could not be read is indistinguishable from a vote that does
+    // not exist, so the page has to say which it is looking at. Nothing is
+    // remembered, so reloading retries.
+    if(d.voteUnread) bits.push(`<strong>${d.voteUnread} ${d.voteUnread===1?"vote file":"vote files"} could not be
+      read just now${d.snapshot?"":" — most likely the 60-requests-an-hour limit everyone here shares"}.</strong>
+      A proposal below may have an open vote that is not shown. This was not remembered, so reloading tries again.`);
+    o.push(`<div class="snap">${bits.join(" ")}</div>`);
+  }
 
   if(d.stale.length) o.push(`<div class="warn"><strong>This page may be out of date.</strong>
     ${d.stale.length===1?"A figure below is":"Figures below are"} copied from
