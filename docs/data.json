@@ -1,6 +1,11 @@
 {
-  "_comment": "Constitutional facts the page cannot derive. Each carries the sentence it came from, so a CI check can fail when an amendment changes the wording. Thresholds are NOT here: the page shows no membership figure, because any figure it showed would go stale silently when members.md changed.",
+  "_comment": "Constitutional facts the page cannot derive. Each carries the sentence it came from, so a CI check warns when an amendment changes the wording. Thresholds are stored as fractions, never as counts: a count goes stale the moment membership changes, while a fraction does not. A count is computed from the roll at the moment a vote opens and frozen into that vote's own file.",
   "repo": "newspeakhouse-lab-2026/constitutional-record",
+  "rounding": {
+    "_comment": "Two rules, and they differ on an even roll. A named fraction rounds up: two-thirds of 14 is 10. A majority is more than half: majority of 14 is 8, not 7, so a 7-7 split fails. Using ceil for a majority is the bug that passes a tie.",
+    "source": "§2",
+    "quote": "For any threshold stated as a fraction of all members, fractions round up to the next whole member."
+  },
   "procedures": {
     "tier-a": {
       "name": "Tier A",
@@ -35,6 +40,89 @@
       "quote": "Two endorsing reviews start the 7-day deliberation clock."
     }
   },
+  "thresholds": {
+    "tier-c": {
+      "rule": "majority",
+      "over": "voting",
+      "quorum": {
+        "rule": "fraction",
+        "num": 1,
+        "den": 2,
+        "over": "all",
+        "counts": "responders"
+      },
+      "source": "§2",
+      "quote": "Adoption requires a simple majority of those who vote, with a quorum of half of all members."
+    },
+    "layer-3": {
+      "rule": "majority",
+      "over": "all",
+      "source": "§2",
+      "quote": "Adoption requires affirmative support from a majority of all members."
+    },
+    "layer-4": {
+      "rule": "fraction",
+      "num": 2,
+      "den": 3,
+      "over": "all",
+      "source": "§2",
+      "quote": "Adoption requires affirmative support from two-thirds of all members."
+    },
+    "emergency": {
+      "rule": "majority",
+      "over": "ambiguous",
+      "quorum": {
+        "rule": "fraction",
+        "num": 1,
+        "den": 2,
+        "over": "all",
+        "counts": "responders"
+      },
+      "verdict": "none",
+      "source": "§2",
+      "quote": "Requires a majority of those who vote within 12 hours, quorum of half."
+    },
+    "recall": {
+      "rule": "unspecified",
+      "over": "unspecified",
+      "verdict": "none",
+      "source": "§3.9",
+      "quote": "Any member may call a no-confidence vote in the Agent or the Deputy, and a simple majority removes them."
+    },
+    "remedy": {
+      "rule": "fraction",
+      "num": 2,
+      "den": 3,
+      "over": "others-voting",
+      "excludes": "respondent",
+      "quorum": {
+        "rule": "fraction",
+        "num": 1,
+        "den": 2,
+        "over": "all-others",
+        "counts": "responders"
+      },
+      "source": "§4",
+      "quote": "A two-thirds majority of the other members who vote is required to adopt a remedy, provided at least half of all other members vote."
+    },
+    "removal": {
+      "rule": "fraction",
+      "num": 2,
+      "den": 3,
+      "over": "all-others",
+      "excludes": "respondent",
+      "source": "§4",
+      "quote": "It requires affirmative support from two-thirds of all members other than the respondent"
+    },
+    "re-ratification": {
+      "rule": "fraction",
+      "num": 2,
+      "den": 3,
+      "over": "all",
+      "source": "§5",
+      "quote": "Re-ratification requires affirmative support from two-thirds of all members."
+    }
+  },
   "fixed": [
     {
       "label": "Constitution expires",
@@ -55,7 +143,7 @@
       "at": "2026-11-02T23:59:00Z",
       "source": "§6",
       "quote": "extended to 23:59 (UK time) on Monday, 2 November 2026",
-      "note": "Extended by pull request #2, adopted under §6 on 4 October. Ends earlier if holders are elected under §3.2. §6's expedited amendment window was not extended and closed at 23:59 on 4 October."
+      "note": "Ends earlier if holders are elected under §3.2. Record Keepers are the only members with merge access, so this date is the one the rest depend on."
     }
   ]
 }
