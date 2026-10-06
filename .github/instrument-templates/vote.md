@@ -9,7 +9,7 @@ NOT under policies/ or rules/. A file in those directories is read as an adopted
 instrument, by the dashboard and by check-record.py. A vote is not one.
 
 WHO OPENS IT: whoever is running the vote. Opening a vote means naming the
-procedure, freezing the roll and writing out the threshold — decisions a member
+procedure, freezing the list of who may vote and writing out the threshold — decisions a member
 makes. No tool may do it for you.
 
 WHO WRITES A ROW: the member it belongs to. Where a member does not or cannot use
@@ -17,8 +17,8 @@ GitHub, the Convener writes it and says so in the commit message (Section 1).
 An agent may never author a position — Section 1: it "holds no membership, no
 vote, and no standing."
 
-EVERY MEMBER ON THE ROLL GETS A ROW, including those who have said nothing.
-Every threshold is a fraction of the roll, so the roll must be visible for the
+EVERY MEMBER ENTITLED TO VOTE GETS A ROW, including those who have said nothing.
+Every threshold is a fraction of that list, so the list must be visible for the
 arithmetic to be checkable. Section 2 also distinguishes an abstention, which is
 taking the position of not taking one, from never answering.
 
@@ -31,7 +31,7 @@ Then delete this comment.
 **Carries if:** <the Constitution's own words> — **N of 14**
 **Opened:** 2026-10-06 12:00 UK (`2026-10-06T12:00:00+01:00`)
 **Closes:** 2026-10-13 12:00 UK (`2026-10-13T12:00:00+01:00`)
-**Roll:** 14 members, frozen at open — `members.md` @ `<commit>`
+**Entitled to vote:** 14 members, frozen when this vote opened — `members.md` blob `<sha>`
 
 <!--
 PROCEDURE — Tier A and Tier B hold no vote: they pass unless a member objects, so
@@ -39,11 +39,11 @@ they need no file. If you are filling this in for a Tier A proposal, you probabl
 want a comment on the pull request instead.
 
 CARRIES IF — write the Constitution's own words, then the number for this vote.
-Writing the number out is safe here and nowhere else: the roll is frozen at open
-and the commit it came from is cited above, so it is a fact about this vote rather
-than a figure that goes stale when membership changes.
+Writing the number out is safe here and nowhere else: the list is frozen when the
+vote opens and the blob it came from is cited above, so it is a fact about this
+vote rather than a figure that goes stale when membership changes.
 
-  Two rounding rules, and they differ on an even roll:
+  Two rounding rules, and they differ on an even number of members:
     a named fraction rounds up            two-thirds of 14 -> ceil(9.33) = 10
     a majority is MORE THAN HALF          majority of 14   -> 7 + 1     = 8
   A majority of 14 is 8, not 7. Seven of fourteen is a tie, and a tie fails.
@@ -54,13 +54,13 @@ Kingdom is on British Summer Time from late March to late October, and a missing
 offset is how a deadline ends up an hour out. It has happened here before.
 A check warns when the words and the timestamp disagree.
 
-ROLL — Section 2 counts "all members entitled to vote when the vote opens", so
-cite the members.md commit the roll was taken from. A member who joins mid-vote
+ENTITLED TO VOTE — Section 2 counts "all members entitled to vote when the vote opens", so
+cite the members.md blob the list was taken from (`git rev-parse HEAD:members.md`). A member who joins mid-vote
 does not change the denominator.
 
 IF THE VOTE RESTARTS — a material change restarts the deliberation period
 (Section 2). Clear the Position and Date cells, add a line reading
-`**Restarted:** <date> — <what changed>` below Roll, and vote again. The earlier
+`**Restarted:** <date> — <what changed>` below Entitled to vote, and vote again. The earlier
 round stays in this file's history, which is the Record. Do not keep two tables.
 -->
 
@@ -68,7 +68,7 @@ round stays in this file's history, which is the Record. Do not keep two tables.
 |---|---|---|
 | <member> | — | |
 | <member> | — | |
-| <one row per member on the roll, in the order members.md lists them> | — | |
+| <one row per member entitled to vote, in the order members.md lists them> | — | |
 
 **Positions:** `preference` · `toleration` · `abstention` · `objection` · `—` not answered.
 
@@ -100,8 +100,8 @@ So write both lines out:
 A toleration helps reach quorum without diluting the majority. That is what the
 word is for.
 
-NOBODY CHOSE PREFERENCE OR OBJECTION? With quorum met and a denominator of zero,
-a majority of nobody is not a majority. It does not carry. Say so in words.
+NOBODY CHOSE PREFERENCE OR OBJECTION? Then even with quorum met there is
+nobody to count a majority of, so it does not carry. Say that in words.
 
 NO VERDICT AVAILABLE for an Emergency resolution or a Section 3.9 recall: neither
 states its denominator unambiguously. Print both readings and say the Constitution

@@ -254,6 +254,15 @@ async function blob(sha){
   return txt;
 }
 
+/* Same editor route as newFileURL, but on a proposal's branch rather than main,
+   and with the same guard: an over-long URL silently fails, so an empty editor
+   beats a broken link. */
+const newVoteURL=(branch,path,text)=>{
+  const base=`https://github.com/${REPO}/new/${encodeURIComponent(branch)}?filename=${encodeURIComponent(path)}`;
+  const v=encodeURIComponent(text);
+  return v.length>6000?base:base+"&value="+v;
+};
+
 const b64=s=>new TextDecoder().decode(Uint8Array.from(atob(s.replace(/\n/g,"")),c=>c.charCodeAt(0)));
 
 /* A vote file carries its own threshold, written out when the vote opened and
@@ -261,7 +270,25 @@ const b64=s=>new TextDecoder().decode(Uint8Array.from(atob(s.replace(/\n/g,"")),
    number the file already states and counts rows. The arithmetic lives once, in
    .github/scripts/tally.py, and this cannot drift from it because it does none.
    The page also never says a vote carried — that is §3's word, not a web page's. */
+/* ---8<--- vote reading and arithmetic. test-vote-parse.mjs lifts this whole
+   region out of the page and drives it from .github/scripts/vote-cases.json —
+   the same cases as tally.py — so the two cannot disagree. Keep the markers. */
 const POS=["preference","toleration","abstention","objection"];
+
+/* Two rules, and they differ on an even denominator. A majority is MORE THAN
+   HALF, so a majority of 14 is 8 and a 7-7 split fails. A named fraction rounds
+   up, so two-thirds of 14 is 10. Using ceil for a majority carries a tie.
+
+   The page needs this only to write a threshold into a vote it is opening. It
+   never uses it to judge one: a vote file states its own threshold, frozen with
+   the roll, and reading that number is all the display does. */
+function requiredFor(spec,d){
+  if(!spec) return null;
+  if(spec.rule==="majority") return Math.floor(d/2)+1;
+  if(spec.rule==="fraction") return Math.ceil(d*spec.num/spec.den);
+  return null;
+}
+
 function voteOf(text){
   text=text.replace(/<!--[\s\S]*?-->/g,"");
   const need=text.match(/^\*\*Carries if:\*\*[^\n]*?(\d+)\s+of\s+\d+/m);
@@ -280,6 +307,58 @@ function voteOf(text){
   if(!rows) return null;
   return {counts, roll:rows, required:need?+need[1]:null,
           affirmative:counts.preference, awaiting, closes:iso?new Date(iso):null};
+}
+/* --->8--- end of the extracted region. */
+
+/* The instant twice, as every dated line in the Record is written: the words a
+   person reads, then the instant a machine reads. The offset is computed rather
+   than assumed, because the United Kingdom is on British Summer Time from late
+   March to late October and a missing offset is how a deadline ends up an hour
+   out. That has happened here before. */
+function ukStamp(d){
+  const part=(o)=>new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/London",...o}).format(d);
+  const tz=new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/London",timeZoneName:"longOffset"})
+    .formatToParts(d).find(p=>p.type==="timeZoneName").value;
+  const off=tz==="GMT"?"+00:00":tz.replace("GMT","");
+  const p=new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/London",year:"numeric",month:"2-digit",
+    day:"2-digit",hour:"2-digit",minute:"2-digit",hour12:false}).formatToParts(d)
+    .reduce((o,x)=>(o[x.type]=x.value,o),{});
+  const words=`${part({weekday:"long"})} ${+p.day} ${part({month:"long"})} ${p.year}, ${p.hour}:${p.minute} UK`;
+  return `${words} (\`${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}:00${off}\`)`;
+}
+
+/* Builds the whole vote file and hands it to GitHub's new-file editor. Safe
+   here and nowhere else: the file does not exist yet, so there is nothing to
+   overwrite and no race with anyone recording a position. */
+function voteFileFor(pr,win,thr,names,sha){
+  const key=win.layer==="4"?"layer-4":win.layer==="3"?"layer-3":win.tier==="c"?"tier-c":null;
+  const spec=key&&thr[key];
+  if(!spec||!win.opened||!win.closes||!names.length) return null;
+  // Tier C counts its majority over preference and objection only, so the number
+  // is not knowable until the window closes. Say so rather than inventing one.
+  const carries=spec.over==="voting"
+    ? `${spec.words} — quorum **${requiredFor(spec.quorum,names.length)} of ${names.length}**; the majority is counted over preference and objection only, once the window has closed`
+    : `${spec.words} — **${requiredFor(spec,names.length)} of ${names.length}**`;
+  return [
+    `# Vote — PR #${pr.number}: ${pr.title}`, "",
+    `**Procedure:** ${spec.name}`,
+    `**Carries if:** ${carries}`,
+    `**Opened:** ${ukStamp(win.opened)}`,
+    `**Closes:** ${ukStamp(win.closes)}`,
+    `**Entitled to vote:** ${names.length} members, frozen when this vote opened — \`members.md\` blob \`${(sha||"").slice(0,7)}\``, "",
+    "| Member | Position | Date |", "|---|---|---|",
+    ...names.map(n=>`| ${n} | — | |`), "",
+    "**Positions:** `preference` · `toleration` · `abstention` · `objection` · `—` not answered.", "",
+    "> **Only `preference` counts as affirmative support.** Where a procedure needs",
+    "> affirmative support from a fraction of all members — Layer 3, Layer 4 and",
+    "> re-ratification all do — toleration, abstention and never answering are the",
+    "> same number. None of them is a yes.", "",
+    "## Result", "",
+    "*Written when the window closes, with the arithmetic shown. "
+    + "`python3 .github/scripts/tally.py` recomputes it and prints the working.*", "",
+    "## Objections", "",
+    "*Each objection's reason and route forward, in full. Section 2 requires both.*", "",
+  ].join("\n");
 }
 
 /* Deliberation arithmetic comes from data.json, which cites the clause it came
@@ -498,8 +577,26 @@ async function collect(){
     if(t){ try{ const v=voteOf(t); if(v) votes[p.number]=v; }catch{} }
   }));
 
+  /* The roll, read only when some proposal needs a vote opened and has none —
+     so this costs nothing on an ordinary load. members.md holds a changelog
+     below the table, so read the section the members are in rather than every
+     pipe row. Never filter empty cells out: most role cells are empty, and
+     dropping them would shift every column left. */
+  let roll=[], rollSha=null;
+  const wantsVote=p=>{const w=wins.get(p.number);
+    return (w.layer==="3"||w.layer==="4"||w.tier==="c")&&!!w.closes;};
+  if(at["members.md"] && prs.some(p=>wantsVote(p)&&!votes[p.number])){
+    try{
+      rollSha=at["members.md"];
+      const sec=((await blob(rollSha))||"").split(/^##\s+/m).find(s=>/^Current members/i.test(s))||"";
+      roll=sec.split("\n").filter(l=>/^\|/.test(l)&&!/^\|\s*:?-/.test(l)).slice(1)
+             .map(l=>l.replace(/^\||\|$/g,"").split("|")[0].trim()).filter(Boolean);
+    }catch{}
+  }
+
   return {
     cfg, stale, snapshot, checked:!!cText, instruments, roles, ends, amendments, merged, branches, shas:at,
+    roll, rollSha,
     props: prs.map(pr=>({pr,win:wins.get(pr.number),
                          vote:votes[pr.number]||null,
                          notes:notes[pr.number]||0, resolves:linkFor[pr.number]||[]})),
@@ -577,6 +674,13 @@ function render(d){
         +(vote.awaiting.length>4?` and ${vote.awaiting.length-4} more`:""));
       p.push(`<a href="https://github.com/${REPO}/edit/${encodeURIComponent(pr.head.ref)}/votes/pr-${pr.number}.md">record your position</a>`);
       voteWhy=p.join(" · ")+` · <span class="quiet">only preference counts as a yes</span>`;
+    }else if((d.roll||[]).length){
+      /* This procedure votes and no file exists yet, so offer to open one —
+         prefilled with the procedure, the threshold computed once from the
+         frozen roll, the window already running, and every member's row. */
+      const f=voteFileFor(pr,win,d.cfg.thresholds||{},d.roll,d.rollSha);
+      if(f) voteWhy=`<a href="${newVoteURL(pr.head.ref,`votes/pr-${pr.number}.md`,f)}">start a vote</a>`
+        +` · <span class="quiet">this procedure votes, and no positions are recorded yet</span>`;
     }
 
     if(win.closes){

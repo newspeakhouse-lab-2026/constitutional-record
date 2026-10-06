@@ -16,12 +16,12 @@ import { dirname, join } from 'node:path';
 const HERE = dirname(fileURLToPath(import.meta.url));
 const html = readFileSync(join(HERE, '..', '..', 'docs', 'index.html'), 'utf8');
 
-const m = html.match(/const POS=\[[\s\S]*?\n\}\n/);
+const m = html.match(/\/\* ---8<---[\s\S]*?--->8--- end[^\n]*\n/);
 if (!m) {
-  console.error('could not find POS and voteOf in docs/index.html — has the page been restructured?');
+  console.error('could not find the ---8<--- region in docs/index.html. If it was renamed, rename it here too.');
   process.exit(1);
 }
-const { POS, voteOf } = new Function(m[0] + '\nreturn {POS, voteOf};')();
+const { POS, requiredFor, voteOf } = new Function(m[0] + '\nreturn {POS, requiredFor, voteOf};')();
 
 const corpus = JSON.parse(readFileSync(join(HERE, 'vote-cases.json'), 'utf8'));
 
@@ -41,7 +41,7 @@ function fixture(c) {
     `**Carries if:** the Constitution's words — **${c.expect.required ?? 0} of ${electorate}**`,
     '**Opened:** 2026-10-06 12:00 UK (`2026-10-06T12:00:00+01:00`)',
     '**Closes:** 2026-10-13 12:00 UK (`2026-10-13T12:00:00+01:00`)',
-    `**Roll:** ${electorate} members, frozen at open — \`members.md\` @ \`abc1234\``, '',
+    `**Entitled to vote:** ${electorate} members, frozen when this vote opened — \`members.md\` blob \`abc1234\``, '',
     '| Member | Position | Date |', '|---|---|---|',
     ...rows, '',
     '<!-- preference toleration abstention objection — guidance, must not be counted -->',
@@ -88,6 +88,21 @@ check('html comments are not counted', [commented.roll, commented.counts.prefere
    rather than being silently bucketed as support. */
 const junk = voteOf(['| Member | Position | Date |', '|---|---|---|', '| A | yes | x |', '| B | preference | x |'].join('\n'));
 check('an unrecognised position is not support', [junk.counts.preference, junk.awaiting], [1, ['A']]);
+
+/* The page computes a threshold only when opening a vote. It must agree with
+   tally.py on every case that states one, including the two rounding rules —
+   a majority is more than half, a named fraction rounds up. */
+const thresholds = JSON.parse(readFileSync(join(HERE, '..', '..', 'docs', 'data.json'), 'utf8')).thresholds;
+for (const c of corpus.cases) {
+  const spec = thresholds[c.procedure];
+  if (!spec || c.expect.required == null || spec.over === 'voting' || spec.over === 'others-voting') continue;
+  const electorate = c.roll - (c.excluded || 0);
+  check(`requiredFor ${c.name}`, requiredFor(spec, electorate), c.expect.required);
+}
+check('a majority of 14 is 8, not 7', requiredFor({ rule: 'majority' }, 14), 8);
+check('two-thirds of 14 rounds up to 10', requiredFor({ rule: 'fraction', num: 2, den: 3 }, 14), 10);
+check('two-thirds of 13 rounds up to 9', requiredFor({ rule: 'fraction', num: 2, den: 3 }, 13), 9);
+check('half of 13 rounds up to 7', requiredFor({ rule: 'fraction', num: 1, den: 2 }, 13), 7);
 
 const passed = results.filter(Boolean).length;
 console.log(`\n${passed}/${results.length} passed`);

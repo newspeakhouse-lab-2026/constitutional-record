@@ -42,6 +42,8 @@
   },
   "thresholds": {
     "tier-c": {
+      "name": "Tier C",
+      "words": "a simple majority of those who vote, with a quorum of half of all members",
       "rule": "majority",
       "over": "voting",
       "quorum": {
@@ -55,12 +57,16 @@
       "quote": "Adoption requires a simple majority of those who vote, with a quorum of half of all members."
     },
     "layer-3": {
+      "name": "Layer 3 Policy",
+      "words": "affirmative support from a majority of all members",
       "rule": "majority",
       "over": "all",
       "source": "§2",
       "quote": "Adoption requires affirmative support from a majority of all members."
     },
     "layer-4": {
+      "name": "Layer 4 Constitutional",
+      "words": "affirmative support from two-thirds of all members",
       "rule": "fraction",
       "num": 2,
       "den": 3,
@@ -69,6 +75,8 @@
       "quote": "Adoption requires affirmative support from two-thirds of all members."
     },
     "emergency": {
+      "name": "Emergency",
+      "words": "a majority of those who vote within 12 hours, quorum of half",
       "rule": "majority",
       "over": "ambiguous",
       "quorum": {
@@ -83,6 +91,8 @@
       "quote": "Requires a majority of those who vote within 12 hours, quorum of half."
     },
     "recall": {
+      "name": "Recall (§3.9)",
+      "words": "a simple majority — the Constitution does not say of whom",
       "rule": "unspecified",
       "over": "unspecified",
       "verdict": "none",
@@ -90,6 +100,8 @@
       "quote": "Any member may call a no-confidence vote in the Agent or the Deputy, and a simple majority removes them."
     },
     "remedy": {
+      "name": "§4 remedy",
+      "words": "a two-thirds majority of the other members who vote, quorum half of all other members",
       "rule": "fraction",
       "num": 2,
       "den": 3,
@@ -106,6 +118,8 @@
       "quote": "A two-thirds majority of the other members who vote is required to adopt a remedy, provided at least half of all other members vote."
     },
     "removal": {
+      "name": "§4 removal",
+      "words": "affirmative support from two-thirds of all members other than the respondent",
       "rule": "fraction",
       "num": 2,
       "den": 3,
@@ -115,6 +129,8 @@
       "quote": "It requires affirmative support from two-thirds of all members other than the respondent"
     },
     "re-ratification": {
+      "name": "Re-ratification",
+      "words": "affirmative support from two-thirds of all members",
       "rule": "fraction",
       "num": 2,
       "den": 3,

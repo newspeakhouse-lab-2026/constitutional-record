@@ -105,7 +105,7 @@ def tally(procedure, roll, counts, thresholds, excluded=0):
 
 
 def parse(text):
-    """Read a vote file: its procedure, its frozen roll, and the positions."""
+    """Read a vote file: its procedure, who was entitled to vote, and the positions."""
     text = re.sub(r"<!--.*?-->", "", text, flags=re.S)
 
     m = re.search(r"^\*\*Procedure:\*\*[^\S\n]*(.+)$", text, re.M)
@@ -141,17 +141,17 @@ def parse(text):
         dupes = sorted({n for n in rows if rows.count(n) > 1})
         return None, f"duplicated row(s) for {', '.join(dupes)}, so the denominator is ambiguous"
     if not rows:
-        return None, "no table rows, so there is no roll to count"
+        return None, "no table rows, so there is nobody to count"
 
-    stated = re.search(r"^\*\*Roll:\*\*[^\S\n]*(\d+)", text, re.M)
+    stated = re.search(r"^\*\*Entitled to vote:\*\*[^\S\n]*(\d+)", text, re.M)
     if stated and int(stated.group(1)) != len(rows):
-        return None, f"**Roll:** says {stated.group(1)} members but the table has {len(rows)} rows"
+        return None, f"**Entitled to vote:** says {stated.group(1)} members but the table has {len(rows)} rows"
 
     return {"procedure": key, "roll": len(rows), "counts": counts, "excluded": excluded}, None
 
 
 def fmt(r):
-    lines = [f"{r['procedure']} — {r['electorate']} on the roll"]
+    lines = [f"{r['procedure']} — {r['electorate']} entitled to vote"]
     c = r["counts"]
     lines.append("  " + " · ".join(f"{p} {c[p]}" for p in POSITIONS) + f" · not answered {r['nonResponse']}")
 
