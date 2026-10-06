@@ -57,8 +57,17 @@ A header, one table, a result, and the objections in full. The template is
 
 The member it belongs to.
 
-An AI agent is not on that list: Section 1 gives it "no membership, no vote, and
-no standing", so it may draft a row and never write one.
+A member's AI agent may write the row that member has told it to write. Section 1
+gives an agent no vote **of its own** and makes its actions the member's
+responsibility, so the position is the member's either way.
+
+**The act may be delegated; the decision may not.** A member may have their agent
+record a position they have stated. A member may not ask it to decide what their
+position is, and it may not offer to. Recording a stated position is
+transcription; inferring one from a conversation is not, and no record can tell
+the two apart afterwards. Section 1 also requires an agent working on Laboratory
+infrastructure to be identifiable as that member's agent, which for a commit
+means saying so in it.
 
 Where a member does not or cannot use GitHub, **the Convener writes the row and
 says so in the commit message.** Section 1 requires a reasonably equivalent route

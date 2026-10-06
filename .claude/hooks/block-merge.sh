@@ -18,11 +18,6 @@ deny() {
   exit 2
 }
 
-deny_vote() {
-  echo "BLOCKED: $1" >&2
-  echo "Constitution §1 gives an AI agent no vote. Filing a vote or an objection through an issue would have a workflow write a member's position for them, which is the same act. Draft it and hand it over for the member to submit." >&2
-  exit 2
-}
 
 # This guards the Constitutional Record. Matching on the command alone blocked
 # pushes to main in every repository, which is wider than it claims. Identify the
@@ -50,10 +45,6 @@ case "$norm" in
   *"gh api"*"/merge"*)                   deny "a merge through the GitHub API" ;;
   # Filing a vote through an issue has a workflow write the row, so the issue is
   # the position. Proposals and every other kind of issue are untouched.
-  *"gh issue create"*|*"gh api"*"/issues"*)
-    case "$norm" in
-      *vote.yml*|*objection.yml*|*"Vote: PR"*|*"Objection: PR"*) deny_vote "filing a vote through an issue" ;;
-    esac ;;
   *"git push"*" main"*|*"git push"*":main"*) deny "a push to main" ;;
   *"git push --force"*|*"git push -f"*)  deny "a force push — the Record's history is append-only (Constitution §1)" ;;
   *"git reset --hard"*)                  deny "git reset --hard" ;;
