@@ -55,12 +55,6 @@ jobs:
             const POS = ['preference', 'toleration', 'abstention', 'objection'];
             const DEFAULT_BRANCH = context.payload.repository.default_branch;
 
-            // Every time comes from when the member acted, never from when the
-            // runner picked the job up. So 11:59:59 is not refused because the
-            // queue was slow, and a re-run produces identical bytes.
-            const ACTED = new Date(issue.created_at);
-            const DATE = ACTED.toISOString().slice(0, 10);
-
             const hand = (branch, n) =>
               `https://github.com/${owner}/${repo}/edit/${branch}/votes/pr-${n}.md`;
 
@@ -97,6 +91,33 @@ jobs:
               await close('vote-failed');
               core.setFailed(text.split('\n')[0]);
             }
+
+            /* Everything below is inside one try. An unhandled throw anywhere
+               used to end the run with no comment, the issue open and unlabelled,
+               and the member told nothing at all — the one outcome worse than a
+               refusal, because a refusal at least says the position was not
+               recorded. The wrapper starts here rather than at the top of the
+               script so that say, close, refuse and hand are in scope for the
+               catch to use.
+
+               The body is NOT re-indented into the block. The indentation would
+               be the whole diff and would bury the one line that changed; JS does
+               not care, and `catch` below marks the other end. */
+            try {
+
+            // Every time comes from when the member acted, never from when the
+            // runner picked the job up. So 11:59:59 is not refused because the
+            // queue was slow, and a re-run produces identical bytes.
+            // Inside the try, and checked: an unparseable created_at makes
+            // toISOString throw RangeError, which used to take the whole run down
+            // in silence.
+            const ACTED = new Date(issue.created_at);
+            if (isNaN(+ACTED)) {
+              return brokenTooling(`This issue reports its creation time as \`${String(issue.created_at).slice(0, 60)}\`, ` +
+                `which is not a time this workflow can read — so it cannot tell whether you submitted before the ` +
+                `window closed, and will not guess. Nothing has been written. A maintainer needs to look at this run.`);
+            }
+            const DATE = ACTED.toISOString().slice(0, 10);
 
             /* An issue form renders as "### Label\n\nvalue\n\n". Label strings
                live here and are asserted against the YAML by
@@ -352,6 +373,11 @@ jobs:
                position silently destroyed, which nobody may ever notice. */
             function invariants(before, after) {
               const b = parseTable(before), a = parseTable(after);
+              // Both ends are guarded. Only `a` used to be, and `b.rows.length`
+              // two lines down threw on a vote file that has no table at all —
+              // which apply() would have rejected first in every ordinary case,
+              // but an invariant check that can itself throw is not a check.
+              if (!b) return 'the file this was built from has no table';
               if (!a) return 'the result has no table';
               if (a.rows.length !== b.rows.length) return `row count changed, ${b.rows.length} to ${a.rows.length}`;
               if (a.lines[a.start] !== b.lines[b.start]) return 'the header row changed';
@@ -483,3 +509,21 @@ jobs:
             await brokenTooling(`Five attempts to write \`${path}\` were each overtaken by someone else ` +
               `writing to it first. Nothing has been recorded. Among fourteen people that should not ` +
               `happen, so this is worth a look.\n\nEdit the file directly: ${hand(branch, n)}`);
+
+            /* The other end of the try opened after brokenTooling. Anything that
+               reaches here is a fault nobody anticipated, so it says only what it
+               can honestly say: nothing was written, here is the error, here is
+               the route that always works. */
+            } catch (e) {
+              await brokenTooling([
+                `This workflow failed before it could record your position, in a way it does not`,
+                `recognise. **Nothing has been written**, and nothing is blocked by this — a position`,
+                `stated in the governance channel is a position whether or not a file says so.`,
+                '',
+                `The error was: \`${String((e && e.message) || e).slice(0, 300)}\``,
+                '',
+                `**Editing the vote file always works**, and that is the route to take now:`,
+                `https://github.com/${owner}/${repo}/pulls — open the proposal, then \`votes/pr-{number}.md\``,
+                `on its branch. A maintainer needs to look at this run.`,
+              ].join('\n'));
+            }
