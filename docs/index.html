@@ -291,7 +291,13 @@ function requiredFor(spec,d){
 
 function voteOf(text){
   text=text.replace(/<!--[\s\S]*?-->/g,"");
-  const need=text.match(/^\*\*Carries if:\*\*[^\n]*?(\d+)\s+of\s+\d+/m);
+  /* Tier C states a quorum here, not an affirmative threshold: its majority is
+     counted over preference and objection only, and not until the window has
+     closed. Reading that number as "needed" would compare preferences against a
+     quorum — the exact confusion the two denominators cause. */
+  const carries=(text.match(/^\*\*Carries if:\*\*([^\n]*)$/m)||[])[1]||"";
+  const quorumOnly=/quorum/i.test(carries);
+  const need=carries.match(/(\d+)\s+of\s+\d+/);
   const iso=(text.match(/^\*\*Closes:\*\*[^\n]*?`([^`]+)`/m)||[])[1];
   const counts={preference:0,toleration:0,abstention:0,objection:0};
   const awaiting=[]; let rows=0;
@@ -305,8 +311,9 @@ function voteOf(text){
     if(POS.includes(p)) counts[p]++; else awaiting.push(cells[0]);
   }
   if(!rows) return null;
-  return {counts, roll:rows, required:need?+need[1]:null,
-          affirmative:counts.preference, awaiting, closes:iso?new Date(iso):null};
+  return {counts, roll:rows, required:need?+need[1]:null, quorumOnly,
+          affirmative:counts.preference, responded:rows-awaiting.length,
+          awaiting, closes:iso?new Date(iso):null};
 }
 /* --->8--- end of the extracted region. */
 
@@ -545,6 +552,7 @@ async function collect(){
   }
 
   const notes={}; for(const i of issues) notes[i.number]=i.comments;
+  const isVoteIssue=i=>(i.labels||[]).some(l=>/^(vote|objection)$/.test(l.name||l));
   const linkFor={}, linkedBy={};
   for(const pr of prs){
     const m=[...(pr.body||"").matchAll(/(?:resolves|closes|fixes)\s+#(\d+)/gi)].map(x=>+x[1]);
@@ -600,7 +608,13 @@ async function collect(){
     props: prs.map(pr=>({pr,win:wins.get(pr.number),
                          vote:votes[pr.number]||null,
                          notes:notes[pr.number]||0, resolves:linkFor[pr.number]||[]})),
-    issues: issues.filter(i=>!i.pull_request).map(i=>({...i,prs:linkedBy[i.number]||[]}))
+    /* A vote or objection form opens an issue, and the workflow closes it within
+       seconds. One still open means it did not record — the member was told, but
+       nobody else was. So they are kept out of "Under discussion", where they are
+       not proposals, and surfaced as what they are: a vote that did not land. */
+    issues: issues.filter(i=>!i.pull_request&&!isVoteIssue(i))
+                  .map(i=>({...i,prs:linkedBy[i.number]||[]})),
+    stuckVotes: issues.filter(i=>!i.pull_request&&isVoteIssue(i))
   };
 }
 
@@ -666,7 +680,11 @@ function render(d){
     let voteWhy="";
     if(vote){
       const c=vote.counts, p=[];
-      p.push(vote.required!=null
+      if(vote.quorumOnly)
+        p.push(`<strong>${vote.responded} of ${vote.roll} have answered</strong>`
+          +(vote.required!=null?`, quorum ${vote.required} — ${vote.responded>=vote.required?"met":"not met"}`:"")
+          +` · the majority is counted over preference and objection only, when the window closes`);
+      else p.push(vote.required!=null
         ? `<strong>${vote.affirmative} toward the ${vote.required} needed</strong>`
         : `<strong>${vote.affirmative} preference</strong> — this vote states no threshold`);
       p.push(POS.map(k=>`${k} ${c[k]}`).join(" · "));
@@ -736,6 +754,23 @@ function render(d){
                          :`<span class="quiet">no pull request — nothing can be adopted from it</span>`);
       return row("",`<span class="num">#${i.number}</span><a href="${i.html_url}">${esc(i.title)}</a>`,
         m.join(" · "),"","","idle");
+    }).join(""));
+  }
+
+  /* A vote submitted through the form should be recorded and the issue closed
+     within seconds. Still open means it failed, and the only person who knows is
+     whoever submitted it. */
+  if((d.stuckVotes||[]).length){
+    o.push(`<h2>Votes that did not record (${d.stuckVotes.length})</h2>`);
+    o.push(`<p class="note">Submitted through a form, and the issue is still open — so the position was
+      not written into the vote file. Whoever submitted it was told why on the issue. Until it is
+      sorted out, the position can be recorded by editing the vote file directly.</p>`);
+    o.push(d.stuckVotes.map(i=>{
+      const mins=Math.floor((Date.now()-+new Date(i.created_at))/60000);
+      const age=mins<60?`${mins}m ago`:mins<1440?`${Math.floor(mins/60)}h ago`:`${Math.floor(mins/1440)}d ago`;
+      return row("",`<span class="num">#${i.number}</span><a href="${i.html_url}">${esc(i.title)}</a>`,
+        `@${esc(i.user.login)} · submitted ${age} · <span class="q7">not recorded</span>`,
+        "","","idle");
     }).join(""));
   }
 

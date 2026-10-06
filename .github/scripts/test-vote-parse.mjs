@@ -104,6 +104,19 @@ check('two-thirds of 14 rounds up to 10', requiredFor({ rule: 'fraction', num: 2
 check('two-thirds of 13 rounds up to 9', requiredFor({ rule: 'fraction', num: 2, den: 3 }, 13), 9);
 check('half of 13 rounds up to 7', requiredFor({ rule: 'fraction', num: 1, den: 2 }, 13), 7);
 
+/* Tier C states a quorum on the Carries if line, not an affirmative threshold.
+   Reading it as "needed" compared preferences against a quorum on the page. */
+const tierC = voteOf([
+  '**Carries if:** a simple majority of those who vote, with a quorum of **7 of 14**; the majority is counted over preference and objection only, once the window has closed',
+  '| Member | Position | Date |', '|---|---|---|',
+  '| A | preference | x |', '| B | objection | x |', '| C | toleration | x |', '| D | — | |',
+].join('\n'));
+check('Tier C is read as a quorum, not a threshold', tierC.quorumOnly, true);
+check('Tier C reports who has answered', [tierC.responded, tierC.roll], [3, 4]);
+const layer3 = voteOf(['**Carries if:** a majority of all members — **8 of 14**',
+  '| Member | Position | Date |', '|---|---|---|', '| A | preference | x |'].join('\n'));
+check('a plain threshold is not read as a quorum', [layer3.quorumOnly, layer3.required], [false, 8]);
+
 const passed = results.filter(Boolean).length;
 console.log(`\n${passed}/${results.length} passed`);
 process.exit(results.every(Boolean) ? 0 : 1);
