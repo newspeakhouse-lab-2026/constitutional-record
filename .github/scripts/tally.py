@@ -143,15 +143,24 @@ def parse(text):
     if not rows:
         return None, "no table rows, so there is nobody to count"
 
+    restarted = re.search(r"^\*\*Restarted:\*\*[^\S\n]*(.+)$", text, re.M)
+    earlier = re.findall(r"^\*\*Round\s+(\d+)\*\*\s*[—-]\s*(.+)$", text, re.M)
     stated = re.search(r"^\*\*Entitled to vote:\*\*[^\S\n]*(\d+)", text, re.M)
     if stated and int(stated.group(1)) != len(rows):
         return None, f"**Entitled to vote:** says {stated.group(1)} members but the table has {len(rows)} rows"
 
-    return {"procedure": key, "roll": len(rows), "counts": counts, "excluded": excluded}, None
+    return {"procedure": key, "roll": len(rows), "counts": counts, "excluded": excluded,
+            "restarted": restarted.group(1).strip() if restarted else None,
+            "earlier": earlier}, None
 
 
-def fmt(r):
-    lines = [f"{r['procedure']} — {r['electorate']} entitled to vote"]
+def fmt(r, restarted=None, earlier=()):
+    rnd = f", round {len(earlier) + 1}" if earlier else ""
+    lines = [f"{r['procedure']} — {r['electorate']} entitled to vote{rnd}"]
+    for n, line in earlier:
+        lines.append(f"  round {n} — {line}")
+    if restarted:
+        lines.append(f"  restarted: {restarted}. Earlier positions were cleared; the full earlier round is in this file's git history.")
     c = r["counts"]
     lines.append("  " + " · ".join(f"{p} {c[p]}" for p in POSITIONS) + f" · not answered {r['nonResponse']}")
 
@@ -199,7 +208,8 @@ def main(argv):
             rc = 1
             continue
         print(fmt(tally(parsed["procedure"], parsed["roll"], parsed["counts"],
-                        thresholds, parsed["excluded"])))
+                        thresholds, parsed["excluded"]),
+                  parsed.get("restarted"), parsed.get("earlier") or ()))
     return rc
 
 

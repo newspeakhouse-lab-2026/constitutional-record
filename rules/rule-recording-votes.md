@@ -102,12 +102,19 @@ Fractions round up.
 
 ## If the vote restarts
 
-A material change restarts the deliberation period (Section 2). Clear the
-positions, add a `Restarted:` line with the date and what changed, and vote
-again.
+A material change restarts the deliberation period (Section 2). Write the closing
+round's outcome into *Earlier rounds*, clear the positions, say in a `Restarted:`
+line what changed, set the new window, and vote again.
 
-The earlier round stays in the file's history, which is the Record. Nothing is
-lost and nothing needs to be kept in parallel.
+**One table, always the current round.** Earlier rounds keep their outcome and
+their reason for restarting; who held which position in one is in the file's git
+history, which is the Record. This is not only tidiness: every tool that writes
+to this file depends on there being exactly one table, and with two, nothing can
+tell which round a row belongs to.
+
+A restart does not clear the objections. An objection is deliberation and stands
+until the member withdraws it, even where the change that caused the restart was
+made to answer it.
 
 ## What this does not do
 

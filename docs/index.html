@@ -295,6 +295,10 @@ function voteOf(text){
      counted over preference and objection only, and not until the window has
      closed. Reading that number as "needed" would compare preferences against a
      quorum — the exact confusion the two denominators cause. */
+  /* A material change restarts the deliberation period (§2): the positions are
+     cleared and the vote runs again. Without showing it, a member whose row was
+     cleared reads "awaiting you" with no idea why. */
+  const restarted=((text.match(/^\*\*Restarted:\*\*[^\S\n]*(.+)$/m)||[])[1]||"").trim();
   const carries=(text.match(/^\*\*Carries if:\*\*([^\n]*)$/m)||[])[1]||"";
   const quorumOnly=/quorum/i.test(carries);
   const need=carries.match(/(\d+)\s+of\s+\d+/);
@@ -310,8 +314,23 @@ function voteOf(text){
     rows++;
     if(POS.includes(p)) counts[p]++; else awaiting.push(cells[0]);
   }
+  /* The result the file states, never one computed here — §3 gives the outcome
+     to a Record Keeper. Rounds are counted from Earlier rounds, which holds one
+     line per round that closed before this one. */
+  /* Tier C writes quorum and majority lines between the verdict and the
+     affirmative count, so these are found separately rather than adjacently. */
+  const verdict=text.match(/^\*\*(Carried|Did not carry)\b/m);
+  const figures=text.match(/^Affirmative\s+(\d+)\s+of\s+(\d+),\s*needed\s+(\d+)/m);
+  const earlier=[...text.matchAll(/^\*\*Round\s+(\d+)\*\*\s*—\s*([^\n]+)/gm)]
+    .map(m=>({n:+m[1], line:m[2].trim()}));
   if(!rows) return null;
-  return {counts, roll:rows, required:need?+need[1]:null, quorumOnly,
+  return {counts, roll:rows, required:need?+need[1]:null, quorumOnly, restarted,
+          result:verdict?{carried:verdict[1]==="Carried",
+            affirmative:figures?+figures[1]:null, of:figures?+figures[2]:null,
+            needed:figures?+figures[3]:null}:null,
+          /* A restart means a round closed, so there are at least two even if the
+             earlier one's outcome was never written down. */
+          rounds:Math.max(earlier.length+1, restarted?2:1), earlier,
           affirmative:counts.preference, responded:rows-awaiting.length,
           awaiting, closes:iso?new Date(iso):null};
 }
@@ -602,9 +621,20 @@ async function collect(){
     }catch{}
   }
 
+  /* Votes on adopted work. The path is in main's tree already, so this is a blob
+     read keyed on content — once ever per vote, then free. Bounded by the number
+     of votes that have ever closed, which is small: Tier A and Tier B, the common
+     case, hold none. */
+  const mergedVotes={};
+  await Promise.all((merged||[]).slice(0,10).map(async p=>{
+    const sha=at[`votes/pr-${p.number}.md`];
+    if(!sha) return;
+    try{ const v=voteOf(await blob(sha)); if(v) mergedVotes[p.number]=v; }catch{}
+  }));
+
   return {
     cfg, stale, snapshot, checked:!!cText, instruments, roles, ends, amendments, merged, branches, shas:at,
-    roll, rollSha,
+    roll, rollSha, mergedVotes,
     props: prs.map(pr=>({pr,win:wins.get(pr.number),
                          vote:votes[pr.number]||null,
                          notes:notes[pr.number]||0, resolves:linkFor[pr.number]||[]})),
@@ -691,6 +721,18 @@ function render(d){
       if(vote.awaiting.length) p.push("awaiting "+vote.awaiting.slice(0,4).map(esc).join(", ")
         +(vote.awaiting.length>4?` and ${vote.awaiting.length-4} more`:""));
       p.push(`<a href="https://github.com/${REPO}/edit/${encodeURIComponent(pr.head.ref)}/votes/pr-${pr.number}.md">record your position</a>`);
+      /* A member whose row was cleared by a restart reads "awaiting you" and has
+         no way to know their earlier position was wiped, unless the page says so. */
+      if(vote.rounds>1) p.unshift(`<span class="q7">round ${vote.rounds}</span>`
+        +(vote.restarted?` · restarted ${esc(vote.restarted)}`:"")
+        +` · earlier positions cleared`);
+      /* A submission whose issue is still open never reached the file. Every
+         handled failure closes its issue and comments, so one still open means
+         nobody was told anything — which is why it belongs here rather than
+         only on the issue. */
+      const failed=(d.stuckVotes||[]).filter(i=>+((i.title.match(/#(\d+)/)||[])[1])===pr.number);
+      if(failed.length) p.push(`<span class="q7">${failed.length} submission${failed.length>1?"s":""} did not record: `
+        +failed.map(i=>`<a href="${i.html_url}">#${i.number}</a>`).join(", ")+`</span>`);
       voteWhy=p.join(" · ")+` · <span class="quiet">only preference counts as a yes</span>`;
     }else if((d.roll||[]).length){
       /* This procedure votes and no file exists yet, so offer to open one —
@@ -757,23 +799,6 @@ function render(d){
     }).join(""));
   }
 
-  /* A vote submitted through the form should be recorded and the issue closed
-     within seconds. Still open means it failed, and the only person who knows is
-     whoever submitted it. */
-  if((d.stuckVotes||[]).length){
-    o.push(`<h2>Votes that did not record (${d.stuckVotes.length})</h2>`);
-    o.push(`<p class="note">Submitted through a form, and the issue is still open — so the position was
-      not written into the vote file. Whoever submitted it was told why on the issue. Until it is
-      sorted out, the position can be recorded by editing the vote file directly.</p>`);
-    o.push(d.stuckVotes.map(i=>{
-      const mins=Math.floor((Date.now()-+new Date(i.created_at))/60000);
-      const age=mins<60?`${mins}m ago`:mins<1440?`${Math.floor(mins/60)}h ago`:`${Math.floor(mins/1440)}d ago`;
-      return row("",`<span class="num">#${i.number}</span><a href="${i.html_url}">${esc(i.title)}</a>`,
-        `@${esc(i.user.login)} · submitted ${age} · <span class="q7">not recorded</span>`,
-        "","","idle");
-    }).join(""));
-  }
-
   // What exists now, which is a different question from how it got here.
   // roles.md holds more than one table — a changelog follows the holders — so
   // read only the section the holders are in, or the changelog leaks in as roles.
@@ -827,11 +852,26 @@ function render(d){
          and the file itself is one click away, which is where the arithmetic
          should be read rather than restated here. */
       const vpath=`votes/pr-${e.m.number}.md`;
-      if((d.shas||{})[vpath])
-        parts.push(`<a href="https://github.com/${REPO}/blob/main/${vpath}">vote recorded</a>`);
+      const mv=(d.mergedVotes||{})[e.m.number];
+      let voteLine="";
+      if((d.shas||{})[vpath]){
+        const bits=[];
+        if(mv&&mv.result){
+          bits.push(`<strong>vote ${mv.result.carried?"carried":"did not carry"}</strong>`
+            +(mv.result.affirmative!=null
+              ? ` — ${mv.result.affirmative} of ${mv.result.of} affirmative, needed ${mv.result.needed}`
+              : ``));
+          /* A proposal that failed once and passed after amendment is a different
+             thing from one that passed first time, and §1's amendment record asks
+             how a decision was made. The detail is in the file. */
+          if(mv.rounds>1) bits.push(`<span class="q7">after ${mv.rounds} rounds</span>`);
+        } else bits.push(`<strong>vote recorded</strong>, with no result written into it`);
+        bits.push(`<a href="https://github.com/${REPO}/blob/main/${vpath}">the vote</a>`);
+        voteLine=bits.join(" · ");
+      }
       const meta=parts.join(" &middot; ");
       return row("",`<span class="num">#${e.m.number}</span><a href="${e.m.html_url}">${esc(e.m.title)}</a>`,
-        meta,"",fmt(e.at),"idle");
+        meta,"",fmt(e.at),"idle",voteLine);
     }
     const a=e.a;
     return row("",esc(a.msg),

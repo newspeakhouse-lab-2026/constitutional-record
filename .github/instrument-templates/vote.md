@@ -59,9 +59,13 @@ cite the members.md blob the list was taken from (`git rev-parse HEAD:members.md
 does not change the denominator.
 
 IF THE VOTE RESTARTS — a material change restarts the deliberation period
-(Section 2). Clear the Position and Date cells, add a line reading
-`**Restarted:** <date> — <what changed>` below Entitled to vote, and vote again. The earlier
-round stays in this file's history, which is the Record. Do not keep two tables.
+(Section 2). Four things, in order: write the closing round's outcome into
+`## Earlier rounds`; clear the Position and Date cells; add or update
+`**Restarted:** <date> — <what changed>` below Entitled to vote; set the new
+Opened and Closes. Then vote again.
+
+  Never keep two tables. Every tool that writes to this file relies on there
+  being exactly one, and with two, nothing can tell which round is current.
 -->
 
 | Member | Position | Date |
@@ -134,3 +138,30 @@ Discussion: <link>
 ## Notes
 
 *Optional. Section 2 invites a member to say what would move their position.*
+
+## Earlier rounds
+
+*One line per round that closed before this one, newest first. Empty until a vote
+restarts.*
+
+**Round 1** — did not carry. Affirmative 6 of 14, needed 8. Closed 5 October 2026.
+Restarted because the cadence section was materially changed.
+
+<!--
+WHY RESULTS AND NOT TABLES. A material change restarts the deliberation period
+(Section 2), and the positions are cleared and taken again. Only the outcome of
+the earlier round is kept here, because this file holds exactly one table and
+every tool that writes to it depends on that: with two tables, nothing can be
+sure which one is current, and a row could be written into a closed round.
+
+The detail — who held which position in an earlier round — is in this file's git
+history, which is the Record. `git log -p votes/pr-NNN.md` shows every round in
+full. What belongs here is the fact a round closed, how it closed, and why it
+restarted, because a proposal that failed once and passed after amendment is a
+different thing from one that passed first time, and Section 1's amendment record
+asks how a decision was made.
+
+A restart does not clear the Objections section. An objection is deliberation and
+stands until withdrawn (Section 2), even where the change that triggered the
+restart was made to answer it — in which case the member withdraws it and says so.
+-->

@@ -117,6 +117,64 @@ const layer3 = voteOf(['**Carries if:** a majority of all members — **8 of 14*
   '| Member | Position | Date |', '|---|---|---|', '| A | preference | x |'].join('\n'));
 check('a plain threshold is not read as a quorum', [layer3.quorumOnly, layer3.required], [false, 8]);
 
+/* A material change restarts the deliberation period and clears the positions.
+   Nothing read the line, so a cleared row looked like a member who had not
+   answered — with no sign their earlier position had been wiped. */
+const re1 = voteOf([
+  '**Carries if:** a majority of all members — **8 of 14**',
+  '**Restarted:** 2026-10-05 — the cadence section was materially changed',
+  '| Member | Position | Date |', '|---|---|---|', '| A | — | |',
+].join('\n'));
+check('a restart is read off the file', re1.restarted, '2026-10-05 — the cadence section was materially changed');
+const re0 = voteOf(['**Carries if:** a majority of all members — **8 of 14**',
+  '| Member | Position | Date |', '|---|---|---|', '| A | — | |'].join('\n'));
+check('a vote that never restarted says so', re0.restarted, '');
+
+/* What the history section displays: the result the file states, and how many
+   rounds it took. The page must never compute a verdict — §3 gives that to a
+   Record Keeper — so it reads these, and nothing else. */
+const done = voteOf([
+  '**Carries if:** a majority of all members — **8 of 14**',
+  '**Restarted:** 5 October 2026 — the cadence section was materially changed',
+  '| Member | Position | Date |', '|---|---|---|', '| A | preference | 2026-10-07 |',
+  '', '## Result', '', '**Carried.**', 'Affirmative 9 of 14, needed 8.', '',
+  '## Earlier rounds', '',
+  '**Round 1** — did not carry. Affirmative 6 of 14, needed 8. Closed 5 October 2026.',
+].join('\n'));
+check('the stated result is read, not computed',
+  [done.result.carried, done.result.affirmative, done.result.of, done.result.needed], [true, 9, 14, 8]);
+check('rounds are counted from Earlier rounds', done.rounds, 2);
+check('each earlier round keeps its outcome', done.earlier[0].n, 1);
+check('a single-round vote reports one round', re0.rounds, 1);
+check('an open vote has no result yet', re0.result, null);
+const failed = voteOf(['**Carries if:** two-thirds of all members — **10 of 14**',
+  '| Member | Position | Date |', '|---|---|---|', '| A | preference | x |',
+  '', '## Result', '', '**Did not carry.**', 'Affirmative 9 of 14, needed 10.'].join('\n'));
+check('a vote that did not carry is read as such', failed.result.carried, false);
+
+/* A Tier C result puts quorum and majority lines between the verdict and the
+   affirmative count. Requiring them adjacent read a recorded result as absent. */
+const tierCresult = voteOf([
+  '**Carries if:** a simple majority of those who vote, with a quorum of **7 of 14**',
+  '| Member | Position | Date |', '|---|---|---|', '| A | preference | x |',
+  '', '## Result', '', '**Carried.**',
+  'quorum 8 of 14 responded, needed 7 — met',
+  'majority 6 of 7 counted (preference and objection only), needed 4',
+  'Affirmative 6 of 7, needed 4.',
+].join('\n'));
+check('a Tier C result is read through its quorum lines',
+  [tierCresult.result.carried, tierCresult.result.affirmative, tierCresult.result.needed], [true, 6, 4]);
+
+/* A restart means a round closed, so there are at least two — even when the
+   earlier one's outcome was never written down. Saying "round 1 — restarted" is
+   a contradiction. */
+const orphan = voteOf([
+  '**Carries if:** a majority of all members — **8 of 14**',
+  '**Restarted:** 5 October — the cadence changed',
+  '| Member | Position | Date |', '|---|---|---|', '| A | — | |',
+].join('\n'));
+check('a restart implies at least two rounds', orphan.rounds, 2);
+
 const passed = results.filter(Boolean).length;
 console.log(`\n${passed}/${results.length} passed`);
 process.exit(results.every(Boolean) ? 0 : 1);

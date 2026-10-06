@@ -6,10 +6,12 @@ says the tooling creates no duty, and an amendment is valid whatever our JSON
 happens to contain. The job is to tell whoever is amending the Constitution,
 at the moment they amend it, that something else needs updating too.
 
-Three checks:
+Five checks:
   1. Every sentence docs/data.json quotes still appears in constitution.md.
   2. Every instant agrees with the wall-clock time its own quote states.
   3. Every instrument that expires declares it in a form the page can read.
+  4. Every vote's written result still matches its own rows.
+  5. Every vote that restarted records what the earlier round decided.
 """
 import json, re, sys, glob
 from datetime import datetime
@@ -190,7 +192,15 @@ def main():
             continue
         got = tally.tally(parsed["procedure"], parsed["roll"], parsed["counts"],
                           data.get("thresholds", {}), parsed["excluded"])
-        stated = re.search(r"^\*\*(Carried|Did not carry)\b", re.sub(r"<!--.*?-->", "", text, flags=re.S), re.M)
+        clean = re.sub(r"<!--.*?-->", "", text, flags=re.S)
+        # A restart means a round closed. If its outcome was never written into
+        # Earlier rounds, it survives only in git history — which is still the
+        # Record, but nothing on the page or in this file can say what happened.
+        if parsed.get("restarted") and not parsed.get("earlier"):
+            warn(path, "this vote says it restarted but records no earlier round, so the outcome of "
+                       "the round that closed is not written down. Add a line under Earlier rounds; "
+                       "`git log -p " + path + "` has the detail.")
+        stated = re.search(r"^\*\*(Carried|Did not carry)\b", clean, re.M)
         if not stated:
             continue  # no result written yet: an open vote, not a defect
         said = stated.group(1) == "Carried"
