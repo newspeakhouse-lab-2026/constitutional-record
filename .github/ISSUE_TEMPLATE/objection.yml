@@ -1,0 +1,53 @@
+name: "Raise an objection"
+description: Object to a proposal. Section 2 requires a reason and a suggested route forward, so both are asked for here.
+title: "Objection: PR #"
+labels: ["objection"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **An objection is not a bare no.** Section 2: it is *"stated with its reason and offered alongside a suggested route forward, so that raising a concern moves the cohort closer to a decision rather than simply halting it."* Both parts are required, which is why this is a separate form.
+
+        Both go into `votes/pr-{number}.md` word for word, on the proposal's own branch. They have to be in the file rather than in a comment: a comment is not in the Record, and `git clone` retrieves none of them.
+
+        **One objection moves an Ordinary proposal up a tier** — A to B, B to C — never down.
+
+  - type: input
+    id: pr
+    attributes:
+      label: Pull request number
+      description: Digits only.
+      placeholder: "14"
+    validations:
+      required: true
+
+  - type: textarea
+    id: reason
+    attributes:
+      label: Your reason
+      description: "Section 2 asks for an objection on the basis of potential harm to the Laboratory. What is the harm, and to whom?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: route
+    attributes:
+      label: A suggested route forward
+      description: "What would resolve this — an amendment, a narrower version, a different mechanism, more time? It does not have to be a solution you are confident in. It has to be something the cohort can act on."
+    validations:
+      required: true
+
+  - type: input
+    id: discussion
+    attributes:
+      label: Link to the discussion
+      description: Optional. A comment or thread where this was argued, for context — the operative sentences still go above, in the file.
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        **An objection missing a part is never discounted.** If something is incomplete you will be asked for the rest; nobody may treat your concern as absent because a field was blank. It stands as deliberation from the moment you raise it.
+
+        An objection is withdrawn by saying so in the same thread.

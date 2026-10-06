@@ -50,3 +50,11 @@ jobs:
       # reading would fail here rather than misreport a live vote.
       - name: Test the dashboard's vote reader
         run: node .github/scripts/test-vote-parse.mjs
+
+      # record-vote.yml triggers on `issues`, which GitHub always runs from the
+      # default branch, so it cannot be exercised by the pull request that
+      # introduces it. This runs its logic against a stubbed API — including a
+      # forced write conflict, which is the case that proves a retry reapplies
+      # rather than resending stale bytes and erasing another member's row.
+      - name: Test the vote-recording workflow's logic
+        run: node .github/scripts/test-record-vote.mjs

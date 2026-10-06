@@ -1,0 +1,48 @@
+name: "Record a position on a vote"
+description: State preference, toleration or abstention on an open vote. A workflow writes your row for you.
+title: "Vote: PR #"
+labels: ["vote"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Only `preference` counts as a yes.** At Layer 3, Layer 4 and re-ratification, the Constitution asks for affirmative support from a fraction of *all* members — so toleration, abstention and never answering are the same number. None of them is a yes.
+
+        This form does not decide anything. A workflow writes your row into `votes/pr-{number}.md` on the proposal's own branch, as you, and replies with a link to the commit. If it cannot, it says so and you edit the file directly — that always works.
+
+        **To object, use the other form.** An objection has to carry a reason and a suggested route forward (Section 2), which this one does not ask for.
+
+  - type: input
+    id: pr
+    attributes:
+      label: Pull request number
+      description: Digits only. The proposal you are voting on — a vote belongs to the pull request carrying the text, because an issue adopts nothing.
+      placeholder: "14"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: position
+    attributes:
+      label: Your position
+      description: "Section 2's four positions, in its own words. Pick deliberately — this is the whole vote."
+      options:
+        - "preference — I support this outcome. THE ONLY ANSWER THAT COUNTS AS A YES"
+        - "toleration — I may not be in favour, but I have no reasoned objection. Counted as an abstention, not a yes"
+        - "abstention — I do not take a position. Not a yes"
+        - "objection — I object. USE THE OBJECTION FORM INSTEAD: Section 2 requires a reason and a route forward"
+    validations:
+      required: true
+
+  - type: textarea
+    id: note
+    attributes:
+      label: Anything that would move your position
+      description: "Optional. Section 2 invites this, especially alongside a toleration: saying what would make it a preference, or an objection, is how a proposal gets better before it closes. Written into the vote file under Notes."
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        Changed your mind? Submit this again while the window is open — your row is updated, not duplicated, and the earlier one stays in the file's history.
