@@ -57,6 +57,23 @@ jobs:
 
             const hand = (branch, n) =>
               `https://github.com/${owner}/${repo}/edit/${branch}/votes/pr-${n}.md`;
+            /* Editing the file by hand always works — but GitHub's commit dialog
+               offers two radios and the wrong one looks exactly like the right
+               one. "Create a new branch for this commit and start a pull
+               request" is correct for a proposal and wrong for a vote: it puts
+               the position on a branch of its own, shows a green success page,
+               and leaves the Record untouched. The member believes they voted.
+               Nothing tells them otherwise, and nothing ever will.
+               So the radio is named every time a hand edit is offered, instead
+               of being left to be discovered by whoever loses a vote to it. */
+            const byHand = (branch, n) => [
+              `**Editing the file by hand always works:** ${hand(branch, n)}`,
+              '',
+              `When you press **Commit changes**, choose **"Commit directly to the \`${branch}\` branch"**.`,
+              `Do **not** choose **"Create a new branch for this commit and start a pull request"** — that puts`,
+              `your position on a branch nothing reads, and shows you a success page while the Record stays`,
+              `exactly as it was.`,
+            ].join('\n');
 
             async function say(text) {
               await github.rest.issues.createComment({
@@ -81,7 +98,7 @@ jobs:
                 '`rules/rule-recording-votes.md` creates no duty, and a position stated in the',
                 'governance channel is a position whether or not a file says so.',
                 '',
-                branch && n ? `**Editing the file always works:** ${hand(branch, n)}` : '',
+                branch && n ? byHand(branch, n) : '',
               ].join('\n'));
               await close('vote-refused');
               core.notice('refused: ' + text.split('\n')[0]);
@@ -434,7 +451,7 @@ jobs:
                   return brokenTooling(`I could not read \`${path}\` on branch \`${branch}\` — GitHub answered ` +
                     `\`${e.status || 'with an error'}\`. **This is not a statement that no vote is open**; it is ` +
                     `a statement that this workflow could not find out. Nothing has been written. Submit the ` +
-                    `form again in a few minutes, or edit the file directly: ${hand(branch, n)}`);
+                    `form again in a few minutes, or edit the file by hand.\n\n` + byHand(branch, n));
                 }
                 return refuse(`There is no \`${path}\` on branch \`${branch}\`, so no vote is open to record a ` +
                   `position in. This workflow will not create one: opening a vote means naming the procedure, ` +
@@ -483,7 +500,7 @@ jobs:
                   `because it failed an internal check: **${bad}**.\n\n` +
                   `**Your position has not been recorded, and nothing in the file has changed.** That is ` +
                   `intended: writing anyway could overwrite a position another member already recorded, ` +
-                  `and a position quietly destroyed may never be noticed.\n\nEdit the file directly: ${hand(branch, n)}`);
+                  `and a position quietly destroyed may never be noticed.\n\n` + byHand(branch, n));
               }
 
               try {
@@ -528,7 +545,7 @@ jobs:
             }
             await brokenTooling(`Five attempts to write \`${path}\` were each overtaken by someone else ` +
               `writing to it first. Nothing has been recorded. Among fourteen people that should not ` +
-              `happen, so this is worth a look.\n\nEdit the file directly: ${hand(branch, n)}`);
+              `happen, so this is worth a look.\n\n` + byHand(branch, n));
 
             /* The other end of the try opened after brokenTooling. Anything that
                reaches here is a fault nobody anticipated, so it says only what it

@@ -171,6 +171,13 @@ r = await run({ fileMissing: true });
 check('no vote file means refusal, not creation', r.writes.length, 0);
 check('and it will not open a vote itself', has(r.comments[0], "will not create one"), true);
 check('and a 404 is not a red run', r.failed, []);
+/* The silent failure: a hand edit committed to a new branch shows a green
+   success page and changes nothing. Every message offering a hand edit names
+   the radio, so this is asserted on one of them. */
+check('the hand-edit offer names the branch to commit to',
+  has(r.comments[0], 'Commit directly to the `feature` branch'), true);
+check('and names the radio that loses the vote',
+  has(r.comments[0], 'Create a new branch for this commit and start a pull request'), true);
 
 /* A rate limit, a permissions blip or a 500 is not evidence about the Record.
    Saying "no vote is open" on that evidence tells a member something false, and

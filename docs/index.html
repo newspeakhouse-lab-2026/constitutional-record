@@ -946,6 +946,13 @@ function render(d){
         L.push(`<div class="acts"><a class="act" href="https://github.com/${REPO}/issues/new`
           +`?template=vote.yml&title=${encodeURIComponent("Vote: PR #"+pr.number)}&pr=${pr.number}">Record your position</a>`
           +`<a class="actalt" href="https://github.com/${REPO}/edit/${encodeURIComponent(pr.head.ref)}/votes/pr-${pr.number}.md">or edit votes/pr-${pr.number}.md yourself</a></div>`);
+        /* The hand edit is offered here too, so the radio is named here too.
+           GitHub's commit dialog defaults to language that is right for a
+           proposal and wrong for a vote, and choosing it shows a success page
+           while the Record stays as it was. */
+        L.push(`<p class="vnote">Editing it by hand: commit <strong>directly to the
+          <code>${esc(pr.head.ref)}</code> branch</strong>. &ldquo;Create a new branch for this commit and start a
+          pull request&rdquo; puts your position on a branch nothing reads, and still shows you a success page.</p>`);
       }
       voteWhy=`<div class="vote">${L.join("")}</div>`;
     }else if((d.roll||[]).length){

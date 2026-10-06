@@ -294,6 +294,8 @@ One table, one row per member — **all of them, including anyone who has said n
 
 To record your own position, change your row to `preference`, `toleration`, `abstention` or `objection`, with the date. The dashboard links straight to your file.
 
+> **When you commit, choose "Commit directly to the `{branch}` branch".** The other option — *"Create a new branch for this commit and start a pull request"* — is the right one for a proposal and the wrong one for a vote. It puts your position on a branch of its own, where nothing reads it, and then shows you a green success page. You will believe you have voted and nothing in the Record will have changed. This is the one way to lose a vote without being told, which is why the workflow names the same radio in every message that offers a hand edit.
+
 > **Only `preference` counts as affirmative support.** At Layer 3, Layer 4 and re-ratification, toleration, abstention and never answering are the same number. None of them is a yes.
 
 **An objection goes in the file, in full** — its reason *and* a suggested route forward, both of which Section 2 requires. A reason that lives only in a pull request comment is not in the Record: `git clone` retrieves none of it. Link the discussion for context; put the operative sentences in the file.
