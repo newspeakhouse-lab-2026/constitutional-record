@@ -1067,6 +1067,20 @@ function render(d){
       if(f) voteWhy=`<div class="vote"><p class="vnote">This procedure votes, and no positions are recorded yet.</p>`
         +`<div class="acts"><a class="act" href="${newVoteURL(pr.head.ref,`votes/pr-${pr.number}.md`,f)}">Start a vote</a></div></div>`;
     }
+    if(!voteWhy&&(win.tier==="a"||win.tier==="b")&&win.closes){
+      /* Tier A and Tier B had no action at all here: §2 holds no vote, so there
+         was nothing for a vote block to say, and the one act that does change the
+         outcome — an objection — had nowhere to go but a pull request comment,
+         which git clone does not retrieve. The form records it now. */
+      voteWhy=`<div class="vote">
+        <p class="yesonly"><strong>No vote is held at Tier ${win.tier.toUpperCase()}.</strong>
+        Preference, toleration, abstention and saying nothing are the same act here: absent a stated
+        objection, it passes. One objection — with a reason and a route forward, as §2 requires —
+        moves it to Tier ${win.tier==="a"?"B":"C"} rather than stopping it.</p>
+        <div class="acts"><a class="act" href="https://github.com/${REPO}/issues/new`
+        +`?template=vote.yml&title=${encodeURIComponent("Vote: PR #"+pr.number)}&pr=${pr.number}">Object to this proposal</a>`
+        +`<a class="actalt" href="${pr.html_url}">or say so on the proposal</a></div></div>`;
+    }
 
     if(win.closes){
       const r=rem(win.closes);
