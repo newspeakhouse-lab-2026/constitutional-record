@@ -6,12 +6,13 @@ says the tooling creates no duty, and an amendment is valid whatever our JSON
 happens to contain. The job is to tell whoever is amending the Constitution,
 at the moment they amend it, that something else needs updating too.
 
-Five checks:
+Six checks:
   1. Every sentence docs/data.json quotes still appears in constitution.md.
   2. Every instant agrees with the wall-clock time its own quote states.
   3. Every instrument that expires declares it in a form the page can read.
   4. Every vote's written result still matches its own rows.
   5. Every vote that restarted records what the earlier round decided.
+  6. Every recorded outcome carries the amendment record §1 requires.
 """
 import json, re, sys, glob
 from datetime import datetime
@@ -202,6 +203,33 @@ def main():
             warn(path, "this vote says it restarted but records no earlier round, so the outcome of "
                        "the round that closed is not written down. Add a line under Earlier rounds; "
                        "`git log -p " + path + "` has the detail.")
+        # 6 -- §1 requires five things recorded for every adopted amendment, and
+        # the pull request body that also asks for them is discarded at merge: a
+        # merge commit carries the title, not the body. So a file that records an
+        # outcome and no amendment record is a decision whose reasoning left no
+        # trace. Warns, like everything else here -- the tooling creates no duty,
+        # and §1's requirement binds whether or not this file notices.
+        FIELDS = ["How it was made", "Assumptions", "Status",
+                  "Notes from the discussion", "Abstentions or objections"]
+        has_outcome = re.search(r"^\*\*(Carried|Did not carry)\b", clean, re.M) \
+            or (parsed.get("objections") and not parsed.get("holdsVote", True))
+        if has_outcome:
+            sec = re.search(r"^## Amendment record\s*$(.*?)(?=^## |\Z)", clean, re.M | re.S)
+            if not sec:
+                warn(path, "this records an outcome but has no `## Amendment record` section. "
+                           "\u00a71 requires five things recorded for every amendment to the Constitution "
+                           "or a rule, and the pull request body that also asks for them is discarded "
+                           "at merge. `.github/instrument-templates/vote.md` has the section.")
+            else:
+                body = sec.group(1)
+                missing = [f for f in FIELDS
+                           if not re.search(r"^\*\*" + re.escape(f) + r":\*\*[^\S\n]*(\S.*)$", body, re.M)
+                           or re.search(r"^\*\*" + re.escape(f) + r":\*\*[^\S\n]*<", body, re.M)]
+                if missing:
+                    warn(path, "the `## Amendment record` is incomplete \u2014 " + ", ".join(missing)
+                               + (" is" if len(missing) == 1 else " are") + " still blank or still the "
+                               "template's placeholder. \u00a71 asks for each of them.")
+
         stated = re.search(r"^\*\*(Carried|Did not carry)\b", clean, re.M)
         if not stated:
             continue  # no result written yet: an open vote, not a defect

@@ -165,6 +165,48 @@ treat the concern as absent. Anyone may ask.
 
 Discussion: <link>
 
+## Amendment record
+
+*Completed before merge, by whoever merges. Section 1 requires six things recorded
+for every amendment to the Constitution or a rule; the first is the commit
+timestamp, so five are left.*
+
+<!--
+WHY HERE. The pull request template asks for these too, and that copy is thrown
+away: this repository merges with merge commits, and a GitHub merge commit carries
+the pull request TITLE and not its body. So a record typed into the web form never
+enters the repository at all. `git clone` retrieves this file.
+
+EVERY ADOPTED PROPOSAL NEEDS ONE — §1 says "all amendments to the Constitution and
+rules", with no exception for the ones that passed quietly. A Tier A rule adopted
+by lazy consensus has no vote and may have no objection, so this file may hold
+nothing but the section below. That is correct and it is not an empty file: it is
+the record of how something was decided.
+
+ASSUMPTIONS IS THE ONE THAT EARNS ITS KEEP. The others say what happened;
+assumptions say what has to stay true for the rule to still make sense. In six
+months the question is never "what did we decide" — the text says so — it is "does
+this still fit?", and nothing else in the Record answers it.
+-->
+
+**How it was made:** <one sentence. §2's own examples: by consent, by consensus,
+by majority or supermajority vote. For a Tier A rule nobody objected to: "Lazy
+consensus — posted to the governance channel on 4 October, no objection within the
+48-hour window." Where there was a vote, the numbers.>
+
+**Assumptions:** <what has to stay true for this to keep making sense — a price, a
+headcount, a role being filled, a room existing, a platform still running.>
+
+**Status:** <live, experimental, or archived — §1's own three words.>
+
+**Notes from the discussion:** <what was argued, and what changed because of it.
+Anything a reader would otherwise have to reconstruct from scattered comments.>
+
+**Abstentions or objections:** <§1 asks for these "in aggregate where the
+applicable procedure uses an anonymous or secret ballot" — which in this
+Constitution is §3.2 elections and nothing else, so name people here. "None" if
+there were none. The objections themselves stay in full above.>
+
 ## Notes
 
 *Optional. Section 2 invites a member to say what would move their position.*

@@ -135,6 +135,29 @@ Fractions **of all members** round up — Section 1 says so of thresholds stated
 way, which is what a quorum is. A majority is *more than half*, and does not: a
 majority of 14 is 8, so a 7–7 split fails.
 
+## The amendment record
+
+Section 1 requires six things recorded for every amendment to the Constitution or
+a rule: the date and time, a brief narrative of how it was made, the assumptions
+it rests on, its status, explanatory notes from the discussion, and any
+abstentions or objections. The commit timestamp supplies the first.
+
+**The other five go in this file, under `## Amendment record`, completed before
+merge.** The pull request template asks for them too and that copy is discarded:
+this repository merges with merge commits, and a merge commit carries the pull
+request's title, not its body. A record typed into a web form and never committed
+is not in the Record.
+
+**Every adopted proposal needs one**, including those that passed quietly.
+Section 1 says *all* amendments, with no exception for lazy consensus. So a Tier A
+rule nobody objected to has a file here holding nothing but this section — which
+is not an empty file, it is the record of how something was decided.
+
+Of the five, **assumptions** is the one that earns its keep. The others say what
+happened. Assumptions say what has to stay true for the rule to still make sense,
+and six months on the question is never *what did we decide* — the text says so —
+but *does this still fit*. Nothing else in the Record answers that.
+
 ## If the vote restarts
 
 A material change restarts the deliberation period (Section 2). Write the closing
