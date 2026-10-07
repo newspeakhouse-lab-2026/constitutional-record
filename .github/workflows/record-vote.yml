@@ -433,9 +433,18 @@ jobs:
                   ''].filter(x => x !== null).join('\n');
                 const esc = anchor.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
                 const existing = new RegExp(esc + '[\\s\\S]*?(?=\\n<!-- (?:objection|note): |\\n## |$)');
-                if (existing.test(s)) s = s.replace(existing, block);
-                else if (s.includes(heading)) s = s.replace(heading, heading + '\n\n' + block);
-                else s = s.replace(/\s*$/, '\n\n' + heading + '\n\n' + block + '\n');
+                /* Function replacements, never string ones. A replacement STRING
+                   expands $&, $`, $' and $1 — and `block` contains the member's own
+                   words. An objection reading "the space costs $`40 a month" wrote
+                   the whole file prefix, header and table included, unquoted into
+                   the middle of the objection: the write succeeded, nobody was
+                   warned, and tally.py then refused the vote for the whole cohort
+                   because the duplicated table gave it two rows per member.
+                   A function's return value is used literally, so there is nothing
+                   to expand and no escaping to get right. */
+                if (existing.test(s)) s = s.replace(existing, () => block);
+                else if (s.includes(heading)) s = s.replace(heading, () => heading + '\n\n' + block);
+                else s = s.replace(/\s*$/, () => '\n\n' + heading + '\n\n' + block + '\n');
               }
               return s.replace(/\s*$/, '\n');
             }
@@ -587,16 +596,6 @@ jobs:
                     `Whoever is running the vote can open it from the dashboard, or from ` +
                     `\`.github/instrument-templates/vote.md\`.`, branch, n);
                 }
-                if (!isObjection) {
-                  return await refuse(`#${n} is a **${noVoteTier}** proposal, and Section 2 holds no vote at that ` +
-                    `tier — it passes absent a stated objection. So there is nothing for a **${position}** to be ` +
-                    `recorded in, and recording one would suggest a vote was running when none was.\n\n` +
-                    `An **objection** does have an effect here: a single stated one is enough to move the ` +
-                    `proposal up a tier. If that is what you mean, submit the form again choosing objection, ` +
-                    `with its reason and a route forward.\n\n` +
-                    `Support for a ${noVoteTier} proposal is expressed by saying so in the governance channel ` +
-                    `or on the proposal itself, where the deliberation happens.`, branch, n);
-                }
                 /* Creating it. Nothing is being decided: the procedure comes from
                    the proposal's own label, there is no roll and no threshold, and
                    the objection is the member's own words. */
@@ -620,6 +619,31 @@ jobs:
               const noTable = !parseTable(base);
 
               if (noTable) {
+                /* Keyed on noTable, not on the 404. This guard used to live inside
+                   the branch that CREATES the file, so it only ever ran on the
+                   first submission. Once the file existed, a preference, toleration
+                   or abstention fell straight through: it was written into the
+                   objections section, committed as "Record objection from <member>",
+                   announced to them as their objection, and labelled `objection` on
+                   the proposal — which §2 makes decisive. A member expressing
+                   support blocked the proposal they supported, in their own name,
+                   and label-proposals.yml never removes that label.
+
+                   The tier is read from the file here rather than from the labels,
+                   because the labels move up a tier the moment the first objection
+                   lands and the file is the Record. */
+                const fileTier = ((base.match(/^\*\*Procedure:\*\*[^\S\n]*(.+)$/m) || [])[1] || noVoteTier || 'Tier A')
+                  .replace(/\*/g, '').trim();
+                if (!isObjection) {
+                  return await refuse(`#${n} is a **${fileTier}** proposal, and Section 2 holds no vote at that ` +
+                    `tier — it passes absent a stated objection. So there is nothing for a **${position}** to be ` +
+                    `recorded in, and recording one would suggest a vote was running when none was.\n\n` +
+                    `An **objection** does have an effect here: a single stated one is enough to move the ` +
+                    `proposal up a tier. If that is what you mean, submit the form again choosing objection, ` +
+                    `with its reason and a route forward.\n\n` +
+                    `Support for a ${fileTier} proposal is expressed by saying so in the governance channel ` +
+                    `or on the proposal itself, where the deliberation happens.`, branch, n);
+                }
                 /* Read from the file once it exists, exactly as a vote's window is,
                    so there is one answer rather than one per caller. */
                 const cleanNV = base.replace(/<!--[\s\S]*?-->/g, '');

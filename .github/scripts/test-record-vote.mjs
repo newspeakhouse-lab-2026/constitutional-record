@@ -423,6 +423,50 @@ r = await run({ pull: TIER('a'), fileMissing: true, dataJson: '{"procedures":{}}
 check('no recorded period for Tier A is refused, not assumed', r.writes.length, 0);
 check('and names the file that should hold it', has(r.comments[0], 'docs/data.json'), true);
 
+/* ---- the two defects the final review found ------------------------------
+   Both were in the newest code, and both got through because the tests covered
+   the path that worked rather than the path that did not. */
+
+/* A replacement STRING expands $&, $`, $' and $1, and the block being inserted
+   carries the member's own words. "The space costs $`40" wrote the whole file
+   prefix - header and table - unquoted into the middle of the objection, the
+   write succeeded, nobody was warned, and tally.py then refused the vote for the
+   whole cohort because every member had two rows. */
+const DOLLARS = ['$`', "$'", '$&', '$1', '$$'];
+for (const d of DOLLARS) {
+  r = await run({ pull: TIER('a'), file: noVoteFile(), body: OBJ(`the space costs ${d}40 a month`, 'make it fortnightly') });
+  const text = r.writes.length ? r.writes[0].text : '';
+  check(`an objection containing ${d} is written`, r.writes.length, 1);
+  check(`  and does not duplicate the file's header`,
+    (text.match(/^\*\*Procedure:\*\*/gm) || []).length, 1);
+  check(`  and does not duplicate the Objections heading`,
+    (text.match(/^## Objections\s*$/gm) || []).length, 1);
+  check(`  and keeps the member's text verbatim`, text.includes(`${d}40 a month`), true);
+}
+
+/* The !isObjection guard lived inside the branch that CREATES the file, so it
+   only ever ran on the first submission. Once the file existed, a preference was
+   committed as "Record objection from <member>" and labelled `objection` on the
+   proposal - which §2 makes decisive. A member expressing support blocked the
+   proposal they supported. Every existing-file Tier A test submitted an
+   objection, so nothing covered this. */
+for (const [label, body] of [
+  ['preference', '### Pull request number\n\n14\n\n### Your position\n\npreference — I support this outcome. THE ONLY ANSWER THAT COUNTS AS A YES\n'],
+  ['toleration', '### Pull request number\n\n14\n\n### Your position\n\ntoleration — I may not be in favour, but I have no reasoned objection. Counted as an abstention, not a yes\n'],
+  ['abstention', '### Pull request number\n\n14\n\n### Your position\n\nabstention — I do not take a position. Not a yes\n'],
+]) {
+  r = await run({ pull: TIER('a'), file: noVoteFile(), body });
+  check(`${label} on an EXISTING Tier A file writes nothing`, r.writes.length, 0);
+  check(`  and is not labelled an objection`, r.labelled.some(l => l.startsWith('objection@')), false);
+  check(`  and says why, naming the tier`, has(r.comments[0], 'holds no vote at that tier'), true);
+}
+
+/* The refusal reads the tier from the file, not the labels: §2 moves the labels
+   up a tier the moment the first objection lands, and the file is the Record. */
+r = await run({ pull: TIER('c'), file: noVoteFile(),
+  body: '### Pull request number\n\n14\n\n### Your position\n\npreference — I support this outcome. THE ONLY ANSWER THAT COUNTS AS A YES\n' });
+check('after escalation the refusal still names Tier A, from the file', has(r.comments[0], 'Tier A'), true);
+
 const passed = results.filter(Boolean).length;
 console.log(`\n${passed}/${results.length} passed`);
 process.exit(results.every(Boolean) ? 0 : 1);
