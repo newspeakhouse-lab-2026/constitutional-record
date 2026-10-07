@@ -62,9 +62,11 @@ Everything from here down is the full form, for a tier that votes.
 **Entitled to vote:** 14 members, frozen when this vote opened — `members.md` blob `<sha>`
 
 <!--
-PROCEDURE — Tier A and Tier B hold no vote: they pass unless a member objects, so
-they need no file. If you are filling this in for a Tier A proposal, you probably
-want a comment on the pull request instead.
+PROCEDURE — Tier A and Tier B hold no vote: they pass unless a member objects. If
+you are filling this in for a Tier A or Tier B proposal, use the short form at the
+top of this file, not the table below. Do NOT put the objection in a pull request
+comment: `git clone` retrieves none of it, so a reason that lives only there is
+not in the Record.
 
 CARRIES IF — write the Constitution's own words, then the number for this vote.
 Writing the number out is safe here and nowhere else: the list is frozen when the

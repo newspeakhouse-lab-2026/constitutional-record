@@ -44,8 +44,9 @@ def objections_in(text):
     m = re.search(r"^## Objections\s*$(.*?)(?=^## |\Z)", text, re.M | re.S)
     if not m:
         return []
+    # An en dash is the easier Mac keystroke and was silently erasing objections.
     return [(n.strip(), d.strip())
-            for n, d in re.findall(r"^\*\*(.+?)\*\*\s*[\u2014-]\s*(\S+)", m.group(1), re.M)]
+            for n, d in re.findall(r"^\*\*(.+?)\*\*\s*[\u2014\u2013-]\s*(\S+)", m.group(1), re.M)]
 
 
 def ceil_div(a, b):
@@ -140,9 +141,16 @@ def parse(text):
         return None, f'procedure "{raw}" is not one the Constitution names'
 
     rows, counts, excluded, bad = [], {p: 0 for p in POSITIONS}, 0, []
+    # ONE table, the first. The scan used to run to the end of the file, so a
+    # comparison table pasted under ## Notes -- which the template invites -- was
+    # counted into the roll and the affirmative total.
+    started = False
     for line in text.split("\n"):
         if not line.lstrip().startswith("|"):
+            if started:
+                break
             continue
+        started = True
         cells = [c.strip() for c in line.strip().strip("|").split("|")]
         if len(cells) < 2 or re.fullmatch(r"[:\-\s]+", cells[0] or "-"):
             continue

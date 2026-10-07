@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%237a5a2a'/%3E%3Crect x='4' y='4' width='8' height='1.4' fill='%23fbfaf8'/%3E%3Crect x='4' y='7.3' width='8' height='1.4' fill='%23fbfaf8'/%3E%3Crect x='4' y='10.6' width='5' height='1.4' fill='%23fbfaf8'/%3E%3C/svg%3E">
-<title>PROPOSED design — State of the Record — Newspeak House Governance Laboratory 2026</title>
+<title>State of the Record — Newspeak House Governance Laboratory 2026</title>
 <style>
   /* ======================================================================
      THE RECORD — a visual language, stated.
@@ -835,17 +835,27 @@ function voteOf(text){
   /* Bounded to its own section: ## Notes holds blocks of the same shape, and
      counting those as objections would be wrong. */
   const objSec=(text.split(/^## Objections[^\n]*$/m)[1]||"").split(/^## /m)[0];
-  const objections=[...objSec.matchAll(/^\*\*(.+?)\*\*\s*[—-]\s*(\S+)/gm)]
+  const objections=[...objSec.matchAll(/^\*\*(.+?)\*\*\s*[\u2014\u2013-]\s*(\S+)/gm)]
     .map(m=>({name:m[1].trim(), date:m[2].trim()}));
   const restarted=((text.match(/^\*\*Restarted:\*\*[^\S\n]*(.+)$/m)||[])[1]||"").trim();
   const carries=(text.match(/^\*\*Carries if:\*\*([^\n]*)$/m)||[])[1]||"";
-  const quorumOnly=/quorum/i.test(carries);
+  /* The stated quorum FIGURE, not the word. Testing for "quorum" anywhere matched
+     it inside a negation — "a majority of all members, with no quorum requirement"
+     rendered a Layer 3 row as Tier C and hid the affirmative count, which is the
+     only number that decides it. */
+  const quorumOnly=/quorum\s+(?:of\s+)?\*\*\d+\s+of\s+\d+\*\*/i.test(carries);
   const need=carries.match(/(\d+)\s+of\s+\d+/);
   const iso=(text.match(/^\*\*Closes:\*\*[^\n]*?`([^`]+)`/m)||[])[1];
   const counts={preference:0,toleration:0,abstention:0,objection:0};
   const awaiting=[], members=[]; let rows=0;
-  for(const line of text.split("\n")){
-    if(!line.trimStart().startsWith("|")) continue;
+  /* ONE table, the first. The scan used to run to the end of the file, so a
+     comparison table pasted under ## Notes — which the template invites — was
+     counted into the roll and the affirmative total. Stop at the first blank line
+     after the table has started. */
+  const lines=text.split("\n"); let started=false;
+  for(const line of lines){
+    if(!line.trimStart().startsWith("|")){ if(started) break; continue; }
+    started=true;
     const cells=line.trim().replace(/^\||\|$/g,"").split("|").map(s=>s.trim());
     if(cells.length<2 || /^[:\-\s]+$/.test(cells[0]||"-") || cells[0].toLowerCase()==="member") continue;
     const p=cells[1].toLowerCase();
@@ -877,7 +887,14 @@ function voteOf(text){
              earlier one's outcome was never written down. */
           rounds:Math.max(earlier.length+1, restarted?2:1), earlier,
           affirmative:counts.preference, responded:rows-awaiting.length,
-          awaiting, closes:iso?new Date(iso):null};
+          awaiting,
+          /* Invalid Date is TRUTHY, so `vote.closes || win.closes` picked it and
+             `+enforced <= Date.now()` became NaN <= n, i.e. false: a closed vote
+             kept a live button and the workflow then refused the member. The
+             workflow guards this exactly; this did not. badCloses carries the fact
+             so the row can say so rather than silently falling back. */
+          badCloses:!!iso&&isNaN(new Date(iso)),
+          closes:(iso&&!isNaN(new Date(iso)))?new Date(iso):null};
 }
 /* --->8--- end of the extracted region. */
 
@@ -1445,6 +1462,15 @@ function render(d){
          read "running" on this row and be refused by the workflow. Which
          instant each clock names, and which one is enforced, is what a member
          needs only once they have seen that there is a disagreement. */
+      if(vote.badCloses)
+        warns.push(["The vote file's closing time cannot be read",
+          `<p><code>votes/pr-${pr.number}.md</code> has a <strong>Closes:</strong> line, but the instant in
+           its backticks is not a date this page can read.</p>
+           <p><strong>The workflow refuses every submission while that is true</strong> — it reads the same
+           line and fails the same way. So the window may look open here and accept nothing.</p>
+           <p>The line states the instant twice on purpose: the words for a person, the timestamp in
+           backticks for a machine. It is the backticked half that needs fixing, for example
+           <code>\`2026-10-13T12:00:00+01:00\`</code>.</p>`]);
       if(win.closes&&vote.closes&&Math.abs(+win.closes-+vote.closes)>6e4)
         warns.push(["Two closing times",
           `<p>This row and the vote file disagree about when the window shuts, so the row can show a
@@ -1497,9 +1523,15 @@ function render(d){
         L.push(`<div class="lanes" aria-hidden="true">`
           +lane(pr.number,"the quorum — any mark at all counts, out of all "+vote.roll,
                 plan,vote.roll,vote.required)
+          /* HALF IS NOT THE THRESHOLD. A majority is MORE than half (§2), so with
+             an even number counted the line sat one slot early and a 7-7 tie drew
+             as having reached it — in the one lane that is the only place the Tier
+             C majority appears at all. floor(d/2)+0.5 lands the notch mid-gap
+             before the winning slot for both parities, and is identical to the old
+             position on an odd d. */
           +lane(pr.number,"the majority — preference against objection only",
                 [["y",c.preference],["o",c.objection],["x",other],["x",silent]],
-                vote.roll,(c.preference+c.objection)/2)
+                vote.roll,Math.floor((c.preference+c.objection)/2)+0.5)
           +`</div>`);
       }else if(vote.required!=null){
         const short=vote.required-vote.affirmative;
@@ -1562,21 +1594,29 @@ function render(d){
           <p>The <strong>majority</strong> is then counted over preference and objection only. A
           tolerated or abstained slot is struck out of that second count — it got you through the
           gate and then left the room.</p>
-          <p>Read one column downwards to see what a single answer did in both.</p>`);
+          <p>Read one column downwards to see what a single answer did in both.</p>
+          <p><strong>As it stands:</strong> ${c.preference+c.objection} of the ${vote.roll} have
+          answered preference or objection, so a majority of those is
+          ${Math.floor((c.preference+c.objection)/2)+1} — and ${c.preference} ${c.preference===1?"is":"are"}
+          recorded. That denominator moves with every answer, and only settles when the window
+          closes.</p>`);
       else
         KEY.push(`<p class="yesonly"><strong>Only <code>preference</code> counts.</strong></p>
           <p>This procedure asks for affirmative support from a fraction of <em>all</em> members, and
           there is no quorum to reach. So toleration, abstention and never answering come to the same
           number: none of them is a yes.</p>
           <p>An objection is not counted here either, and that is not the same as not mattering — it
-          is opposition, stated with a reason and a route forward. Eight preferring and six objecting
-          still carries.</p>`);
+          is opposition, stated with a reason and a route forward. <strong>${vote.required} preferences
+          carry this</strong>, however many members object.</p>`);
       LINKS.push(noteBtn("What the marks mean", "What the marks mean, and when they count",
         KEY.join("")));
       /* Grouped by arithmetic effect, but only where the arithmetic has a clean
          binary. At Layer 3, Layer 4 and re-ratification the threshold is purely
-         affirmative — eight preferring and six objecting still carries — so the
-         split is preference against everything else.
+         affirmative — reaching the stated number carries it however many object —
+         so the split is preference against everything else. The figure differs by
+         procedure (8 of 14 at Layer 3, 10 at Layer 4 and re-ratification), so it
+         is read from the file rather than written out here: this branch serves all
+         three, and a sentence naming one of them was wrong on the other two.
          The grouping is visual only, and the sentence below carries the meaning.
          Labelling the muted group "none of these count" would be arithmetically
          true and badly misleading: an objection is opposition, stated with a

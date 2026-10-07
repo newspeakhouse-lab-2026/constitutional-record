@@ -18,6 +18,12 @@ on:
       - 'policies/**'
       - 'votes/**'
       - '.github/workflows/label-proposals.yml'
+      # record-vote.yml was absent, so a pull request touching only it ran none
+      # of the tests written for it -- which is most of the suite.
+      - '.github/workflows/record-vote.yml'
+      - '.github/workflows/check-record.yml'
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/instrument-templates/**'
       - '.github/scripts/**'
   workflow_dispatch:
 

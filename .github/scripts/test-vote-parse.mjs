@@ -218,6 +218,51 @@ check('and the count of the unanswered still agrees', whoVoted.awaiting, ['Carl'
 check('the date each answered is kept',
   whoVoted.members[1].date, '2026-10-08');
 
+/* ---- four defects the final review found in this region ------------------ */
+
+/* Invalid Date is truthy, so `vote.closes || win.closes` picked it and the
+   "window is over" test became NaN <= n. A closed vote kept a live button and
+   the workflow then refused the member. */
+const badDate = voteOf(['**Carries if:** a majority of all members — **8 of 14**',
+  '**Closes:** Monday 6 October 2026 (`6 October 2026 at noon`)',
+  '| Member | Position | Date |', '|---|---|---|', '| A | preference | x |'].join('\n'));
+check('an unreadable Closes gives no date', badDate.closes, null);
+check('and is reported rather than swallowed', badDate.badCloses, true);
+const goodDate = voteOf(['**Carries if:** a majority of all members — **8 of 14**',
+  '**Closes:** Monday 6 October 2026 (`2026-10-06T12:00:00+01:00`)',
+  '| Member | Position | Date |', '|---|---|---|', '| A | preference | x |'].join('\n'));
+check('a readable Closes still parses', !!goodDate.closes && !goodDate.badCloses, true);
+
+/* An en dash is the easier Mac keystroke (alt-hyphen) and erased every
+   objection, while the row's own tag still said OBJECTED. */
+for (const [name, dash] of [['em dash', '\u2014'], ['en dash', '\u2013'], ['hyphen', '-']]) {
+  const v = voteOf(['**Procedure:** Tier A', '', '## Objections', '',
+    `**Ada Lovelace** ${dash} 2026-10-07`, '', '> Reason: x'].join('\n'));
+  check(`an objection dated with an ${name} is counted`, v.objections.length, 1);
+}
+
+/* The scan ran to the end of the file, so a comparison table under ## Notes --
+   which the template invites -- was counted into the roll and the affirmative
+   total. */
+const oneTable = ['**Carries if:** a majority of all members — **8 of 14**',
+  '| Member | Position | Date |', '|---|---|---|',
+  '| A | preference | x |', '| B | — | |'].join('\n');
+check('one table counts one table', [voteOf(oneTable).roll, voteOf(oneTable).counts.preference], [2, 1]);
+const plusNotes = voteOf(oneTable + '\n\n## Notes\n\n| x | y |\n|---|---|\n| C | preference |\n');
+check('a second table under Notes is not the vote', [plusNotes.roll, plusNotes.counts.preference], [2, 1]);
+
+/* Testing for the word "quorum" matched it inside a negation, rendering a
+   Layer 3 row as Tier C and hiding the affirmative count. */
+const q = c => voteOf(['**Carries if:** ' + c, '| Member | Position | Date |', '|---|---|---|',
+  '| A | preference | x |'].join('\n')).quorumOnly;
+check('a stated quorum figure is a quorum',
+  q('a simple majority of those who vote — quorum **7 of 14**'), true);
+check('so is the "quorum of" spelling', q('with a quorum of **7 of 14**'), true);
+check('a NEGATED quorum is not a quorum',
+  q('a majority of all members, with no quorum requirement — **8 of 14**'), false);
+check('and Layer 4 is not a quorum',
+  q('affirmative support from two-thirds of all members — **10 of 14**'), false);
+
 const passed = results.filter(Boolean).length;
 console.log(`\n${passed}/${results.length} passed`);
 process.exit(results.every(Boolean) ? 0 : 1);
