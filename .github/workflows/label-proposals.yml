@@ -1,0 +1,133 @@
+# Turns what a proposer wrote into labels the Record dashboard reads, and records
+# two facts the Constitution cares about:
+#
+#   opened:<timestamp>   when the proposal was submitted for deliberation
+#   endorsed:<n>         how many members have endorsed it
+#
+# The opened: label is not a convenience: it is visible on the proposal itself,
+# with GitHub's own record of who added it and when, which is what showing that
+# a period began ought to mean. (A proposed but NOT adopted rule,
+# rules/rule-deliberation-clock.md, would put that principle in the Record. It
+# has no pull request, so until one is opened and merged this is a convention.)
+#
+# It never fails a check. rules/rule-drafting-tools.md says this tooling creates
+# no duty, and a workflow that blocked a proposal for a missing label would
+# contradict its own instrument.
+
+name: Label proposals
+
+on:
+  pull_request_target:
+    types: [opened, edited, reopened, ready_for_review, converted_to_draft]
+  pull_request_review:
+    types: [submitted, dismissed, edited]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const { owner, repo } = context.repo;
+            const n = pr.number;
+            const action = context.payload.action;
+
+            const names = () => github.rest.issues.get({ owner, repo, issue_number: n })
+              .then(r => r.data.labels.map(l => l.name)).catch(() => []);
+            const add = name => github.rest.issues.getLabel({ owner, repo, name })
+              .catch(() => github.rest.issues.createLabel({
+                owner, repo, name, color: 'ededed',
+                description: 'Applied automatically from the proposal' }).catch(() => {}))
+              .then(() => github.rest.issues.addLabels({ owner, repo, issue_number: n, labels: [name] }))
+              .catch(e => core.warning(`could not add ${name}: ${e.message}`));
+            const drop = name => github.rest.issues.removeLabel({ owner, repo, issue_number: n, name })
+              .catch(() => {});
+
+            const current = await names();
+            const managed = /^(layer-\d|tier-[abc]|days-\d+|opened:|endorsed:)/;
+
+            // ---- endorsements -------------------------------------------------
+            // "Two endorsing reviews start the 7-day deliberation clock" (§2).
+            // An endorsing review is read as an approving review. Only a member's
+            // most recent review counts, so a dismissal or a change of mind is
+            // reflected rather than accumulated.
+            if (context.eventName === 'pull_request_review') {
+              const rv = await github.paginate(github.rest.pulls.listReviews, { owner, repo, pull_number: n });
+              const latest = new Map();
+              for (const r of rv) if (r.state !== 'COMMENTED') latest.set(r.user.login, r.state);
+              const count = [...latest.values()].filter(s => s === 'APPROVED').length;
+              for (const name of current.filter(x => x.startsWith('endorsed:'))) {
+                if (name !== `endorsed:${count}`) await drop(name);
+              }
+              if (!current.includes(`endorsed:${count}`)) await add(`endorsed:${count}`);
+              return;
+            }
+
+            // ---- opening ------------------------------------------------------
+            // A proposal is open for deliberation when it is not a draft.
+            // Converting back to draft withdraws it, so the clock stops.
+            if (action === 'converted_to_draft' || pr.draft) {
+              for (const name of current.filter(x => x.startsWith('opened:'))) await drop(name);
+            } else if (!current.some(x => x.startsWith('opened:'))) {
+              // Prefer GitHub's own record of the moment it left draft, so the
+              // label can be checked against the timeline rather than trusted.
+              let at = pr.created_at;
+              try {
+                const tl = await github.paginate(github.rest.issues.listEventsForTimeline,
+                  { owner, repo, issue_number: n });
+                const ready = tl.filter(e => e.event === 'ready_for_review').pop();
+                if (ready) at = ready.created_at;
+              } catch (e) { core.warning(`timeline unreadable, using created_at: ${e.message}`); }
+              await add(`opened:${at.replace(/\.\d+Z$/, 'Z')}`);
+            }
+
+            // ---- layer, tier, period, from what the proposer wrote -------------
+            const body = pr.body || '';
+            // Anchored to one line, and \s would span newlines: a field left blank
+            // followed by prose that happens to start with a digit would otherwise
+            // be read as the answer. "**Layer:**" above "2 Ordinary · 3 Policy" is
+            // the template's own wording, and it labelled that proposal layer-2.
+            const H = '[^\\S\\n]*';
+            const field = (label, capture) =>
+              (body.match(new RegExp(`^${H}\\*\\*${label}:\\*\\*${H}\\**${H}(${capture})`, 'im')) || [])[1];
+            const layer = field('Layer', '\\d');
+            const tier  = field('Tier', '[ABC]\\b');
+            const days  = field('Deliberation period', '\\d+');
+
+            const wanted = new Set();
+            if (layer) wanted.add(`layer-${layer}`);
+            if (tier)  wanted.add(`tier-${tier.toLowerCase()}`);
+            if (days)  wanted.add(`days-${days}`);
+
+            for (const name of current.filter(x => /^(layer-\d|tier-[abc]|days-\d+)$/.test(x))) {
+              if (!wanted.has(name)) await drop(name);
+            }
+            for (const name of wanted) if (!current.includes(name)) await add(name);
+
+            // ---- say something only when the layer is missing, and only once ---
+            if (layer) return;
+            const marker = '<!-- label-proposals -->';
+            const comments = await github.rest.issues.listComments({ owner, repo, issue_number: n, per_page: 100 });
+            if (comments.data.some(c => (c.body || '').includes(marker))) return;
+
+            await github.rest.issues.createComment({
+              owner, repo, issue_number: n,
+              body: [
+                marker,
+                "I could not read a **Layer** from this pull request, so it has not been labelled and the Record dashboard cannot compute its deliberation window.",
+                "",
+                "Add a line with a bare value, for example:",
+                "",
+                "```",
+                "**Layer:** 2",
+                "**Tier:** A",
+                "```",
+                "",
+                "Nothing is blocked by this. The proposal stands or falls on its own terms, and `rules/rule-drafting-tools.md` creates no duty. Editing the description re-runs this."
+              ].join('\n')
+            }).catch(() => {});
