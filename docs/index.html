@@ -4,227 +4,545 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%237a5a2a'/%3E%3Crect x='4' y='4' width='8' height='1.4' fill='%23fbfaf8'/%3E%3Crect x='4' y='7.3' width='8' height='1.4' fill='%23fbfaf8'/%3E%3Crect x='4' y='10.6' width='5' height='1.4' fill='%23fbfaf8'/%3E%3C/svg%3E">
-<title>State of the Record — Newspeak House Governance Laboratory 2026</title>
+<title>PROPOSED design — State of the Record — Newspeak House Governance Laboratory 2026</title>
 <style>
+  /* ======================================================================
+     THE RECORD — a visual language, stated.
+
+     Three rules hold the whole thing together.
+
+     1. COLOUR IS EVIDENCE, NOT JUDGEMENT.
+        --accent  something a member did, and the Record now holds.
+        --soon    a clock running out. Only ever on time.
+        --urgent  the Record contradicts itself. Only ever on a defect
+                  INSIDE the Record — never on this page failing to read it.
+        --muted / --faint  information, and reference.
+        There is deliberately NO colour meaning "passed" and none meaning
+        "failed". §3 gives the outcome to a Record Keeper, so a palette that
+        could say it would be a palette that lies.
+
+     2. TYPE SAYS WHAT KIND OF FACT THIS IS.
+        serif  — what the Laboratory decided, and the figure it is weighing.
+        mono   — instants and identifiers a machine enforces: times, paths,
+                 branches, SHAs.
+        sans   — everything the page itself says about those two.
+
+     3. A VOTE IS DRAWN AS FOURTEEN SLOTS, ONE PER MEMBER.
+        See "the lanes" below. This is the one idea on the page.
+     ====================================================================== */
   :root {
-    --bg:#fbfaf8; --ink:#1a1a18; --muted:#5f5c56; --faint:#726e66;
-    --line:#e3e0da; --rule:#cfcbc3; --accent:#7a5a2a;
-    --urgent:#a3301f; --soon:#8a5c08;
+    /* ground */
+    --bg:#faf8f4;          /* warm paper, not white */
+    --sunk:#f3efe7;        /* a slip pasted onto the page: the vote block */
+    /* ink */
+    --ink:#1b1a17; --muted:#56534c; --faint:#6b675e;
+    /* hairlines. Deliberately under 3:1 — they group, they never inform. */
+    --line:#e2ddd3; --rule:#c6c0b3;
+    /* a mark that carries meaning must clear 3:1, so it is its own token */
+    --mark:#8f887c;
+    /* signal */
+    --accent:#7a5a2a; --urgent:#a3301f; --soon:#8a5c08;
+    /* type */
     --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
     --ui: system-ui, -apple-system, "Segoe UI", sans-serif;
+    --serif: ui-serif, Georgia, "Iowan Old Style", "Times New Roman", serif;
+    /* scale, five steps, ~1.22. Nothing on this page is smaller than --t0
+       (12px): it is read on a phone, at night, by someone who is tired. */
+    --t0:.75rem; --t1:.875rem; --t2:1rem; --t3:1.25rem; --t4:1.75rem;
+    /* measure */
+    --prose:42rem;
   }
   @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-    --bg:#131312; --ink:#e9e7e2; --muted:#9a958c; --faint:#847e75;
-    --line:#2a2927; --rule:#3a3835; --accent:#c9a876;
-    --urgent:#e8806f; --soon:#d4a344;
+    --bg:#15140f; --sunk:#1d1b15;
+    --ink:#ece9e1; --muted:#a39d91; --faint:#8b8578;
+    --line:#2b2924; --rule:#403d35; --mark:#6e6960;
+    --accent:#c9a876; --urgent:#e8806f; --soon:#d4a344;
   }}
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--ink);font:0.875rem/1.4 var(--ui);-webkit-font-smoothing:antialiased}
-  .wrap{max-width:62rem;margin:0 auto;padding:1.5rem 1rem 3rem}
-  h1{font:600 1.15rem/1.2 ui-serif,Georgia,serif;margin:0;letter-spacing:-.01em}
-  .what{margin:.25rem 0 0;font-size:.76rem;color:var(--muted);max-width:40rem}
-  header{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;flex-wrap:wrap;
-    padding-bottom:.5rem;border-bottom:2px solid var(--rule);margin-bottom:.25rem}
-  header nav{display:flex;align-items:baseline;gap:.9rem;font-size:.75rem}
+
+  /* The ground. A laid-paper weave at about 1.5% contrast — it is not a
+     pattern anyone will notice, it is the difference between a surface and a
+     screen. Pure CSS gradients, so no request and nothing to block. */
+  body{
+    margin:0; color:var(--ink);
+    background-color:var(--bg);
+    background-image:
+      repeating-linear-gradient(90deg, rgba(122,90,42,.018) 0 1px, transparent 1px 3px),
+      repeating-linear-gradient(0deg,  rgba(122,90,42,.013) 0 1px, transparent 1px 4px);
+    font:400 var(--t2)/1.55 var(--ui);
+    -webkit-font-smoothing:antialiased;
+  }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) body{
+    background-image:
+      repeating-linear-gradient(90deg, rgba(201,168,118,.022) 0 1px, transparent 1px 3px),
+      repeating-linear-gradient(0deg,  rgba(201,168,118,.015) 0 1px, transparent 1px 4px);
+  }}
+  /* Light falls from somewhere. A page that feels like a surface in a room
+     has a direction to it; a page lit evenly is a screen. 2%, once, at the
+     top, and it is the difference between the two. */
+  body::before{content:"";position:fixed;inset:0 0 auto;height:32rem;pointer-events:none;
+    background:radial-gradient(90% 100% at 50% -20%, rgba(122,90,42,.055), transparent 70%)}
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) body::before{
+    background:radial-gradient(90% 100% at 50% -20%, rgba(201,168,118,.055), transparent 70%)}}
+  /* 60rem, not 56. The measure that matters is --prose, which caps the
+     paragraphs; the column only has to be wide enough that a row's attribute
+     line fits on one line. At 56rem it did not, and a second line on half the
+     rows on the page is a page half as long again for nothing. */
+  .wrap{position:relative;max-width:62rem;margin:0 auto;padding:1.4rem 1.1rem 1.8rem}
+
+  /* ---- masthead ------------------------------------------------------- */
+  h1{font:400 var(--t4)/1.15 var(--serif);margin:0;letter-spacing:-.012em}
+  .what{margin:.4rem 0 0;font-size:var(--t1);color:var(--muted);max-width:30rem;line-height:1.5}
+  /* CUT. The first prototype put the year's organising fact under the
+     masthead — "This Constitution expires in 54 days…". Two lines of italic
+     serif saying exactly what the row ten rows down already says, above the
+     fold, on a page whose complaint was too much to read before anything
+     useful. The row keeps it. */
+  header{display:flex;justify-content:space-between;align-items:flex-end;gap:1.5rem;flex-wrap:wrap;
+    padding-bottom:.9rem;border-bottom:1px solid var(--rule);margin-bottom:0}
+  header nav{display:flex;align-items:center;gap:1rem;font-size:var(--t0);flex-wrap:wrap}
   header nav a{color:var(--muted);text-decoration:none}
   header nav a:hover{color:var(--accent);text-decoration:underline}
   header nav a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
-  .warnish{color:var(--accent)}
-  .tag.st{border-color:var(--rule);color:var(--muted)}
-  .tag[title]{cursor:help}
-  dialog{border:1px solid var(--rule);border-radius:6px;background:var(--bg);color:var(--ink);
-    padding:1.3rem 1.4rem;max-width:34rem;width:calc(100% - 2rem)}
-  dialog::backdrop{background:rgba(0,0,0,.5)}
-  dialog h3{font:600 1rem/1.2 ui-serif,Georgia,serif;margin:0}
-  .pick{display:block;border:1px solid var(--line);border-radius:4px;padding:.6rem .7rem;
-    margin:.55rem 0;text-decoration:none;color:var(--ink)}
-  .pick:hover,.pick:focus-visible{border-color:var(--accent);outline:none}
-  .pick b{font:600 .82rem/1.3 var(--ui)}
-  .pick i{font-style:normal;color:var(--faint);font-size:.62rem;letter-spacing:.08em;
-    text-transform:uppercase;margin-left:.45rem}
-  .pick span{display:block;font-size:.73rem;line-height:1.5;color:var(--muted);margin-top:.2rem}
-  .pickwrap{margin:.55rem 0}
-  .pickwrap .pick{margin:0}
-  .areain{display:block;width:100%;margin:.4rem 0 0;padding:.4rem .55rem;font:inherit;font-size:.76rem;
-    border:1px solid var(--line);border-radius:4px;background:var(--bg);color:var(--ink)}
-  .areain:focus{outline:none;border-color:var(--accent)}
-  .areapath{display:block;font:inherit;font-size:.68rem;color:var(--faint);margin-top:.3rem}
-  dialog form{margin-top:.9rem;text-align:right;position:sticky;bottom:-1.3rem;
-    background:linear-gradient(to top,var(--bg) 60%,transparent);padding-bottom:1.3rem}
-  dialog button{font:inherit;font-size:.75rem;padding:.3rem .8rem;border:1px solid var(--rule);
-    border-radius:999px;background:var(--bg);color:var(--muted);cursor:pointer}
-  .div{display:flex;align-items:center;gap:.7rem;margin:1.6rem 0 .3rem;
-    font:600 .62rem/1 var(--ui);text-transform:uppercase;letter-spacing:.1em;color:var(--faint)}
-  .div::after{content:"";flex:1;height:1px;background:var(--line)}
-  a.btn{border:1px solid var(--rule);border-radius:999px;padding:.3rem .7rem;color:var(--ink);
-    background:var(--bg);white-space:nowrap}
-  a.btn:hover{border-color:var(--accent);color:var(--accent);text-decoration:none}
-  .stamp{font:0.72rem/1 var(--mono);color:var(--faint)}
-  h2{font:600 .74rem/1 var(--ui);text-transform:uppercase;letter-spacing:.11em;color:var(--ink);
-    margin:2.6rem 0 0;padding:0 .25rem .45rem;border-bottom:1px solid var(--rule)}
-  h2:first-of-type{margin-top:.9rem}
+  .stamp{font:400 var(--t0)/1 var(--mono);color:var(--faint)}
+  a.btn{border:1px solid var(--rule);border-radius:999px;padding:.45rem .9rem;color:var(--ink);
+    background:transparent;white-space:nowrap;text-decoration:none;font-size:var(--t0)}
+  a.btn:hover{border-color:var(--accent);color:var(--accent)}
+  a.btn:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 
-  /* one row grammar: title and meta stack on the left, time on the right */
-  .r{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.25rem 1rem;
-     align-items:start;padding:.45rem .25rem;border-bottom:1px solid var(--line)}
+  /* ---- section heads. A register's divisions: a word, then a rule to the
+     margin. Serif, because these name what the Laboratory is doing. ------ */
+  /* A rule drawn rather than specified: the pen presses down for the first
+     inch and a half of the stroke, then lifts to a hairline. */
+  h2{position:relative;font:400 var(--t3)/1.2 var(--serif);color:var(--ink);letter-spacing:-.008em;
+    margin:1.8rem 0 0;padding:0 0 .25rem;border-bottom:1px solid var(--rule);
+    display:flex;align-items:baseline;gap:.6rem}
+  h2::after{content:"";position:absolute;left:0;bottom:-1px;width:2.2rem;height:2px;
+    background:var(--accent);opacity:.75}
+  h2:first-of-type{margin-top:1.2rem}
+  h2 em{font:400 var(--t0)/1 var(--ui);font-style:normal;color:var(--faint);
+    letter-spacing:.09em;text-transform:uppercase}
+  /* Calm technology talks rather than labels. "NO COUNTDOWN" is a column
+     header; a sentence is a page telling you where you are. */
+  .div{display:flex;align-items:center;gap:.9rem;margin:1.25rem 0 .2rem;
+    font:400 var(--t1)/1.4 var(--serif);font-style:italic;color:var(--faint)}
+  .div::after{content:"";flex:1;height:1px;background:var(--line)}
+  .note{color:var(--muted);font-size:var(--t1);line-height:1.55;margin:.45rem 0 .6rem;max-width:46rem}
+  .note a{color:var(--accent)}
+
+  /* ---- the row. A ledger entry: its number hangs in the left margin, the
+     time sits in the right, and everything the page has to say about it runs
+     between them at a readable measure. ---------------------------------- */
+  .r{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;
+     column-gap:1.5rem;align-items:baseline;
+     padding:.4rem .25rem .45rem 3.1rem;border-bottom:1px solid var(--line)}
   .r:last-child{border-bottom:0}
-  .lbl{min-width:0}
-  .lbl a{color:inherit;text-decoration:none;padding-block:.15rem}
-  .lbl a:hover{color:var(--accent);text-decoration:underline}
-  .lbl a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
-  .num{font:0.78rem/1.5 var(--mono);color:var(--faint);margin-right:.3rem}
-  .meta{grid-column:1;font-size:.75rem;color:var(--muted);margin-top:.1rem}
-  .rt{grid-column:2;grid-row:1/span 2;text-align:right;white-space:nowrap}
-  /* Stepped down from 600/.85rem. It was the largest, most coloured thing on
-     every row, and a clock affords nothing: knowing a vote closes in 19 hours
-     tells a member nothing about whether to act. The gap to the threshold does,
-     so that is now the largest live figure on a row and this is the second.
-     The colours stay — --urgent and --soon on a countdown are exactly what the
-     style block reserves them for. */
-  .rem{display:block;font:500 .8rem/1.3 var(--mono);font-variant-numeric:tabular-nums}
-  .abs{display:block;font:0.71rem/1.3 var(--mono);color:var(--faint);font-variant-numeric:tabular-nums}
-  .urgent .rem{color:var(--urgent)}
-  .soon .rem{color:var(--soon)}
-  .idle .rem{color:var(--faint);font-weight:400;font-size:.76rem}
-  /* Staleness, and nothing else. A misconfiguration is .clash, a lost vote is
-     .clash, and a round number is a fact needing no colour at all — this class
-     meant all four at once while its comment said it meant one. */
-  .q7{color:var(--soon);font-weight:500}
-  .quiet{color:var(--muted)}                  /* informational, not a warning */
-  .await{color:var(--ink);font-size:.75rem}   /* who has not answered is the actionable part */
-  /* --urgent, and it earns it: two closing times that disagree means a member
-     can read "running" here and be refused by the workflow, or the reverse.
-     That is a real problem with the Record, not a clock running out. */
-  .clash{color:var(--urgent);font-weight:600}
-  .tag.objected{border-color:var(--accent);color:var(--accent);font-weight:600}
-  /* Reference material is genuinely static; live signals a tier below the clocks
-     — quiet counters, comment counts, endorsement progress — are not, and were
-     styled as though they were. */
-  .tag.ty{color:var(--ink);border-color:var(--rule)}
-  .tag{font:0.63rem/1 var(--ui);letter-spacing:.04em;text-transform:uppercase;color:var(--muted);
-    border:1px solid var(--line);border-radius:2px;padding:.08rem .28rem;margin-right:.25rem;
-    white-space:nowrap}
-  /* Explanations are not urgency. --soon is reserved for clocks running out. */
-  .why{grid-column:1;font-size:.74rem;color:var(--muted);margin-top:.15rem}
+  /* CUT. The first prototype warmed the ground of a row as its clock ran
+     down. It read as a box drawn round the row — the single loudest reason the
+     page looked "weirdly boxed in" — and it encoded nothing the countdown
+     beside it does not already say. The row grammar is a hairline and nothing
+     else, which is what the live page does and what carries this much without
+     feeling crowded. */
+  .num{position:absolute;left:0;top:.6rem;width:2.7rem;text-align:right;
+    font:400 var(--t0)/1.4 var(--mono);color:var(--faint)}
+  /* Serif, and bigger than everything around it: the Record is a document,
+     and its contents should read as prose rather than as issue-tracker rows.
+     Stepped down from --t3 (20px) to 18.4px — the reversal against the live
+     page's 14px sans is intact, and 1.6px a row over twenty rows is most of a
+     phone screen. */
+  .lbl{min-width:0;font:400 1.1rem/1.3 var(--serif);letter-spacing:-.006em}
+  .lbl a{color:inherit;text-decoration:none;text-decoration-color:var(--rule)}
+  .lbl a:hover{text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
+  .lbl a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
+  .meta{grid-column:1;font-size:var(--t0);color:var(--faint);margin-top:.2rem;
+    line-height:1.5;overflow-wrap:anywhere}
+  /* A BUG INHERITED FROM THE LIVE PAGE, worth taking back into index.html on
+     its own. There is no rule for a link inside .meta, so the commit SHAs under
+     "How the Record got here" and the "endorsing reviews" link render in the
+     browser's default blue — #0000EE, which is about 1.3:1 on the dark ground
+     and fails every contrast requirement there is. --accent is 5.96:1 light
+     and 8.21:1 dark. */
+  .meta a{color:var(--accent);text-decoration:underline;text-underline-offset:2px}
+  .meta a:hover{color:var(--ink)}
+  .meta a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+  .why{grid-column:1;font-size:var(--t1);color:var(--muted);margin-top:.35rem;max-width:var(--prose)}
+  .why p{margin:.3rem 0 0}
   .why a{color:inherit;text-decoration:underline;text-underline-offset:2px}
   .why a:hover{color:var(--ink)}
-  /* There was no focus-visible style here at all, so a keyboard reader got the
-     browser default — 3.11:1 on this dark background, under the 3:1 a focus
-     indicator has to clear with nothing in hand to prove it. The ring is
-     --accent on --bg: 6.06:1 light, 8.27:1 dark. */
   .why a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
-  .why p{margin:.25rem 0 0}
+  .rt{grid-column:2;grid-row:1/span 2;text-align:right;white-space:nowrap}
+  /* The clock is deliberately NOT the biggest thing on a row. Knowing a vote
+     closes in 19 hours affords nothing; the gap to the threshold does. */
+  .rem{display:block;font:400 var(--t1)/1.3 var(--mono);font-variant-numeric:tabular-nums;color:var(--muted)}
+  /* The absolute date is never hidden, at any width. A countdown with nothing
+     to check it against has been wrong here before. */
+  .abs{display:block;font:400 var(--t0)/1.5 var(--mono);color:var(--faint);font-variant-numeric:tabular-nums}
+  .urgent .rem{color:var(--urgent)}
+  .soon .rem{color:var(--soon)}
+  .idle .rem{color:var(--faint)}
 
-  /* ---- a vote on a row ---------------------------------------------------
-     This was one run of about 300 characters joined by middots: the round, why
-     it restarted, the count toward the threshold, four tallies, every name that
-     had not answered, the action, and for Tier C a sentence about two
-     denominators. Everything carried the same weight, so nothing carried any,
-     and the one thing a member had to read before choosing sat three clauses
-     after the button.
-     It is now four things, each its own line, in the order a member needs them:
-     where the vote stands, who is missing, what counts as a yes, and only then
-     what to do.
-     Scoped under .why because `.why a` (0,1,1) beat a bare `.act` (0,1,0) and
-     was quietly undoing the button's own colour and underline. */
-  /* A left rule, so a row carrying a live vote reads as one thing rather than
-     as more sentences under the title. --rule is a hairline against --bg and
-     that is the point: it groups, it does not inform, and nothing here depends
-     on seeing it. */
-  .vote{margin-top:.45rem;display:grid;gap:.3rem;
-    border-left:2px solid var(--rule);padding-left:.75rem}
+  /* ---- tags. One boxed tag per row, and it is always the one that means
+     "something is being asked of you". Everything else is unboxed micro-caps,
+     because a box around a word is tracker furniture, not information. --- */
+  .tag{font:400 var(--t0)/1.5 var(--ui);letter-spacing:.06em;text-transform:uppercase;
+    color:var(--faint);margin-right:.5rem;white-space:nowrap}
+  .tag.ty{color:var(--muted)}
+  .tag.st{color:var(--muted)}
+  .tag.open{color:var(--accent);border:1px solid var(--accent);border-radius:2px;
+    padding:.1rem .4rem;margin-right:.6rem;letter-spacing:.08em}
+  /* An objection is NOT damage, and this is where I part company with the live
+     page, which gives it --urgent. §2: "An objection is never left as a bare
+     'no' — it is stated with its reason and offered alongside a suggested route
+     forward, so that raising a concern moves the cohort closer to a decision
+     rather than simply halting it." The Constitution is explicit that an
+     objection ADVANCES the decision. Drawing it in the same red as "two closing
+     times disagree and one of them is wrong" tells a member that using the
+     mechanism correctly is a fault.
+     So it is --accent: a member acted, and the Record holds it. Boxed, like
+     `vote open`, because it is the other tag that means something changed and
+     you should look. The two never co-occur: a Tier A or Tier B row holds no
+     vote, and above those tiers the live page already demotes it to a plain
+     tag, which .tag.st handles. */
+  .tag.objected{color:var(--accent);border:1px solid var(--accent);border-radius:2px;
+    padding:.1rem .4rem;margin-right:.6rem;letter-spacing:.08em;font-weight:600}
+  .tag[title]{cursor:help;text-decoration:underline dotted;text-underline-offset:3px;
+    text-decoration-color:var(--rule)}
+  .q7{color:var(--soon)}
+  .quiet{color:var(--faint)}
+  /* Every name, never "and N more". This is the most actionable line on the
+     row: silence is how this ends, and the people who need asking are exactly
+     the people a truncation would hide. */
+  .await{color:var(--ink);font-size:var(--t1);line-height:1.6;margin-top:.7rem!important;
+    overflow-wrap:anywhere}
+  .await b{font-weight:400;color:var(--muted)}
+  /* A contradiction inside the Record. Nothing else. */
+  .clash{color:var(--urgent)}
+  .warnish{color:var(--accent)}
+
+  /* ======================================================================
+     THE LANES — fourteen slots, one per member of the frozen roll.
+
+     Four marks, and the whole constitutional vocabulary is in them:
+
+       ■  filled    a preference. The only mark that fills anything.
+       ▨  hatched   an objection: stated, with a reason, and a route forward.
+                    Present on the page; not filling the strip.
+       □  outlined  toleration or abstention: answered, no fill.
+       ▁  floor     never answered. A blank left in the register.
+
+     And TWO lane shapes, which is the whole difference between the procedures:
+
+       A FIXED STRIP OF FOURTEEN, with the threshold notched into it, means
+       "of ALL members". Silence is a slot that never fills, so silence
+       counts against. Layer 3, Layer 4, re-ratification.
+
+       A LANE IN WHICH SOME SLOTS ARE STRUCK OUT means "of THOSE WHO VOTE":
+       the struck slots are not in the denominator at all. Tier C's majority.
+
+     Tier C draws BOTH, one above the other, with every member in the same
+     column in both. A member who tolerated is a filled mark in the quorum
+     lane and a struck slot in the majority lane — directly above each other.
+     That vertical pair is the sentence the page used to have to write out.
+
+     The drawing is aria-hidden. Every number in it is stated in words
+     immediately above, so a screen reader hears it once.
+     ====================================================================== */
+  .lanes{display:grid;gap:.55rem;margin:.5rem 0 0;max-width:25rem}
+  .lane{display:grid;gap:.22rem}
+  .lanek{font:400 var(--t0)/1.25 var(--ui);color:var(--faint);letter-spacing:.03em}
+  .slots{position:relative;display:grid;grid-template-columns:repeat(var(--n),1fr);gap:2px;height:1rem}
+  /* Every mark is set a fraction off true — a rotation and an offset derived
+     from the proposal number and the slot, so it is stable across reloads and
+     different for every vote. Fourteen marks made by a hand on a wall, which
+     is what a tally is and has always been. The deviation is under a degree:
+     you do not see it, you feel that the row was not printed. */
+  .c{display:block;height:100%;border-radius:1px;
+     transform:rotate(var(--r,0deg)) translateY(var(--d,0px))}
+  /* a preference — the only mark that fills anything */
+  .c.y{background:var(--accent)}
+  /* an objection: hatched by hand. Stated, with a reason and a route forward;
+     present on the page; not filling the strip. */
+  .c.o{border:1px solid var(--urgent);
+       background:repeating-linear-gradient(135deg,var(--urgent) 0 1px,transparent 1px 4px)}
+  /* toleration or abstention: they came, they made no mark */
+  .c.t{border:1px solid var(--mark)}
+  /* never answered: the slot is drawn and left open. An empty chair, not a
+     zero. This is the mark the page is quietly about. */
+  .c.s{border:1px dotted var(--mark);opacity:.75}
+  /* struck out of THIS lane's denominator. The slot is still drawn, in the
+     same column as the member it belongs to, and then crossed through: not
+     "there is nobody here" but "this answer is not counted here". */
+  .c.x{position:relative;border-bottom:1px solid var(--line)}
+  .c.x::after{content:"";position:absolute;left:0;right:0;top:50%;height:1px;
+    background:var(--mark);transform:translateY(-.5px)}
+  /* the stated threshold, notched between two slots. Exact: with n tracks and
+     a 2px gap, the right edge of slot k is k*(W+2px)/n - 2px. */
+  /* The stated number, notched between two slots — so the drawing shows a
+     GAP rather than a percentage. The 1px ring in --bg keeps it legible where
+     it crosses filled marks, which is exactly where it matters most. It stays
+     drawn after the marks pass it: a line that has been crossed, never a
+     finish line that has been won. */
+  .notch{position:absolute;top:-.28rem;bottom:-.28rem;width:2px;background:var(--ink);
+    box-shadow:0 0 0 1px var(--bg);
+    left:calc(var(--at) * (100% + 2px) / var(--n) - 2px)}
+
+  /* ---- the vote block. CUT: the first prototype gave it a recessed
+     ground, a rounded corner, a left rule and a ring of padding. Three ways of
+     saying "this is a separate thing" on top of a row that is already a
+     separate thing — a card inside a card, and read as exactly that. It is now
+     part of its row: a margin, a measure, and nothing drawn at all. The lanes
+     are the object here; they do not need a tray to sit on. ------------- */
+  .vote{margin-top:.4rem;max-width:46rem}
   .vote p{margin:0}
-  /* The largest live figure on the row, because it is the one that affords
-     something: it answers "does my position change this". */
-  .vhead{font:600 .82rem/1.35 var(--ui);color:var(--ink)}
-  .vtally{font:0.72rem/1.4 var(--mono);color:var(--muted)}
-  .vnote{font:0.73rem/1.45 var(--ui);color:var(--muted)}
-  /* Toleration, abstention and silence are arithmetically identical at Layer 3
-     and above. A member who picks toleration believing it helps has done
-     nothing, and five of those end the Laboratory — so this is the one line on
-     the page that changes outcomes, and it is not styled as metadata. */
-  .yesonly{font:0.76rem/1.45 var(--ui);color:var(--ink)}
-  .yesonly strong{font-weight:600}
-  /* "7 of 8" and "5 of 10" read identically in running text, and the difference
-     between them is the entire question a member is answering. A bar is the
-     cheapest thing that shows a ratio, and on a page this deliberately plain it
-     earns its place only because the ratio IS the page's subject — one per
-     vote, no axis, no animation, no label of its own. The numbers are already
-     stated in words directly above, which is why it is aria-hidden rather than
-     given a role: a screen reader should hear them once.
-     Drawn as an --accent outline with the reached part filled in --accent,
-     rather than a tinted track. Every boundary is then accent against --bg,
-     6.06:1 light and 8.27:1 dark. A filled track cannot work: it would have to
-     clear 3:1 against both --bg and --accent at once, and --accent is only
-     6.06:1 from --bg, so there is no room between them. No new token. */
-  .gauge{display:block;height:.5rem;max-width:20rem;background:var(--bg);
-    border:1px solid var(--accent);border-radius:999px;overflow:hidden}
-  .gauge i{display:block;height:100%;background:var(--accent)}
-  /* The one action this page exists to produce. It was a 112x13px text link in
-     the middle of a sentence: under WCAG 2.5.8's 24px minimum and far under
-     2.5.5's 44px, for the thing most worth tapping. Now 2.25rem (36px), and a
-     full-width 2.75rem (44px) on a phone where the thumb is.
-     The focus ring is --accent offset onto the page, not --ink inside the
-     filled pill: --ink on --accent is 2.76:1 light and 1.82:1 dark, which is
-     not a focus indicator. */
-  .acts{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem;margin-top:.15rem}
-  .why a.act{display:inline-flex;align-items:center;justify-content:center;min-height:2.25rem;
-    padding:0 1.1rem;border:1px solid var(--accent);border-radius:999px;background:var(--bg);
-    color:var(--accent);text-decoration:none;font:600 .8rem/1 var(--ui)}
+  /* THE figure. The only question a member is actually weighing: does my
+     position change this. Serif numerals, because this is a quantity a person
+     decides about, not an instant a machine enforces. */
+  .vask{font:400 var(--t1)/1.55 var(--ui);color:var(--muted);margin:0!important;
+    max-width:44rem}
+  /* Old-style figures. Georgia sets them by default and they are the reason
+     to use it here: 6 and 10 drawn with ascenders and descenders read as a
+     quantity in a document, not as a readout on a device. */
+  /* Old-style figures. Georgia sets them by default and they are the reason
+     to use it here: 6 and 10 drawn with ascenders and descenders read as a
+     quantity in a document, not as a readout on a device.
+     Stepped down from 28px and brought back onto the same line as its own
+     sentence. At 28px, stacked over a caption, it was a headline on every vote
+     row — four headlines down one page is not a hierarchy. */
+  .vask b{font:400 1.45rem/1 var(--serif);color:var(--ink);font-variant-numeric:oldstyle-nums;
+    vertical-align:-.08em}
+  .vask i{font-style:normal;font-size:var(--t1);color:var(--faint);padding:0 .12rem}
+  /* ======================================================================
+     PROGRESSIVE DISCLOSURE. Three things fold, and only these three.
+
+     The page already folds its layer-and-tier glossary in a <details>, so
+     these follow that idiom rather than inventing a second one. Everything
+     folded answers "why" or "who exactly"; nothing folded is needed to read
+     the row. At rest a row is: what it is, how long is left, where the vote
+     stands. Closed by default, every time — the page has no server and cannot
+     know who is reading, so it cannot remember that you have opened one.
+
+       1. WHO HAS NOT ANSWERED.  A count at rest, the names on demand. They
+          matter enormously when somebody is chasing people and are noise the
+          rest of the time.
+       2. WHAT THE MARKS MEAN AND WHEN THEY COUNT.  A first-visit need and
+          furniture by the fifth. The counts live here, beside the marks they
+          draw, which is the only place they teach anything.
+       3. THE TWO CLOSING TIMES.  The FACT that they disagree stays on the
+          summary, in --urgent, always visible: it changes whether a position
+          can be cast at all. Which instant each one is, and which the workflow
+          enforces, is the part that folds.
+     ====================================================================== */
+  .fold{margin:.4rem 0 0}
+  .fold>summary{cursor:pointer;color:var(--faint);font:400 var(--t0)/1.5 var(--ui);
+    padding:.3rem 0;display:list-item;list-style-position:outside;
+    margin-left:1rem;width:fit-content;max-width:100%}
+  .fold>summary::marker{color:var(--rule)}
+  .fold>summary:hover{color:var(--ink)}
+  .fold>summary:hover::marker{color:var(--accent)}
+  .fold>summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
+  .fold[open]>summary{color:var(--muted)}
+  .fold[open]>summary::marker{color:var(--accent)}
+  .foldbody{padding:.15rem 0 .35rem;max-width:34rem}
+  /* Side by side at desktop: two quiet affordances on one line rather than a
+     stack of two. They fall back to a stack on a phone, where a fold is a tap
+     target before it is a label. */
+  .folds{display:flex;flex-wrap:wrap;column-gap:1.8rem}
+  .folds>.fold{margin-top:.2rem}
+  .folds>.fold[open]{flex:1 1 100%}
+
+  /* The key IS the tally: every count is preceded by the mark it draws, so
+     reading the numbers teaches the drawing and vice versa. */
+  .vkey{display:flex;flex-wrap:wrap;gap:.3rem .95rem;font:400 var(--t0)/1.4 var(--ui);
+    color:var(--muted);margin:0 0 .45rem!important}
+  .vkey span{display:inline-flex;align-items:center;gap:.4rem;white-space:nowrap}
+  .vkey .c{width:.85rem;height:.85rem;flex:none}
+  .vkey b{font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
+  /* "Nobody objected" is a fact worth stating and not a thing to notice — but
+     it is still text, so it steps down to --faint (4.91:1 light, 4.69:1 dark on
+     --sunk) rather than being dimmed with opacity, which would have taken it
+     under 4.5:1. Only the glyph, which is decorative, is faded. */
+  .vkey .z{color:var(--faint)}
+  .vkey .z b{color:var(--faint);font-weight:400}
+  .vkey .z .c{opacity:.45}
+  /* The one line on this page that changes outcomes. It is now a caption on a
+     drawing rather than an abstract claim, which is why it is shorter. */
+  .yesonly{font:400 var(--t1)/1.55 var(--ui);color:var(--muted);margin:0!important;
+    max-width:46rem}
+  .yesonly strong{font-weight:600;color:var(--ink)}
+  .yesonly a{color:var(--accent)}
+  .names{font:400 var(--t1)/1.6 var(--ui);color:var(--ink);margin:0!important;
+    overflow-wrap:anywhere}
+  .vnote{font:400 var(--t0)/1.6 var(--ui);color:var(--faint);margin-top:.4rem!important;max-width:34rem;
+    overflow-wrap:anywhere}
+  .vnote code{font-size:.95em}
+  .vnone{color:var(--faint)}
+
+  /* ---- the action ----------------------------------------------------- */
+  .acts{display:flex;flex-wrap:wrap;align-items:center;gap:.9rem;margin-top:.5rem}
+  .why a.act{display:inline-flex;align-items:center;justify-content:center;min-height:2.5rem;
+    padding:0 1.3rem;border:1px solid var(--accent);border-radius:999px;background:transparent;
+    color:var(--accent);text-decoration:none;font:600 var(--t1)/1 var(--ui);letter-spacing:.01em}
   .why a.act:hover{background:var(--accent);color:var(--bg)}
   .why a.act:focus-visible{background:var(--accent);color:var(--bg);
-    outline:2px solid var(--accent);outline-offset:2px}
-  .why a.actalt{display:inline-flex;align-items:center;min-height:2.25rem;padding:0 .15rem;
-    color:var(--muted);text-decoration:underline;text-underline-offset:2px;font-size:.75rem}
+    outline:2px solid var(--accent);outline-offset:3px}
+  .why a.actalt{display:inline-flex;align-items:center;min-height:2.5rem;padding:0 .15rem;
+    color:var(--faint);text-decoration:underline;text-underline-offset:3px;font-size:var(--t0)}
   .why a.actalt:hover{color:var(--ink)}
-  .vnone{color:var(--muted)}                  /* counts for nothing toward the threshold */
-  .glossary{color:var(--muted);font-size:.72rem;line-height:1.6;padding:0 0 .7rem 1rem;max-width:46rem}
-  .glossary summary{cursor:pointer;color:var(--faint);font-size:.7rem;padding:.3rem 0;min-height:1.6rem}
+  /* The hand-edit warning rides on the action line rather than sitting under
+     it as its own paragraph. It was the same three lines on every vote row —
+     the most repeated block on the page — and it only concerns somebody who
+     has already decided to edit the file. */
+  /* The warning that used to be a three-line paragraph under every vote row.
+     It rides on the action line beside the two routes rather than beneath
+     them, and stacks under them on a phone. */
+  .vhand{font:400 var(--t0)/1.5 var(--ui);color:var(--faint);flex:1 1 14rem;min-width:0}
+  .vhand strong{font-weight:600;color:var(--muted)}
+
+  /* ---- the seam. Kintsugi: where the Record contradicts itself, the break
+     is shown rather than smoothed over, and the row stays in service. A
+     stitched edge, not an alarm bar — the difference between "this is
+     damaged and still load-bearing" and "stop". ------------------------- */
+  .seam{border-left:3px solid transparent;
+    border-image:repeating-linear-gradient(0deg,var(--urgent) 0 4px,transparent 4px 7px) 3;
+    padding-left:.7rem;margin:0 0 .5rem!important;font-size:var(--t1);line-height:1.55;color:var(--muted)}
+  .seam strong{color:var(--urgent);font-weight:600}
+  /* A seam that folds. The contradiction itself stays on the summary and stays
+     in --urgent — it changes whether a position can be cast at all, so it is
+     never the thing that is hidden. What folds is which instant each clock
+     names and which one the workflow enforces: the explanation, not the fact. */
+  details.seam{padding-left:1.15rem;margin:.15rem 0 .4rem!important}
+  details.seam>summary{margin-left:0;color:var(--muted);font:400 var(--t1)/1.5 var(--ui)}
+  details.seam>summary::marker{color:var(--urgent)}
+  details.seam .foldbody{font:400 var(--t0)/1.6 var(--ui);color:var(--faint);padding-bottom:.2rem}
+  /* The page failing to SEE the Record is not a defect IN the Record, so it
+     does not get --urgent. It gets the same stitched edge in --accent: this
+     view is mended, read it knowing that. */
+  .snap{border-left:3px solid transparent;
+    border-image:repeating-linear-gradient(0deg,var(--accent) 0 4px,transparent 4px 7px) 3;
+    padding:.1rem 0 .1rem .8rem;margin:0 0 1.4rem;font-size:var(--t1);line-height:1.6;
+    color:var(--muted);max-width:var(--prose)}
+  .snap strong{color:var(--ink);font-weight:600}
+  .warn{border-left:3px solid transparent;
+    border-image:repeating-linear-gradient(0deg,var(--urgent) 0 4px,transparent 4px 7px) 3;
+    padding:.1rem 0 .1rem .8rem;margin:1rem 0 1.2rem;font-size:var(--t1);line-height:1.6;
+    color:var(--muted);max-width:var(--prose)}
+  .warn strong{color:var(--urgent);font-weight:600}
+  .warn .q{display:block;font:400 var(--t0)/1.6 var(--mono);color:var(--faint);margin-top:.4rem}
+  /* "This page cannot see" is never "nothing is happening", so it is never
+     drawn as an error. */
+  .blind{border-left:3px solid transparent;
+    border-image:repeating-linear-gradient(0deg,var(--accent) 0 4px,transparent 4px 7px) 3;
+    padding:.1rem 0 .1rem .8rem;margin:1.6rem 0;font-size:var(--t2);line-height:1.6;
+    color:var(--muted);max-width:var(--prose)}
+  .blind strong{color:var(--ink);font-weight:600;font-family:var(--serif);font-size:var(--t3);
+    display:block;margin-bottom:.3rem}
+  .blind .q{display:block;font-size:var(--t1);color:var(--faint);margin-top:.5rem}
+
+  /* ---- the glossary, the picker, the footer --------------------------- */
+  .glossary{color:var(--muted);font-size:var(--t1);line-height:1.65;padding:0 0 .6rem;max-width:var(--prose)}
+  .glossary summary{cursor:pointer;color:var(--faint);font-size:var(--t0);padding:.3rem 0;min-height:1.9rem}
   .glossary summary:hover{color:var(--ink)}
   .glossary summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
-  .glossary p{margin:.2rem 0 .4rem}
-  .glossary strong{color:var(--ink);font:600 .66rem/1 var(--ui);letter-spacing:.04em}
-  .note{color:var(--muted);font-size:.76rem;line-height:1.55;padding:.1rem 0 .55rem 1rem;max-width:46rem}
-  .note a{color:var(--accent)}
-  footer{margin-top:2.6rem;padding-top:.75rem;border-top:1px solid var(--rule);
-    color:var(--faint);font-size:.73rem;line-height:1.6;max-width:46rem}
+  .glossary p{margin:.2rem 0 .5rem}
+  .glossary strong{color:var(--ink);font-weight:600}
+
+  dialog{border:1px solid var(--rule);border-radius:4px;background:var(--bg);color:var(--ink);
+    padding:1.6rem 1.6rem 1.3rem;max-width:34rem;width:calc(100% - 2rem)}
+  dialog::backdrop{background:rgba(20,18,14,.55)}
+  dialog h3{font:400 var(--t3)/1.2 var(--serif);margin:0 0 .6rem}
+  .pick{display:block;border:1px solid var(--line);border-radius:3px;padding:.75rem .85rem;
+    margin:.6rem 0;text-decoration:none;color:var(--ink);background:var(--sunk)}
+  .pick:hover,.pick:focus-visible{border-color:var(--accent);outline:none}
+  .pick b{font:400 var(--t2)/1.3 var(--serif)}
+  .pick i{font-style:normal;color:var(--faint);font-size:var(--t0);letter-spacing:.08em;
+    text-transform:uppercase;margin-left:.5rem}
+  .pick span{display:block;font-size:var(--t1);line-height:1.55;color:var(--muted);margin-top:.25rem}
+  .pickwrap{margin:.6rem 0}
+  .pickwrap .pick{margin:0}
+  .areain{display:block;width:100%;margin:.45rem 0 0;padding:.5rem .6rem;font:inherit;
+    font-size:var(--t1);border:1px solid var(--rule);border-radius:3px;background:var(--bg);color:var(--ink)}
+  .areain:focus{outline:none;border-color:var(--accent)}
+  .areapath{display:block;font:400 var(--t0)/1.5 var(--mono);color:var(--faint);margin-top:.35rem}
+  dialog form{margin-top:1rem;text-align:right;position:sticky;bottom:-1.3rem;
+    background:linear-gradient(to top,var(--bg) 60%,transparent);padding-bottom:1.3rem}
+  dialog button{font:inherit;font-size:var(--t0);padding:.45rem .9rem;border:1px solid var(--rule);
+    border-radius:999px;background:transparent;color:var(--muted);cursor:pointer;min-height:2.25rem}
+
+  /* The honesty clause. It is the last thing on the page and the most
+     important thing the page says about itself, so it is set like a colophon
+     rather than like small print. */
+  /* The honesty clause, set as a colophon rather than as small print: serif,
+     at the page's floor size and not below it, with the clause that matters
+     most — this page cannot see the deliberation — in italic. */
+  footer{margin-top:1.4rem;padding-top:.7rem;border-top:1px solid var(--rule);
+    color:var(--muted);font:400 var(--t0)/1.65 var(--serif);max-width:44rem}
+  footer p{margin:0 0 .5rem}
+  footer p:last-of-type{margin-bottom:0}
   footer a{color:var(--accent)}
-  .budget{display:block;margin-top:.5rem;font:400 .66rem/1.4 var(--ui);color:var(--faint)}
-  .snap{border:1px solid var(--rule);border-left-width:3px;border-radius:2px;padding:.5rem .6rem;
-    margin-bottom:1.1rem;font-size:.76rem;line-height:1.55;color:var(--muted);background:var(--bg)}
-  .warn{border:1px solid var(--urgent);border-left-width:3px;border-radius:2px;padding:.5rem .6rem;
-    margin:.9rem 0 .2rem;font-size:.8rem;line-height:1.45;color:var(--ink)}
-  .warn .q{display:block;font:0.72rem/1.5 var(--mono);color:var(--muted);margin-top:.3rem}
+  footer strong{font-weight:400;font-style:italic;color:var(--ink)}
+  .budget{display:block;margin-top:.6rem;font:400 var(--t0)/1.5 var(--ui);color:var(--faint)}
+
   .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-  @media (max-width:40rem){
-    /* The absolute date is the only wall-clock anchor a countdown has.
-       Hiding it on phones left '1d 19h' with nothing to check it against. */
-    .abs{font-size:.64rem}
-    .r{padding:.5rem .25rem}
-    /* One column at 375px. The two-column grid left the content about 245px
-       wide while the countdown held a column of its own, so every title wrapped
-       three times and the list of who has not answered wrapped five. The time
-       drops onto its own line under the title, where it reads as a sentence
-       rather than as a sidebar. */
-    .r{grid-template-columns:minmax(0,1fr)}
-    .rt{grid-column:1;grid-row:auto;text-align:left;margin-top:.1rem}
+  code{font-family:var(--mono);font-size:.92em}
+
+  /* ---- the phone, which is where this page is actually opened --------- */
+  @media (max-width:46rem){
+    .wrap{padding:1rem .9rem 1.6rem}
+    h1{font-size:1.4rem}
+    .note{line-height:1.5}
+    footer{line-height:1.6}
+    /* The number gutter is 54px of a 375px screen. It goes, and the number
+       returns to the head of the line where it reads as part of the title. */
+    .r{grid-template-columns:minmax(0,1fr);padding:.45rem .1rem .5rem}
+    .num{position:static;display:inline;width:auto;text-align:left;margin-right:.45rem}
+    .what{font-size:var(--t0)}
+    h2{font-size:1.15rem}
+    a.btn{padding:.35rem .75rem}
+    .div{margin:1rem 0 .2rem}
+    .tag{margin-right:.4rem;letter-spacing:.04em}
+    .lbl{font-size:.95rem;line-height:1.3}
+    /* The time drops under the title and reads as a sentence rather than as a
+       sidebar — but the absolute date stays, always. */
+    .rt{grid-column:1;grid-row:auto;text-align:left;margin-top:.2rem}
     .rem,.abs{display:inline}
     .abs::before{content:" · "}
+    .meta{line-height:1.55}
+    .lanes{max-width:none}
+    .vask b{font-size:1.35rem}
+    /* A fold is a tap target before it is a label: 44px tall and the full
+       width of the column, so a tired thumb at 11pm does not have to find a
+       12px word. The marker is drawn rather than left to ::marker, which
+       cannot be positioned, and the summary stays a block so a two-part
+       summary — "Two closing times. The countdown and the file disagree." —
+       sets as one run of prose rather than as two flex columns. */
+    .fold>summary{display:block;position:relative;list-style:none;margin-left:0;
+      width:auto;max-width:none;padding:.6rem 0 .6rem 1.1rem;min-height:2.75rem}
+    .fold>summary::marker,.fold>summary::-webkit-details-marker{display:none;content:""}
+    .fold>summary::before{content:"\25b8";position:absolute;left:0;top:.6rem;color:var(--rule)}
+    .fold[open]>summary::before{content:"\25be";color:var(--accent)}
+    details.seam{padding-left:.7rem}
+    details.seam>summary::before{color:var(--urgent)}
+    .folds{display:block}
+    /* The second route keeps its 44px target; its warning is a sentence of its
+       own beneath it rather than a clause orphaned off the end of a link. */
+    .vhand{display:block}
     /* Full width and 44px, so the thing the page exists to produce is the
-       easiest thing on it to hit. At 375px the row's left column is about
-       280px, and a pill sized to its text was a quarter of that. */
+       easiest thing on it to hit. */
     .acts{display:block}
     .acts>*{margin-top:.45rem}
-    .why a.act{display:flex;width:100%;min-height:2.75rem;font-size:.85rem}
+    .why a.act{display:flex;width:100%;min-height:2.75rem;font-size:var(--t2)}
     .why a.actalt{display:flex;width:100%;min-height:2.75rem;justify-content:center}
-    .gauge{max-width:none}
+  }
+  @media (prefers-reduced-motion:no-preference){
+    a,summary{transition:color .12s ease,background-color .12s ease,border-color .12s ease}
   }
 </style>
 </head>
 <body><div class="wrap">
   <header>
     <div><h1>State of the Record</h1>
-      <p class="what">What the 2026 Newspeak House Governance Laboratory has decided, is deciding, and is running out of time to decide.</p></div>
+      <p class="what">What the 2026 Newspeak House Governance Laboratory has decided, is deciding, and is running out of time to decide.</p>
+      </div>
     <nav>
       <a href="https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/CONTRIBUTING.md">Contributing guide</a>
       <a class="btn" id="newprop" href="#">Start a proposal</a>
@@ -249,12 +567,13 @@
     <form method="dialog"><button>Close</button></form>
   </dialog>
   <footer id="foot">
-    Read live from <a href="https://github.com/newspeakhouse-lab-2026/constitutional-record">the Constitutional Record</a> on each load, and from
-    <a href="https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/constitution.md">the Constitution</a> itself — which is checked against the figures above.
-    Times are UK time, as the Constitution states them.
-    <strong>A countdown runs from the opening recorded on the proposal itself</strong>, which is posted to
-    Discord automatically as it happens. What this page cannot see is the deliberation — who said what, and
-    whether anyone objected. Where there is no countdown, the rows above say why.
+    <p>Read live from <a href="https://github.com/newspeakhouse-lab-2026/constitutional-record">the Constitutional Record</a> on each load,
+    and from <a href="https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/constitution.md">the Constitution</a>
+    itself, which is checked against the figures above. Times are UK time, as the Constitution states them;
+    <strong>a countdown runs from the opening recorded on the proposal</strong>, not from when it was filed.</p>
+    <p>What this page cannot see is the deliberation — who said what in the governance channel, and who
+    objected. It reports counts and thresholds and stops: whether a proposal carried is a Record
+    Keeper's finding, not a web page's.</p>
     <span class="budget" id="budget"></span>
   </footer>
 </div>
@@ -574,6 +893,38 @@ function rem(at){
 // The Constitution states its deadlines in UK time, so show them in UK time.
 const fmt=d=>d?d.toLocaleString("en-GB",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit",timeZone:"Europe/London"}):"";
 
+/* ======================================================================
+   THE LANES — fourteen slots, one per member of the frozen roll.
+
+   `hand` gives every mark a rotation and an offset derived from the proposal
+   number and the slot index: stable across reloads, different for every vote,
+   under a degree of deviation. You do not see it; you feel that the row was
+   not printed. A tally is marks made by a hand, and that is what this is.
+
+   Order within a lane is always act to absence: preference, objection,
+   toleration and abstention, then silence. The strip fades out to the right
+   and the silence at the end of it is what this page is quietly about. */
+function hand(seed,i){
+  let x=((seed+1)*2654435761 ^ (i+1)*40503)>>>0;
+  x=(x ^ (x>>>13))>>>0;
+  return `--r:${((x%13)-6)/10}deg;--d:${(((x>>>5)%9)-4)/8}px`;
+}
+function laneCells(seed,plan){
+  let i=0,out="";
+  for(const [cls,n] of plan) for(let k=0;k<n;k++,i++)
+    out+=`<i class="c ${cls}" style="${hand(seed,i)}"></i>`;
+  return out;
+}
+/* `at` is where the stated threshold falls BETWEEN slots, so the drawing shows
+   a gap rather than a percentage. null draws no line, which is the honest
+   rendering when the procedure states no number this page may read. */
+function lane(seed,key,plan,n,at){
+  return `<div class="lane"><span class="lanek">${key}</span>`
+    +`<span class="slots" style="--n:${n}">${laneCells(seed,plan)}`
+    +(at!=null&&at>0?`<b class="notch" style="--at:${at}"></b>`:"")
+    +`</span></div>`;
+}
+
 function row(sr,label,meta,remTxt,abs,cls,why){
   return `<div class="r ${cls||""}">
     <div class="lbl">${label}</div>
@@ -851,7 +1202,7 @@ function render(d){
                 /* A file at Tier A or Tier B is objections, not a vote (§2 holds
                    none there), so the tag would be false on the one row where the
                    distinction decides what a member can do. */
-                vote&&vote.holdsVote?`<span class="tag st" title="A vote is recorded in votes/pr-${pr.number}.md on this proposal's branch">VOTE OPEN</span>`:"",
+                vote&&vote.holdsVote?`<span class="tag open" title="A vote is recorded in votes/pr-${pr.number}.md on this proposal's branch">vote open</span>`:"",
                 win.layer?`<span class="tag" title="${esc(LAYER[win.layer]||"")}">L${win.layer}</span>`:"",
                 win.tier?`<span class="tag" title="${esc(tp?tp.source+": “"+tp.quote+"”":"")}">${win.tier.toUpperCase()}</span>`:"",
                 st?`<span class="tag st" title="${esc(st.d)}">${esc(st.t)}</span>`:"",
@@ -862,12 +1213,6 @@ function render(d){
                    the tally already counts. Same label, two weights. */
                 (win.other||[]).includes("objection")
                   ? (win.tier==="a"||win.tier==="b"
-                      /* Not --urgent. §2 asks for an objection stated with a
-                         reason and a route forward "so that raising a concern
-                         moves the cohort closer to a decision rather than simply
-                         halting it". Drawing it in the colour reserved for a
-                         contradiction in the Record would tell a member that
-                         using the mechanism correctly is a fault. */
                       ? `<span class="tag objected">OBJECTED</span>`
                       : `<span class="tag st">OBJECTION</span>`)
                   : "",
@@ -880,8 +1225,7 @@ function render(d){
     /* Why it matters, not just that it happened — the tag alone does not say
        that lazy consensus has stopped. */
     if((win.other||[]).includes("objection")&&(win.tier==="a"||win.tier==="b"))
-      bits.push(`<span class="warnish">lazy consensus has ended — §2 moves this to Tier `
-        +`${win.tier==="a"?"B":"C"}, where it is deliberated again</span>`);
+      bits.push(`<span class="warnish">lazy consensus has ended</span>`);
     if(quiet>=7) bits.push(`<span class="q7">quiet ${quiet}d</span>`);
     // A Tier A with no comments is passing normally, not stalling.
     bits.push(notes?`${notes} note${notes>1?"s":""}`:`<span class="quiet">no comment</span>`);
@@ -890,7 +1234,7 @@ function render(d){
     if(rev.length) bits.push(`review requested from ${rev.join(", ")}`);
     if(pr.base&&pr.base.ref!=="main") bits.push(`<span class="clash">targets ${esc(pr.base.ref)}, not main</span>`);
     if(resolves.length) bits.push("resolves "+resolves.map(n=>`#${n}`).join(", "));
-    const meta=tags+bits.join(" · ");
+    const meta=tags+" "+bits.join(" · ");
 
     /* What the page says about a vote: the counts the file holds, the gap to the
        threshold the file states, and who has not answered. Never a verdict.
@@ -942,15 +1286,25 @@ function render(d){
          would turn a visible contradiction into an invisible one. 60 seconds of
          tolerance because the file writes the instant to the minute while the
          label carries seconds. */
+      /* FOLDED, and only the explanation. The summary carries the
+         contradiction itself and stays in --urgent on the closed state,
+         because it changes whether a position can be cast at all: a member can
+         read "running" on this row and be refused by the workflow. Which
+         instant each clock names, and which one is enforced, is what a member
+         needs only once they have seen that there is a disagreement. */
       if(win.closes&&vote.closes&&Math.abs(+win.closes-+vote.closes)>6e4)
-        L.push(`<p class="vnote"><span class="clash">Two closing times.</span> This countdown runs to
-          <strong>${fmt(win.closes)}</strong>, computed from the recorded opening;
-          <code>votes/pr-${pr.number}.md</code> says <strong>${fmt(vote.closes)}</strong>, and that is the one
-          the workflow enforces. One of them is wrong — nothing here can say which.</p>`);
+        L.push(`<details class="fold seam"><summary><strong>Two closing times.</strong>
+          The countdown on this row and the vote file disagree.</summary>
+          <div class="foldbody">The countdown runs to <strong>${fmt(win.closes)}</strong>, computed from the
+          recorded opening. <code>votes/pr-${pr.number}.md</code> says <strong>${fmt(vote.closes)}</strong>,
+          and that is the one the workflow enforces — a position submitted after it is refused.
+          One of them is wrong, and nothing here can say which.</div></details>`);
       else if(!win.closes&&vote.closes)
-        L.push(`<p class="vnote"><span class="clash">No countdown here, but a window in the file.</span>
-          <code>votes/pr-${pr.number}.md</code> says this closes <strong>${fmt(vote.closes)}</strong>, and the
-          workflow enforces that. This page shows none because the proposal records no opening it can read.</p>`);
+        L.push(`<details class="fold seam"><summary><strong>No countdown here, but a window in the
+          file.</strong> The vote closes at a time this row cannot show.</summary>
+          <div class="foldbody"><code>votes/pr-${pr.number}.md</code> says this closes
+          <strong>${fmt(vote.closes)}</strong>, and the workflow enforces that. This row shows no countdown
+          because the proposal records no opening this page can read.</div></details>`);
       /* A member whose row was cleared by a restart reads "awaiting you" and has
          no way to know their earlier position was wiped, unless the page says so. */
       if(vote.rounds>1) L.push(`<p class="vnote"><strong>Round ${vote.rounds}</strong>`
@@ -961,28 +1315,92 @@ function render(d){
          a countdown affords nothing, and this answers the only question a member
          is actually weighing — does my position change this. Never a verdict:
          what carries is §3's word and a Record Keeper's to write. */
-      let head, done=null, need=null;
+      const other=c.toleration+c.abstention, silent=vote.roll-vote.responded;
+      const plan=[["y",c.preference],["o",c.objection],["t",other],["s",silent]];
+
+      /* The figure a member is actually weighing, set in serif numerals
+         because it is a quantity a person decides about — not an instant a
+         machine enforces, which is what everything in mono on this page is.
+         Never a verdict: §3 gives the outcome to a Record Keeper. */
+      /* An objection is evidence a member acted and the Record holds it, and
+         on a purely affirmative threshold it is the one count the headline
+         sentence would otherwise drop entirely. It stays at rest; the rest of
+         the tally folds. */
+      const objn=c.objection?`, with ${c.objection} objection${c.objection>1?"s":""} recorded`:``;
       if(vote.quorumOnly){
-        done=vote.responded; need=vote.required;
         const short=vote.required!=null?vote.required-vote.responded:null;
-        head=`${vote.responded} of ${vote.roll} have answered`
-          +(vote.required==null?``
-            :short>0?` · quorum ${vote.required} — ${short} more to reach it`
-            :` · quorum ${vote.required}, reached`);
+        L.push(`<p class="vask"><b>${vote.responded}</b> <i>of</i> <b>${vote.roll}</b>
+          have answered${vote.required==null?``
+            :short>0?` — the quorum is ${vote.required}, so ${short} more would reach it`
+                    :` — the quorum of ${vote.required} is reached`}${objn}.</p>`);
+        /* Two lanes, same fourteen columns, because Tier C counts the same
+           answer twice and differently. A member who tolerated is a filled
+           slot above and a struck slot below, in the same column. That pair
+           is what the page used to have to explain in a sentence. */
+        L.push(`<div class="lanes" aria-hidden="true">`
+          +lane(pr.number,"the quorum — any mark at all counts, out of all "+vote.roll,
+                plan,vote.roll,vote.required)
+          +lane(pr.number,"the majority — preference against objection only",
+                [["y",c.preference],["o",c.objection],["x",other],["x",silent]],
+                vote.roll,(c.preference+c.objection)/2)
+          +`</div>`);
       }else if(vote.required!=null){
-        done=vote.affirmative; need=vote.required;
         const short=vote.required-vote.affirmative;
-        head=`${vote.affirmative} of the ${vote.required} needed`
-          +(short>0?` · ${short} more preference${short>1?"s":""}`
-                   :` · the stated number is reached — whether it carries is a Record Keeper's to verify (§3)`);
+        L.push(`<p class="vask"><b>${vote.affirmative}</b> <i>of</i> <b>${vote.required}</b>
+          preferences recorded, out of all ${vote.roll} members${short>0
+            ?` — ${short} more would reach the stated number`
+            :` — the stated number is reached, and whether it carries is a Record Keeper's to verify (§3)`}${objn}.</p>`);
+        L.push(`<div class="lanes" aria-hidden="true">`
+          +lane(pr.number,"of all "+vote.roll+" members — only a filled mark counts",
+                plan,vote.roll,vote.required)
+          +`</div>`);
       }else{
-        head=`${vote.affirmative} preference — this vote states no threshold`;
+        L.push(`<p class="vask"><b>${vote.affirmative}</b>
+          preferences recorded${objn}. This vote states no threshold, so nothing here draws one.</p>`);
+        L.push(`<div class="lanes" aria-hidden="true">`
+          +lane(pr.number,"of all "+vote.roll+" members",plan,vote.roll,null)
+          +`</div>`);
       }
-      L.push(`<p class="vhead">${head}</p>`);
-      if(need!=null&&need>0){
-        const pct=Math.max(0,Math.min(100,Math.round(done/need*100)));
-        L.push(`<span class="gauge" aria-hidden="true"><i style="width:${pct}%"></i></span>`);
-      }
+
+      /* The key IS the tally. Every count is preceded by the mark it draws, so
+         reading the numbers teaches the drawing and the drawing teaches the
+         numbers. Toleration and abstention share a glyph, because they are
+         arithmetically the same answer under every procedure in the
+         Constitution — and showing them as one mark with two counts says that
+         without a word. */
+      const kz=n=>n?"":" z";   // a count of nothing is a fact, not a signal
+      /* FOLDED. The legend and the one sentence that changes outcomes are a
+         first-visit need and furniture by the fifth, and together they were
+         six lines on every vote row. The drawing above is readable without
+         them — the gap between the fill and the notch is the shortfall, and
+         the sentence beside it states the shortfall in words — so what is
+         behind this summary is what the marks MEAN, which is a different
+         question from where the vote stands. */
+      L.push(`<div class="folds">`
+        +`<details class="fold"><summary>What the marks mean, and when they count</summary>`
+        +`<div class="foldbody">`);
+      L.push(`<p class="vkey">`
+        +`<span class="${kz(c.preference)}"><i class="c y"></i><b>${c.preference}</b> preference</span>`
+        +`<span class="${kz(c.objection)}"><i class="c o"></i><b>${c.objection}</b> objection</span>`
+        +`<span class="${kz(c.toleration)}"><i class="c t"></i><b>${c.toleration}</b> toleration</span>`
+        +`<span class="${kz(c.abstention)}"><i class="c t"></i><b>${c.abstention}</b> abstention</span>`
+        +`<span class="${kz(silent)}"><i class="c s"></i><b>${silent}</b> not answered</span></p>`);
+      /* The one line on this page that changes outcomes. It used to be an
+         abstract claim about arithmetic; it is now a CAPTION on a drawing that
+         has already made the claim, sitting directly under it — which is why it
+         is shorter, and why it talks about what you are looking at. Not
+         dropped: the drawing is aria-hidden, so this is also the whole of what
+         a screen reader is told about the shape of the procedure. */
+      if(vote.quorumOnly)
+        L.push(`<p class="yesonly"><strong>Tier C counts the same answer twice, and differently
+          each time.</strong> Any mark at all counts toward the quorum in the upper lane. In the lower
+          lane only preference and objection are counted at all — a tolerated or abstained slot is
+          struck out of it. Read one column downwards to see what a single answer did.</p>`);
+      else
+        L.push(`<p class="yesonly"><strong>Only a filled mark counts.</strong> At Layer 3,
+          Layer 4 and re-ratification, toleration, abstention and never answering are the same
+          number — and, above, the same unfilled slot.</p>`);
+      L.push(`</div></details>`);
       /* Grouped by arithmetic effect, but only where the arithmetic has a clean
          binary. At Layer 3, Layer 4 and re-ratification the threshold is purely
          affirmative — eight preferring and six objecting still carries — so the
@@ -997,36 +1415,37 @@ function render(d){
          preference and objection are the majority's denominator while toleration
          and abstention reach quorum without diluting it. The note below carries
          that, and a grouping that implied otherwise would be worse than none. */
-      if(vote.quorumOnly)
-        L.push(`<p class="vtally">${POS.map(k=>`${k} ${c[k]}`).join(" · ")}</p>`);
-      else
-        L.push(`<p class="vtally"><strong>preference ${c.preference}</strong>`
-          +` <span class="vnone">· toleration ${c.toleration} · abstention ${c.abstention}`
-          +` · objection ${c.objection}</span></p>`);
-      /* Tier C's two denominators, on their own line rather than as a sixth
-         clause. Quorum counts everyone; the majority counts preference and
-         objection only. It is the commonest way to get a tally wrong. */
-      if(vote.quorumOnly) L.push(`<p class="vnote">Tier C counts twice. Quorum is over everyone who
-        answered. The majority is over preference and objection only, and not until the window closes.</p>`);
+      /* Nothing here. The tally is the key above, beside the marks it names. */
       /* Every name, never "and N more". Silence is the failure mode, so the
          list of who has not answered is the most actionable thing on the row —
          and truncating it hides exactly the people who need chasing. Fourteen
          names is the worst case. */
-      if(vote.awaiting.length) L.push(`<p class="await">Not yet answered: ${vote.awaiting.map(esc).join(", ")}</p>`);
+      /* Every name, never "and N more". Silence is how this ends, so the
+         list of who has not answered is the most actionable thing on the row,
+         and truncating it hides exactly the people who need asking. */
+      /* FOLDED, and this is the fold that earns its place most. Fourteen
+         names is the worst case and it is three lines of proper nouns on a row
+         whose question is "where does this stand". The COUNT is what a member
+         scanning at 11pm needs; the NAMES are what the one person chasing
+         people needs, and they are still every name, never "and N more" —
+         silence is how this ends, and a truncation would hide exactly the
+         people who need asking. */
+      if(vote.awaiting.length) L.push(`<details class="fold"><summary>${vote.awaiting.length}
+        of the ${vote.roll} ${vote.awaiting.length===1?"has":"have"} not answered yet</summary>
+        <div class="foldbody"><p class="names">${vote.awaiting.map(esc).join(", ")}</p></div></details>`);
+      L.push(`</div>`);
       /* A submission whose issue is still open never reached the file. Every
          handled failure closes its issue and comments, so one still open means
          nobody was told anything — which is why it belongs here rather than
          only on the issue. */
       const failed=(d.stuckVotes||[]).filter(i=>+((i.title.match(/#(\d+)/)||[])[1])===pr.number);
-      if(failed.length) L.push(`<p class="vnote"><span class="clash">${failed.length} submission${failed.length>1?"s":""} did not record:</span> `
+      if(failed.length) L.push(`<p class="seam"><strong>${failed.length} submission${failed.length>1?"s":""} did not record.</strong> `
         +failed.map(i=>`<a href="${i.html_url}">#${i.number}</a>`).join(", ")+`</p>`);
 
       /* ---- 2. what counts as a yes. It sat three clauses AFTER the button, so
          a member could act on the page before reading the one sentence on it
          that changes outcomes. The button now follows it. */
-      L.push(`<p class="yesonly"><strong>Only <code>preference</code> counts as a yes.</strong>
-        At Layer 3, Layer 4 and re-ratification, toleration, abstention and never answering
-        are the same number.</p>`);
+
 
       /* ---- 3. the action. Which window decides is the one the workflow
          enforces — the Closes: line in the file — because that is what refuses a
@@ -1049,14 +1468,16 @@ function render(d){
            stays linked because it works when nothing else does. */
         L.push(`<div class="acts"><a class="act" href="https://github.com/${REPO}/issues/new`
           +`?template=vote.yml&title=${encodeURIComponent("Vote: PR #"+pr.number)}&pr=${pr.number}">Record your position</a>`
-          +`<a class="actalt" href="https://github.com/${REPO}/edit/${encodeURIComponent(pr.head.ref)}/votes/pr-${pr.number}.md">or edit votes/pr-${pr.number}.md yourself</a></div>`);
-        /* The hand edit is offered here too, so the radio is named here too.
-           GitHub's commit dialog defaults to language that is right for a
-           proposal and wrong for a vote, and choosing it shows a success page
-           while the Record stays as it was. */
-        L.push(`<p class="vnote">Editing it by hand: commit <strong>directly to the
-          <code>${esc(pr.head.ref)}</code> branch</strong>. &ldquo;Create a new branch for this commit and start a
-          pull request&rdquo; puts your position on a branch nothing reads, and still shows you a success page.</p>`);
+        /* The hand edit is offered here, so the radio is named here. GitHub's
+           commit dialog defaults to language that is right for a proposal and
+           wrong for a vote: choosing it shows a success page while the Record
+           stays as it was. Shortened from a three-line paragraph of its own and
+           folded into the second route's own sentence — it was the most
+           repeated block on the page, and it concerns only somebody who has
+           already chosen that route. */
+          +`<a class="actalt" href="https://github.com/${REPO}/edit/${encodeURIComponent(pr.head.ref)}/votes/pr-${pr.number}.md">or edit votes/pr-${pr.number}.md yourself</a>`
+          +`<span class="vhand">Commit <strong>directly to <code>${esc(pr.head.ref)}</code></strong>,`
+          +` or nothing is recorded.</span></div>`);
       }
       voteWhy=`<div class="vote">${L.join("")}</div>`;
     }else if((d.roll||[]).length){
@@ -1067,20 +1488,44 @@ function render(d){
       if(f) voteWhy=`<div class="vote"><p class="vnote">This procedure votes, and no positions are recorded yet.</p>`
         +`<div class="acts"><a class="act" href="${newVoteURL(pr.head.ref,`votes/pr-${pr.number}.md`,f)}">Start a vote</a></div></div>`;
     }
-    if(!voteWhy&&(win.tier==="a"||win.tier==="b")&&win.closes){
-      /* Tier A and Tier B had no action at all here: §2 holds no vote, so there
-         was nothing for a vote block to say, and the one act that does change the
-         outcome — an objection — had nowhere to go but a pull request comment,
-         which git clone does not retrieve. The form records it now. */
+
+    /* Tier A and Tier B hold no vote at all, so nothing above draws one —
+       and until now the page never said what a member CAN do on such a row.
+       The Constitution's answer is specific and reassuring: an objection does
+       not kill the proposal, it moves it up a tier. That is the third of the
+       four positions' three meanings, and it was the one missing. */
+    const objected=(win.other||[]).includes("objection");
+    if(!vote&&(win.tier==="a"||win.tier==="b")&&win.closes&&objected)
+      /* It has already happened. "One stated objection is all this takes" is
+         the wrong tense, and a row that has been stopped must not read like one
+         that is passing. What a member needs now is what follows, not what to
+         do — and what follows is reassuring. */
+      /* The headline "Objected — so lazy consensus has ended here" went: the
+         tag on the meta line already says OBJECTED and the phrase beside it
+         already says lazy consensus has ended, so this was one event stated
+         three times on one row. What is left is the only part a member does
+         not already know — what happens next. */
+      voteWhy=`<div class="vote">
+        <p class="yesonly"><strong>This does not stop the proposal.</strong> §2 moves it to
+        Tier ${win.tier==="a"?"B":"C"}, to be deliberated again${win.tier==="a"?"":" with a vote"}.
+        An objection carries a reason and a route forward:
+        <a href="${pr.html_url}">read it</a>.</p></div>`;
+    else if(!vote&&(win.tier==="a"||win.tier==="b")&&win.closes)
+      /* The form is the route now. It used to send a member to the proposal
+         thread instead, because record-vote.yml refused whenever votes/pr-N.md
+         did not exist and at these tiers it never does — a button that sends
+         someone somewhere they will be refused is the dead route this page
+         exists to prevent. The workflow now creates the file on the first
+         objection, so the form works here and the objection lands in the
+         Record rather than in a comment git clone does not retrieve. */
       voteWhy=`<div class="vote">
         <p class="yesonly"><strong>No vote is held at Tier ${win.tier.toUpperCase()}.</strong>
         Preference, toleration, abstention and saying nothing are the same act here: absent a stated
         objection, it passes. One objection — with a reason and a route forward, as §2 requires —
         moves it to Tier ${win.tier==="a"?"B":"C"} rather than stopping it.</p>
         <div class="acts"><a class="act" href="https://github.com/${REPO}/issues/new`
-        +`?template=vote.yml&title=${encodeURIComponent("Vote: PR #"+pr.number)}&pr=${pr.number}">Object to this proposal</a>`
-        +`<a class="actalt" href="${pr.html_url}">or say so on the proposal</a></div></div>`;
-    }
+        +`?template=vote.yml&title=${encodeURIComponent("Vote: PR #"+pr.number)}&pr=${pr.number}">Object to this proposal</a>
+        <a class="actalt" href="${pr.html_url}">or say so on the proposal</a></div></div>`;
 
     if(win.closes){
       const r=rem(win.closes);
@@ -1099,7 +1544,7 @@ function render(d){
   }
   live.sort((a,b)=>a.ms-b.ms);
 
-  o.push("<h2>Deadlines and open proposals</h2>");
+  o.push(`<h2>Deadlines and open proposals <em>${live.length+noclock.length}</em></h2>`)
   o.push(`<p class="note">Every deadline the Record knows about, soonest first: dates the Constitution
     sets, instruments that expire, and deliberation periods that can be shown to have started.
     Proposals with no countdown come after them, each saying why it has none.
@@ -1126,11 +1571,11 @@ function render(d){
 
   if(!live.length&&!noclock.length) o.push(`<p class="note">Nothing open and nothing pending.</p>`);
   o.push(live.map(x=>x.html).join(""));
-  if(live.length&&noclock.length) o.push(`<div class="div">No countdown</div>`);
+  if(live.length&&noclock.length) o.push(`<div class="div">Below here, nothing is counting down.</div>`);
   o.push(noclock.join(""));
 
   if(d.issues.length){
-    o.push(`<h2>Under discussion (${d.issues.length})</h2>`);
+    o.push(`<h2>Under discussion <em>${d.issues.length}</em></h2>`);
     o.push(`<p class="note">Raised but not yet drafted. An issue is where a question lives before anyone
       has written the text that would answer it — it adopts nothing by itself.
       <a href="https://github.com/${REPO}/issues/new?template=proposal.yml">Raise one</a>,
@@ -1283,10 +1728,14 @@ collect().then(render).catch(e=>{
   const rl = e.reset
     ? `GitHub allows 60 unauthenticated requests an hour from one address, and this one has used them. It resets at <strong>${e.reset.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"})}</strong>.`
     : "";
-  $("#out").innerHTML=`<div class="warn"><strong>The Record could not be read, so nothing is shown.</strong><br>
-    ${esc(e.message||"unknown error")}. ${rl}<br>
-    <span class="q">This is not a statement that nothing is happening \u2014 it is a statement that this page cannot currently see. Open
-    <a href="https://github.com/${REPO}/pulls">the pull requests</a> directly.</span></div>`;
+  /* Not a .warn. --urgent is for the Record contradicting itself; the page
+     failing to SEE the Record is not a defect in the Record, and drawing it in
+     the same red is how a page starts crying wolf. */
+  $("#out").innerHTML=`<div class="blind"><strong>This page cannot see the Record just now.</strong>
+    ${esc(e.message||"unknown error")}. ${rl}
+    <span class="q">That is not a statement that nothing is happening. Proposals may be open and
+    windows may be running. Open <a href="https://github.com/${REPO}/pulls">the pull requests</a>
+    directly.</span></div>`;
   $("#out").setAttribute("aria-busy","false");
   $("#stamp").textContent="could not read the Record";
 });
