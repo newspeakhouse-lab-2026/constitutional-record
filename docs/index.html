@@ -180,8 +180,13 @@
      a label a screen reader can read. The triangle is drawn in CSS rather than
      set as an emoji, because the emoji renders in full colour on some platforms
      and as a dingbat on others, and neither matches the page. */
+  /* In the gutter, not in the line. Inline they pushed the title right, so a
+     warned row's title no longer lined up with its neighbours' — and the thing
+     a reader scans down a list of proposals is the left edge of the titles. */
+  .warns{position:absolute;left:0;top:2.02rem;width:2.7rem;
+    display:flex;justify-content:flex-end;gap:.18rem}
   .warnbtn{display:inline-flex;align-items:center;justify-content:center;
-    width:1.15rem;height:1.05rem;margin-right:.4rem;vertical-align:-.1em;
+    width:1.15rem;height:1.05rem;vertical-align:-.1em;
     border:0;background:none;cursor:pointer;padding:0;position:relative;
     font:700 .62rem/1 var(--ui);color:var(--bg)}
   .warnbtn::before{content:"";position:absolute;inset:0;background:var(--urgent);
@@ -193,6 +198,9 @@
 
   /* A note is a question answered, not a warning raised, so it reads as a link
      in the sentence it belongs to rather than shouting beside it. */
+  /* They were two buttons with no whitespace between them, so they read as one
+     run-on string: "What the marks meanSee who has voted". */
+  .vlinks{display:flex;flex-wrap:wrap;gap:.35rem 1.25rem;margin-top:.5rem}
   .notebtn{border:0;background:none;padding:0;cursor:pointer;text-align:left;
     font:400 var(--t0)/1.5 var(--ui);color:var(--accent);
     text-decoration:underline;text-underline-offset:2px;
@@ -207,7 +215,12 @@
     color:var(--ink);padding:0;max-width:58ch;width:calc(100vw - 2.5rem);
     box-shadow:0 8px 40px rgba(0,0,0,.28)}
   .sheet::backdrop{background:rgba(0,0,0,.42)}
-  .sheet form{padding:1.15rem 1.3rem 1rem;max-height:80vh;overflow-y:auto}
+  /* dialog form{text-align:right} exists for the proposal dialog's button row
+     and was reaching these, so every sentence in every explanation was
+     right-aligned. Reset here rather than narrowing that rule, which the other
+     dialog still wants. */
+  .sheet form{padding:1.15rem 1.3rem 1rem;max-height:80vh;overflow-y:auto;
+    text-align:left;position:static;background:none;margin-top:0}
   .sheet h3{font:600 var(--t2)/1.3 var(--ui);margin:0 0 .6rem}
   .sheetbody{font:400 var(--t1)/1.6 var(--ui);color:var(--muted)}
   .sheetbody p{margin:0 0 .65rem}
@@ -215,12 +228,23 @@
   .sheetbody strong{color:var(--ink);font-weight:600}
   .sheetbody em{font-style:italic}
   .sheetbody code{font:400 .88em/1 var(--mono)}
-  .sheetbody .names{font:400 var(--t0)/1.65 var(--ui)}
+  /* Each position is a group, and they ran together: the label sat on the line
+     above its names with nothing separating one group from the next. */
+  .sheetbody .names{font:400 var(--t0)/1.65 var(--ui);margin:0 0 .85rem}
+  .sheetbody .names strong{display:block;margin-bottom:.1rem;
+    font:600 var(--t0)/1.5 var(--ui);color:var(--ink)}
   .sheetbody .when{color:var(--faint);font:400 .9em/1 var(--mono)}
   .sheetx{margin-top:1rem;border:1px solid var(--rule);border-radius:2px;
     background:none;color:var(--muted);cursor:pointer;
     font:500 var(--t0)/1 var(--ui);padding:.5rem .85rem}
   .sheetx:hover{color:var(--ink);border-color:var(--muted)}
+
+  /* Words left, drawing right. Below the breakpoint it stacks, because at
+     phone width two columns of this are two columns of nothing. */
+  .vote.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);
+    column-gap:1.75rem;align-items:start}
+  .vleft{min-width:0}
+  .vright{min-width:0;padding-top:.1rem}
 
   .abs{display:block;font:400 var(--t0)/1.5 var(--mono);color:var(--faint);font-variant-numeric:tabular-nums}
   .urgent .rem{color:var(--urgent)}
@@ -539,6 +563,11 @@
        returns to the head of the line where it reads as part of the title. */
     .r{grid-template-columns:minmax(0,1fr);padding:.45rem .1rem .5rem}
     .num{position:static;display:inline;width:auto;text-align:left;margin-right:.45rem}
+    /* The gutter does not exist at this width, so they go back in the line —
+     before the number, which is where the eye starts on a phone anyway. */
+    .warns{position:static;width:auto;display:inline-flex;margin-right:.4rem;
+      vertical-align:-.1em}
+    .vote.split{grid-template-columns:minmax(0,1fr);row-gap:.6rem}
     .what{font-size:var(--t0)}
     h2{font-size:1.15rem}
     a.btn{padding:.35rem .75rem}
@@ -1367,7 +1396,7 @@ function render(d){
       /* Four things, each its own line, in the order a member needs them.
          Anything wrong with the vote itself comes first, because it changes what
          the rest of the block means. */
-      const c=vote.counts, L=[];
+      const c=vote.counts, L=[], R=[];
 
       /* Two clocks, and until now nothing compared them. The countdown on this
          row is computed from the opened: label and the period the layer or tier
@@ -1436,7 +1465,7 @@ function render(d){
            answer twice and differently. A member who tolerated is a filled
            slot above and a struck slot below, in the same column. That pair
            is what the page used to have to explain in a sentence. */
-        L.push(`<div class="lanes" aria-hidden="true">`
+        R.push(`<div class="lanes" aria-hidden="true">`
           +lane(pr.number,"the quorum — any mark at all counts, out of all "+vote.roll,
                 plan,vote.roll,vote.required)
           +lane(pr.number,"the majority — preference against objection only",
@@ -1449,14 +1478,14 @@ function render(d){
           preferences recorded, out of all ${vote.roll} members${short>0
             ?` — <strong>${short} more needed</strong> for the ${vote.required} this procedure asks for`
             :` — the ${vote.required} this procedure asks for is reached, and whether it carries is a Record Keeper's to verify (§3)`}${objn}.</p>`);
-        L.push(`<div class="lanes" aria-hidden="true">`
+        R.push(`<div class="lanes" aria-hidden="true">`
           +lane(pr.number,"of all "+vote.roll+" members — only a filled mark counts",
                 plan,vote.roll,vote.required)
           +`</div>`);
       }else{
         L.push(`<p class="vask"><b>${vote.affirmative}</b>
           preferences recorded${objn}. This vote states no threshold, so nothing here draws one.</p>`);
-        L.push(`<div class="lanes" aria-hidden="true">`
+        R.push(`<div class="lanes" aria-hidden="true">`
           +lane(pr.number,"of all "+vote.roll+" members",plan,vote.roll,null)
           +`</div>`);
       }
@@ -1513,7 +1542,7 @@ function render(d){
           <p>An objection is not counted here either, and that is not the same as not mattering — it
           is opposition, stated with a reason and a route forward. Eight preferring and six objecting
           still carries.</p>`);
-      L.push(noteBtn("What the marks mean", "What the marks mean, and when they count",
+      R.push(noteBtn("What the marks mean", "What the marks mean, and when they count",
         KEY.join("")));
       /* Grouped by arithmetic effect, but only where the arithmetic has a clean
          binary. At Layer 3, Layer 4 and re-ratification the threshold is purely
@@ -1541,7 +1570,7 @@ function render(d){
           ? `<p class="names"><strong>${label} (${by(p).length})</strong><br>${
               by(p).map(m=>esc(m.name)+(m.date?` <span class="when">${esc(m.date)}</span>`:"")).join(", ")}</p>`
           : "";
-        L.push(noteBtn("See who has voted","Who has voted, and how",
+        R.push(noteBtn("See who has voted","Who has voted, and how",
           grp("preference","Preference")+grp("objection","Objection")
           +grp("toleration","Toleration")+grp("abstention","Abstention")
           +(vote.awaiting.length
@@ -1590,7 +1619,18 @@ function render(d){
         L.push(`<div class="acts"><a class="act" href="https://github.com/${REPO}/issues/new`
           +`?template=vote.yml&title=${encodeURIComponent("Vote: PR #"+pr.number)}&pr=${pr.number}">Record your position</a></div>`);
       }
-      voteWhy=`<div class="vote">${L.join("")}</div>`;
+      /* A clear left/right divide: everything in words on the left, the drawing
+         and the two things that explain it on the right. The action goes with
+         the words because it is what you do about them, and it used to sit
+         under the marks where it read as a caption on the drawing. */
+      /* The two explanations are one group, and were rendering as one run-on
+         string without it. */
+      const Rl=R.filter(x=>x.includes("notebtn")), Rm=R.filter(x=>!x.includes("notebtn"));
+      const Rj=Rm.join("")+(Rl.length?`<div class="vlinks">${Rl.join("")}</div>`:"");
+      voteWhy=`<div class="vote${R.length?" split":""}">`
+        +`<div class="vleft">${L.join("")}</div>`
+        +(R.length?`<div class="vright">${Rj}</div>`:"")
+        +`</div>`;
     }else if((d.roll||[]).length){
       /* This procedure votes and no file exists yet, so offer to open one —
          prefilled with the procedure, the threshold computed once from the
@@ -1640,7 +1680,7 @@ function render(d){
 
     /* Attached here, not where the label is built: the vote block is read after
        it, and that is where two of the three warnings are discovered. */
-    if(warns.length) lbl=warns.map(w=>warnIcon(w[0],w[1])).join("")+lbl;
+    if(warns.length) lbl=`<span class="warns">${warns.map(w=>warnIcon(w[0],w[1])).join("")}</span>`+lbl;
 
     if(win.closes){
       const r=rem(win.closes);
