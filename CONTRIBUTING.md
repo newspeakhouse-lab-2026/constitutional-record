@@ -14,11 +14,12 @@ Almost all Laboratory members have write access, which is what lets you push a b
 
 | Action | How |
 |---|---|
-| Propose a new rule | The dashboard's **Start a proposal** button, which opens GitHub's editor at the right path with the right template. An issue first is optional, for raising a problem before the text exists |
+| Propose a new rule | The dashboard's **Start a proposal** button. It opens GitHub's editor at the right path with the right template, and committing offers to open the pull request |
 | Amend an existing rule | Open file → pencil icon → **Commit changes** → new branch → **Propose changes** |
 | Discuss a proposal | Comment on the pull request |
+| Raise a problem you cannot draft yet | Open an issue. Issues are for discussion and adopt nothing |
 | Record a vote | Your row in `votes/pr-{number}.md` on the proposal's branch — step 10 |
-| See what's being proposed | Open pull requests, open issues, **and** `git branch -a` — drafts live in branches |
+| See what's being proposed | Open pull requests — plus the dashboard, which also lists drafts still sitting on a branch |
 | See the full history of a rule | Open the file → **History** |
 | See all current rules | Browse the repo on `main` |
 | Check thresholds and windows | `AGENTS.md` — or ask your agent |
@@ -76,7 +77,7 @@ AGENTS.md                            Instructions for members' AI agents
 CLAUDE.md                            One line, pointing at AGENTS.md
 CONTRIBUTING.md                      This guide
 .github/
-  ISSUE_TEMPLATE/                    Two forms: Proposal, and Record a position on a vote
+  ISSUE_TEMPLATE/                    One form: Record a position on a vote
   pull_request_template.md           What every pull request is asked for
   instrument-templates/              Skeletons for a rule, a policy, an adjudication, a vote
   workflows/, scripts/               Labelling, recording a vote, and the checks. The Record check warns; the test suite fails the pull request
@@ -109,7 +110,7 @@ Every amendment follows the same arc. The deliberation periods and thresholds di
 |---|---|---|---|
 | 1 | Set up, once — or not at all, if you use the website | You | Your machine |
 | 2 | Decide what you are proposing, and at which layer | You. An agent may advise; you decide | — |
-| 3 | *Optional:* open an issue, if you have no text yet — a plain one, there is no form | You or your agent | GitHub |
+| 3 | *Optional:* open an issue to discuss it first, if you have no text yet | You or your agent | GitHub |
 | 4 | Draft the instrument, and a `rationale.md` beside it | Your agent drafts; you own it | Your machine or GitHub |
 | 5 | Check it against what the Constitution requires | Your agent | — |
 | 6 | Branch, commit, open the pull request | You or your agent | GitHub |
@@ -211,11 +212,17 @@ It is your proposal. Section 1 is unambiguous that an agent's actions are the me
 
 The table above is the summary. This is the detail, for the steps that have any.
 
-### Deciding whether you need an issue
+### Issues are for discussion. Proposals are pull requests.
 
-**An issue cannot adopt anything.** It holds discussion, not text, and Constitution §1 requires that a rule's exact adopted text appear in the Record. Only a merged pull request does that.
+One rule, and it has no exceptions:
 
-So the pull request is the proposal of record, and its template asks for everything the Constitution requires. **Open an issue first only when it helps** — when you want to propose a rule before drafting its wording, or deliberate on whether a rule should exist before arguing about its text. Go to **Issues → New issue** and say what the problem is. There is no form for it: an issue is where a question lives before anyone has written the text that would answer it, and it adopts nothing by itself. The proposal is still the pull request, and you can go straight to one whenever you have the text.
+> **To propose anything, open a pull request. Issues are for talking.**
+
+**An issue cannot adopt anything.** It holds discussion, not text, and §1 requires a rule's exact adopted text to appear in the Record. Only a merged pull request puts it there — so an issue is never the step that decides anything, and a proposal that started as one still has to become a pull request before it can be adopted.
+
+Use an issue when you want to **think out loud**: something is wrong and you do not know what the rule should say, or you want to find out whether anyone else cares before you spend an evening drafting. That is a real and useful thing, and it is all an issue is for. The dashboard lists open issues under *Under discussion*, so raising one makes the question visible to everyone without committing you to a draft.
+
+When you do have text — even rough text — go straight to a pull request. The dashboard's **Start a proposal** button opens GitHub's editor at the right path with the template already in it, and committing there offers to create the branch and open the pull request for you. No git, no terminal.
 
 A proposal is classified by its **actual effect**, not by the label you choose. Where two layers are reasonably arguable, the more demanding process applies.
 
@@ -251,7 +258,7 @@ For constitutional amendments, edit `constitution.md` on a new branch. Two endor
 
 ### Filling in the pull request template
 
-The pull request is pre-filled with everything the Constitution requires: the layer **and the reasoning for it**, the tier, the `Observed by:` line if the proposal creates any duty, the conflicts you searched, the source of authority for a Policy or an amendment, and the experiment fields if it is one. Link an issue with `Resolves #N` if you opened one.
+The pull request is pre-filled with everything the Constitution requires: the layer **and the reasoning for it**, the tier, the `Observed by:` line if the proposal creates any duty, the conflicts you searched, the source of authority for a Policy or an amendment, and the experiment fields if it is one. If you discussed it in an issue first, link it with `Resolves #N` so the discussion and the text stay connected.
 
 You don't need everything immediately — the amendment record and the vote evidence are completed after deliberation, before merge.
 
