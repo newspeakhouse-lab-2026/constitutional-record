@@ -17,7 +17,7 @@ Almost all Laboratory members have write access, which is what lets you push a b
 | Propose a new rule | Create a branch with the file → **Propose changes**. An issue first is optional, for proposing before the text exists |
 | Amend an existing rule | Open file → pencil icon → **Commit changes** → new branch → **Propose changes** |
 | Discuss a proposal | Comment on the pull request |
-| Record a vote | Your row in `votes/pr-{number}.md` on the proposal's branch — step 6 |
+| Record a vote | Your row in `votes/pr-{number}.md` on the proposal's branch — step 10 |
 | See what's being proposed | Open pull requests, open issues, **and** `git branch -a` — drafts live in branches |
 | See the full history of a rule | Open the file → **History** |
 | See all current rules | Browse the repo on `main` |
@@ -79,7 +79,7 @@ CONTRIBUTING.md                      This guide
   ISSUE_TEMPLATE/                    Two forms: Proposal, and Record a position on a vote
   pull_request_template.md           What every pull request is asked for
   instrument-templates/              Skeletons for a rule, a policy, an adjudication, a vote
-  workflows/, scripts/               Labelling, recording a vote, and checks that warn rather than block
+  workflows/, scripts/               Labelling, recording a vote, and the checks. The Record check warns; the test suite fails the pull request
   ruleset-main.json                  A copy of the branch protection on main
 ```
 
@@ -123,7 +123,7 @@ Every amendment follows the same arc. The deliberation periods and thresholds di
 
 A webhook posts repository events to Discord, so taking a proposal out of draft announces it without you doing anything further — that is the visibility Section 2 asks for. The relay posts a bare GitHub notification though, so saying what tier you are claiming and when the window closes still saves everyone reconstructing it later.
 
-Two things happen on their own as you go. When you fill in the Layer, Tier and Deliberation period, a workflow turns them into **labels**; and when you take the pull request out of draft it adds an **`opened:`** label recording the moment, which is what shows that a deliberation period began. A second label, **`endorsed:`**, counts endorsing reviews. Nobody writes these by hand.
+Two things happen on their own as you go. When you fill in the Layer, Tier and Deliberation period, a workflow turns them into **labels**; and when you take the pull request out of draft it adds an **`opened:`** label recording the moment, which is what shows that a deliberation period began. A second, **`endorsed:`**, counts endorsing reviews. A third, **`objection`**, is added to the proposal when someone objects through the form — the dashboard reads it to know there is an objection file to show. Nobody writes any of them by hand.
 
 The [dashboard](https://newspeakhouse-lab-2026.github.io/constitutional-record/) reads them, so a proposal with no layer recorded is shown as **No layer recorded** rather than appearing to have no window running. If your proposal looks wrong there, the labels are the place to look.
 
@@ -199,7 +199,7 @@ Section 1 says an agent must be **documented and communicated to the rest of the
 2. **Say so on every proposal it helped prepare**, naming yourself as the member responsible. That is the identifying, and Section 1 requires it separately: an agent acting on Laboratory infrastructure must be *clearly identifiable as that member's agent*.
 3. **Mark its commits.** A `Co-Authored-By:` trailer naming the agent does this, and survives in the history where a pull request comment does not.
 
-#### Two labels it must never touch
+#### Three labels it must never touch
 
 The `opened:` and `endorsed:` labels are written by a workflow. **An agent must not add, edit or remove either by hand.** The `opened:` label is the evidence that a deliberation period began, and evidence an agent can write is not evidence. If one looks wrong, it is for a member to fix.
 
@@ -272,7 +272,7 @@ Two layers need an endorsement before anything else happens, and for one of them
 | **Layer 3 Policy** | "At least one other member must endorse" |
 | **Layer 4 Constitutional** | "**Two endorsing reviews start the 7-day deliberation clock**" |
 
-So a constitutional amendment's clock does not run from when it was opened. It runs from the moment the second member reviews it. An amendment nobody reviews has no window running, however long it has been sitting there — which is the position pull request #2 is in.
+So a constitutional amendment's clock does not run from when it was opened. It runs from the moment the second member reviews it. An amendment nobody reviews has no window running, however long it has been sitting there.
 
 **Endorsing is not supporting.** It says *this deserves to be deliberated*, not *I agree with it*. You can endorse an amendment onto the agenda and then vote against it, and that is a perfectly coherent thing to do.
 
@@ -282,21 +282,31 @@ In practice an endorsement is an **approving review** on the pull request. The C
 
 ### Voting
 
-Tier A and Tier B hold no vote: they pass unless someone objects. Tier C, Layer 3, Layer 4, re-ratification and the Section 4 procedures do vote.
+Tier A and Tier B hold no vote: they pass unless someone objects — see *Objecting at Tier A or Tier B* below. Tier C, Layer 3, Layer 4, re-ratification, Emergency, the Section 3.9 recall and the Section 4 procedures do vote.
 
 A position may be stated anywhere — in the governance channel, in person, by message. **Stating it is the vote; the file is the evidence of it.** Nobody loses a vote for not using GitHub.
 
+### Objecting at Tier A or Tier B
+
+This is the commonest decisive act in the Constitution, and the only one that changes what happens at these tiers. **A single stated objection moves the proposal up a tier** — Tier A to Tier B, Tier B to Tier C. It never moves it down, and it never stops it outright.
+
+**Use the form.** The dashboard's **Object to this proposal** button, or Issues → New issue → *Record a position on a vote*. Section 2 asks an objection to carry two things: the harm you foresee, and a route forward the cohort can act on. The form asks for both.
+
+A workflow creates `votes/pr-{number}.md` on the proposal's branch, writes your reason and route **word for word**, commits it as you, and labels the proposal `objection`. There is no table in that file and no row for you: no vote is held at these tiers, so there is nothing to count.
+
+**Only an objection can be recorded here.** Preference, toleration, abstention and saying nothing are the same act at Tier A and Tier B — the proposal passes absent an objection — so the form will tell you why it cannot record any of them. To express support, say so on the proposal or in the governance channel.
+
+**Not in a pull request comment.** `git clone` retrieves none of it, so a reason that lives only there is not in the Record — and the reason is the one thing Section 2 insists an objection contain.
+
 ### Recording a vote
 
-In **`votes/pr-{number}.md`, on the proposal's own branch**, so the evidence merges into the Record beside the text it adopted. Start it from `.github/instrument-templates/vote.md`; the dashboard's *Start a vote* button opens it prefilled.
+For the procedures that do vote. In **`votes/pr-{number}.md`, on the proposal's own branch**, so the evidence merges into the Record beside the text it adopted. Start it from `.github/instrument-templates/vote.md`; the dashboard's *Start a vote* button opens it prefilled.
 
 One table, one row per member — **all of them, including anyone who has said nothing**, because every threshold is a fraction of everyone entitled to vote, and you cannot check the arithmetic unless you can see them all.
 
-Two routes, and both record the same thing.
+**Use the form.** Issues → New issue → **Record a position on a vote**, or the button on the dashboard, which fills in the pull request number. One form for all four positions; the reason and route forward an objection needs are asked of everyone and required only from an objection. A workflow writes your row as you and replies with a link to the commit, or says why it could not. It needs only read access, so it is the route that works if you cannot push.
 
-**The form.** Issues → New issue → **Record a position on a vote**, or the button on the dashboard, which fills in the pull request number. One form for all four positions; the reason and route forward an objection needs are asked of everyone and required only from an objection. A workflow writes your row as you and replies with a link to the commit, or says why it could not. It needs only read access, so it is the route that works if you cannot push.
-
-**By hand.** Change your row to `preference`, `toleration`, `abstention` or `objection`, with the date. The dashboard links straight to your file.
+**If it refuses you, edit the file by hand** — change your row to `preference`, `toleration`, `abstention` or `objection`, with the date. Every refusal gives you the link and the warning below. It is the route that always works, which is why it is a fallback rather than a second front door.
 
 > **When you commit, choose "Commit directly to the `{branch}` branch".** The other option — *"Create a new branch for this commit and start a pull request"* — is the right one for a proposal and the wrong one for a vote. It puts your position on a branch of its own, where nothing reads it, and then shows you a green success page. You will believe you have voted and nothing in the Record will have changed. This is the one way to lose a vote without being told, which is why the workflow names the same radio in every message that offers a hand edit.
 

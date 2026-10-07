@@ -1194,7 +1194,12 @@ async function collect(){
   const norm=t=>t.replace(/\*/g,"").replace(/\s+/g," ").trim();
   const stale=[];
   if(cText){ const cn=norm(cText);
-    for(const e of [...Object.values(cfg.procedures||{}),...(cfg.fixed||[])])
+    /* thresholds and rounding were missing, which is the block the NUMBERS come
+       from — voteFileFor writes one of these into a real vote file's Carries if
+       line. check-record.py covers them on a pull request, so CI caught a stale
+       one; the live banner never did. */
+    for(const e of [...Object.values(cfg.procedures||{}),...Object.values(cfg.thresholds||{}),
+                    ...(cfg.rounding?[cfg.rounding]:[]),...(cfg.fixed||[])])
       if(e.quote && !cn.includes(norm(e.quote))) stale.push(e);
   }
 

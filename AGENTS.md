@@ -161,10 +161,10 @@ Before filing, check these too, and report what is missing rather than quietly f
 |---|---|
 | `.github/pull_request_template.md` | Pre-fills every pull request. It asks for the layer and its reasoning, the tier, the deliberation period, `Observed by:`, conflicts searched, source of authority for Layers 3 and 4, experiment fields, and the amendment record. **Fill it rather than replacing it** — a member's proposal is judged on what it contains. |
 | `.github/ISSUE_TEMPLATE/proposal.yml` | One issue form for proposing before any text exists. Three required fields: layer, what is proposed, and why that layer. |
-| `.github/ISSUE_TEMPLATE/vote.yml` | One form for all four positions, including an objection. A member submits it; `.github/workflows/record-vote.yml` writes their row into `votes/pr-{number}.md` on the proposal's branch, as them, or says why it could not. **You may fill it in only with a position the member has stated in terms** — see *Hard rules*. |
+| `.github/ISSUE_TEMPLATE/vote.yml` | One form for all four positions, including an objection. A member submits it; `.github/workflows/record-vote.yml` writes it into `votes/pr-{number}.md` on the proposal's branch, as them, or says why it could not. At Tier A and Tier B it creates that file and writes the objection into it — there is no table and no row, because §2 holds no vote there, and only an objection can be recorded. **You may fill it in only with a position the member has stated in terms** — see *Hard rules*. |
 | `.github/instrument-templates/` | Skeletons for a rule, a policy, a record of an adjudication and a vote, each naming the path it belongs at. The dashboard's *Start a proposal* button opens GitHub's editor prefilled with one. Read the right one before drafting rather than inventing a shape. |
 | `.github/workflows/label-proposals.yml` | Reads the pull request body and applies `layer-*`, `tier-*` and `days-*` labels; records `opened:` and `endorsed:`. It comments rather than failing when it cannot read a layer. |
-| `.github/workflows/check-record.yml` | Warns when the dashboard's figures no longer match the Record. Never fails a pull request. |
+| `.github/workflows/check-record.yml` | Two jobs in one file. The Record check **warns** when the dashboard's figures no longer match the Record and never fails a pull request. The test suite that runs after it **does** fail one — a red check there is a real defect, not a stale figure. |
 | `docs/` | The dashboard, read live from the Record. `docs/data.json` holds the constitutional facts it cannot derive. |
 
 ## Metadata on a proposal
@@ -181,16 +181,17 @@ Three fields in the pull request template are read by a workflow and turned into
 - **Tier** — A, B or C. Layer 2 only.
 - **Deliberation period** — days, Tier B only. Constitution §2 requires a Tier B proposal to run for *a stated period of less than seven days*, and a period never stated cannot have elapsed.
 
-Two further labels are written by a workflow, never by you:
+Three further labels are written by a workflow, never by you:
 
 | | |
 |---|---|
 | `opened:2026-10-03T19:06:12Z` | When the proposal was submitted for deliberation — added when it leaves draft, removed if it returns to draft |
 | `endorsed:2` | How many members have endorsed it, recounted on every review |
+| `objection` | Added to the proposal when a member objects through the form. The dashboard reads it to know there is an objection file worth fetching |
 
 `endorsed:` counts approving reviews, and an approving review is not necessarily an endorsement — someone may approve to say the text reads well, or that the process ran. **Never report `endorsed:2` on a Layer 4 amendment as "the clock has started" without reading what those two reviews actually say.** The Constitution wants two members endorsing the amendment, not two clicks.
 
-**Never add, edit or remove either by hand.** The `opened:` label is the evidence that a deliberation period began, and evidence an agent can write is not evidence. (A *proposed*, not yet adopted, rule would put this in the Record: `rules/rule-deliberation-clock.md`. Until it is merged, treat it as a convention, not a clause.) If one is wrong, say so and let a member fix it.
+**Never add, edit or remove any of them by hand.** The `opened:` label is the evidence that a deliberation period began, and evidence an agent can write is not evidence. (A *proposed*, not yet adopted, rule would put this in the Record: `rules/rule-deliberation-clock.md`. Until it is merged, treat it as a convention, not a clause.) If one is wrong, say so and let a member fix it.
 
 A missing layer means the proposal is unlabelled and will not appear on the dashboard with a window. It does **not** invalidate the proposal — the tooling creates no duty, and the workflow comments rather than failing. Tell the member what is missing and why it matters, not that they have done something wrong.
 
