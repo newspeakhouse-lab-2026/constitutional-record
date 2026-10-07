@@ -106,10 +106,13 @@ else.** This is the one place a single objection is decisive — it blocks lazy
 consensus and moves the proposal up a tier. The reason and the route forward
 Section 2 requires are the whole content of the file.
 
-**It states no window.** The deliberation clock for these tiers is on the
-proposal; a second one here would be a second clock to disagree with the first.
-Each objection carries its own date, and whether that fell inside the window is
-verified, not computed.
+**It states its window**, computed once from the proposal's `opened:` label and
+the period Section 2 gives the tier, and written out like every other dated line
+in the Record: the words, then the instant. That is the clock the dashboard
+already counts down, not a new one — and writing it here puts it in the Record,
+where a GitHub label is not. An objection submitted after it closes is refused,
+and the refusal says so without ruling the objection out of time: Section 3
+gives that to a Record Keeper.
 
 If the proposal reaches a tier that votes, the table is added to this same file
 and the `Procedure:` line is updated. The earlier objections stay: they were

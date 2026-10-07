@@ -136,6 +136,23 @@ jobs:
             }
             const DATE = ACTED.toISOString().slice(0, 10);
 
+            /* The instant twice, as every dated line in the Record is written: the
+               words a person reads, then the instant a machine reads. The offset is
+               computed rather than assumed — the UK is on BST from late March to
+               late October, and a missing offset is how a deadline ends up an hour
+               out. That has happened in this repository before. */
+            function stamp(d) {
+              const f = o => new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/London', ...o }).format(d);
+              const tz = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/London', timeZoneName: 'longOffset' })
+                .formatToParts(d).find(p => p.type === 'timeZoneName').value;
+              const off = (tz.match(/GMT([+-]\d{2}:\d{2})/) || [, '+00:00'])[1];
+              const iso = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString();
+              const local = new Date(d.getTime() + (off === '+01:00' ? 3600000 : 0));
+              return `${f({ weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}, ` +
+                `${f({ hour: '2-digit', minute: '2-digit', hour12: false })} UK ` +
+                '(`' + local.toISOString().slice(0, 19) + off + '`)';
+            }
+
             /* An issue form renders as "### Label\n\nvalue\n\n". Label strings
                live here and are asserted against the YAML by
                test-record-vote.mjs, so the form and this cannot drift. */
@@ -305,6 +322,43 @@ jobs:
             const prLabels = (pull.labels || []).map(l => String((l && l.name) || ''));
             const noVoteTier = prLabels.includes('tier-a') ? 'Tier A'
                              : prLabels.includes('tier-b') ? 'Tier B' : null;
+
+            /* The window at these tiers is computable and therefore enforced, the
+               same as a vote's. It is not a second clock: it is the one the
+               dashboard already counts down — the opened: label, written by
+               label-proposals.yml and never by hand, plus the period §2 states for
+               the tier. docs/data.json carries that period with the sentence it
+               was read from, so no number the Constitution states is repeated
+               here.
+
+               §2 defines Tier A's 48 hours against the proposal being visible in
+               the governance channel. The opened: label records when it was
+               submitted for deliberation, which is the Record's answer to the same
+               question. Where those differ, the label is what this repository
+               knows and a Record Keeper is who reconciles them. */
+            async function noVoteWindow() {
+              const openedLabel = prLabels.find(l => l.startsWith('opened:'));
+              if (!openedLabel) return { err: 'no `opened:` label on the proposal, so nothing records when its deliberation period began' };
+              const opened = new Date(openedLabel.slice(openedLabel.indexOf(':') + 1));
+              if (isNaN(opened)) return { err: `the \`opened:\` label reads \`${openedLabel}\`, which is not a date` };
+              let days;
+              if (noVoteTier === 'Tier B') {
+                const d = prLabels.find(l => /^days-\d+$/.test(l));
+                if (!d) return { err: '#' + n + ' is Tier B, which §2 requires to run for *a stated period of less than seven days*, and no `days-` label states one. A period never stated cannot have elapsed' };
+                days = Number(d.split('-')[1]);
+              } else {
+                try {
+                  const r = await github.rest.repos.getContent({
+                    owner, repo, path: 'docs/data.json', ref: DEFAULT_BRANCH });
+                  const cfg = JSON.parse(Buffer.from(r.data.content, 'base64').toString('utf8'));
+                  days = ((cfg.procedures || {})['tier-a'] || {}).days;
+                } catch (e) {
+                  return { err: 'could not read `docs/data.json`, which holds the period §2 states for Tier A: ' + e.message };
+                }
+                if (!days) return { err: '`docs/data.json` records no period for Tier A' };
+              }
+              return { opened, closes: new Date(opened.getTime() + days * 86400000), days };
+            }
             const branch = pull.head.ref;
             if (branch === DEFAULT_BRANCH) {
               return await refuse(`Pull request #${n}'s branch is \`${branch}\`, this repository's default branch. ` +
@@ -410,16 +464,19 @@ jobs:
                threshold — the reasons this workflow refuses to open a vote do not
                arise, and writing the objection down decides nothing.
 
-               It states no window. The deliberation clock for these tiers lives in
-               the proposal's labels, and copying it here would be a second clock to
-               disagree with the first. The objection carries its own date; whether
-               that fell inside the window is a Record Keeper's to verify (Section 3),
-               which is right in any case because most deliberation happens in the
-               governance channel this workflow cannot see. */
-            function objectionFile(tier, number, title) {
+               It states its window, computed once from the proposal's opened: label
+               and the period §2 gives the tier. That is the clock the dashboard
+               already counts down, not a new one — and writing it here puts it in
+               the Record, where a GitHub label is not: `git clone` retrieves the
+               file and none of the labels. From then on this file is what the
+               window is read from, exactly as for a vote. */
+            function objectionFile(tier, number, title, win) {
               return [
                 `# Objections — PR #${number}: ${String(title).replace(/[\r\n]/g, ' ').slice(0, 200)}`, '',
-                `**Procedure:** ${tier}`, '',
+                `**Procedure:** ${tier}`,
+                `**Carries if:** no member objects before it closes`,
+                `**Opened:** ${stamp(win.opened)}`,
+                `**Closes:** ${stamp(win.closes)}`, '',
                 `Section 2 passes a ${tier} proposal absent a stated objection, so no vote is`,
                 'held and this file has no table. It records the objections, which Section 2',
                 'requires to carry a reason and a route forward, and which nothing else in this',
@@ -550,10 +607,36 @@ jobs:
                  objectionFile. Everything from here to the write is about a vote,
                  so the no-table path takes its own route. */
               const creating = got.text === null;
-              const base = creating ? objectionFile(noVoteTier, n, pull.title) : got.text;
+              let win = null;
+              if (creating) {
+                win = await noVoteWindow();
+                if (win.err) {
+                  return await refuse(`I cannot tell when the deliberation period on #${n} closes: ${win.err}. ` +
+                    `Nothing has been written. An objection is not lost by this — say it on the proposal and ` +
+                    `in the governance channel, and ask for the proposal's labels to be put right.`, branch, n);
+                }
+              }
+              const base = creating ? objectionFile(noVoteTier, n, pull.title, win) : got.text;
               const noTable = !parseTable(base);
 
               if (noTable) {
+                /* Read from the file once it exists, exactly as a vote's window is,
+                   so there is one answer rather than one per caller. */
+                const cleanNV = base.replace(/<!--[\s\S]*?-->/g, '');
+                const isoNV = (cleanNV.match(/^\*\*Closes:\*\*[^\n]*?`([^`]+)`/m) || [])[1];
+                if (!isoNV || isNaN(new Date(isoNV))) {
+                  return await brokenTooling(`\`${path}\` has no readable **Closes:** line, so I cannot tell ` +
+                    `whether the window is open. Nothing has been written.\n\n` + byHand(branch, n));
+                }
+                if (ACTED > new Date(isoNV)) {
+                  return await refuse(`The deliberation period on #${n} closed at **${isoNV}**, and you submitted ` +
+                    `at ${issue.created_at}. Nothing has been written.\n\n` +
+                    `**This is not a ruling that your objection is out of time.** Section 2 is explicit that an ` +
+                    `objection is never discounted for being incomplete, and §3 gives a Record Keeper the ` +
+                    `verification. If the period was extended or restarted — a material change restarts it (§2) — ` +
+                    `the file's **Closes:** line needs to say so first: this workflow reads the file, not the ` +
+                    `conversation.`, branch, n);
+                }
                 let next2;
                 try { next2 = writeBlock(base); }
                 catch (e) {
@@ -590,10 +673,10 @@ jobs:
                     `**#${n} is a ${noVoteTier} proposal, so there is no vote.** Section 2 passes one absent a`,
                     'stated objection, and a single stated objection is enough to move it up a tier.',
                     '',
-                    '**This workflow has not decided that, and cannot.** It does not know whether your',
-                    'objection fell inside the deliberation window — most of that runs in the governance',
-                    'channel, which it cannot see. Your objection carries its date; Section 3 gives the',
-                    'verification to a Record Keeper.',
+                    `Your objection was recorded inside the deliberation period, which closes ${isoNV}.`,
+                    '',
+                    '**That is not a ruling that the proposal has moved.** Section 3 gives the outcome to a',
+                    'Record Keeper, who verifies it. This workflow writes down what you said and when.',
                     '',
                     'Changed your mind, or want to add to it? Submit the form again — your block is',
                     'replaced, not duplicated, and the earlier wording stays in the file\'s history.',

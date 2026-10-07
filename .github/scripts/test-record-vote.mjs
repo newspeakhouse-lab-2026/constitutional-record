@@ -67,16 +67,27 @@ const voteFile = (rows = { Ada: '—', Blaise: '—', Carl: '—' }, closes = '2
 
 /* Tier A and Tier B hold no vote (§2): no table, no roll, no threshold, no
    window. The file exists only because somebody objected. */
-const noVoteFile = (blocks = '') => [
+const noVoteFile = (blocks = '', closes = '2099-01-01T12:00:00+00:00') => [
   '# Objections — PR #14: a proposal', '',
-  '**Procedure:** Tier A', '',
+  '**Procedure:** Tier A',
+  '**Carries if:** no member objects before it closes',
+  '**Opened:** Sunday 31 May 2026, 10:00 UK (`2026-05-31T10:00:00+01:00`)',
+  `**Closes:** Friday 1 January 2099, 12:00 UK (\`${closes}\`)`, '',
   'Section 2 passes a Tier A proposal absent a stated objection, so no vote is',
   'held and this file has no table.', '',
   '## Objections', '', blocks,
 ].join('\n');
 
-const TIER = tier => ({ state: 'open', draft: false, labels: [{ name: `tier-${tier}` }],
-  head: { ref: 'feature', repo: { full_name: 'o/r' } }, html_url: 'PRURL' });
+/* The window at Tier A and Tier B is computed from the proposal's own labels —
+   opened: plus the period §2 gives the tier — so a fixture without them is a
+   proposal whose period nothing records. The issue is submitted 2026-06-01, so
+   opening on 05-31 leaves a 2-day Tier A window open. */
+const TIER = (tier, extra = ['opened:2026-05-31T10:00:00Z']) =>
+  ({ state: 'open', draft: false,
+     labels: [{ name: `tier-${tier}` }, ...extra.map(name => ({ name }))],
+     head: { ref: 'feature', repo: { full_name: 'o/r' } }, html_url: 'PRURL' });
+
+const DATA_JSON = JSON.stringify({ procedures: { 'tier-a': { days: 2 } } });
 
 const b64 = s => Buffer.from(s, 'utf8').toString('base64');
 
@@ -105,6 +116,7 @@ async function run({
   pullStatus = 404,
   pull = { state: 'open', draft: false, head: { ref: 'feature', repo: { full_name: 'o/r' } }, html_url: 'PRURL' },
   pullMissing = false,
+  dataJson = DATA_JSON,     // holds the period §2 gives Tier A
   putFails = [],            // statuses to throw before succeeding
   fileAfterConflict = null, // what another voter left behind
 } = {}) {
@@ -130,6 +142,7 @@ async function run({
     repos: {
       getContent: async ({ path }) => {
         if (path === 'members.md') return { data: { content: b64(MEMBERS) } };
+        if (path === 'docs/data.json') return { data: { content: b64(dataJson) } };
         if (fileMissing) throw err(fileStatus);
         return { data: { content: b64(current), sha: 'sha' + puts } };
       },
@@ -335,14 +348,16 @@ r = await run({ pull: TIER('a'), fileMissing: true, body: OBJ('the bins are full
 check('Tier A objection with no file creates one', r.writes.length, 1);
 check('the created file has no table', /^\s*\|/m.test(r.writes[0].text), false);
 check('the created file names the procedure', r.writes[0].text.includes('**Procedure:** Tier A'), true);
-check('the created file states no window', r.writes[0].text.includes('**Closes:**'), false);
+check('the created file states its window', r.writes[0].text.includes('**Closes:**'), true);
+check('and states it twice, words and timestamp', /\*\*Closes:\*\*.*`\d{4}-\d{2}-\d{2}T[\d:]+[+-]\d{2}:\d{2}`/.test(r.writes[0].text), true);
+check('the window is the one the labels describe', r.writes[0].text.includes('2026-06-02T'), true);
 check('the reason is written verbatim', r.writes[0].text.includes('the bins are full by Tuesday'), true);
 check('the route forward is written verbatim', r.writes[0].text.includes('a second collection'), true);
 check('it is created without a sha', r.writes[0].sha, undefined);
 check('the objection labels the proposal, not only the issue',
   r.labelled.includes('objection@14') && r.labelled.includes('objection@7'), true);
 
-r = await run({ pull: TIER('b'), fileMissing: true, body: OBJ('r', 'q') });
+r = await run({ pull: TIER('b', ['opened:2026-05-31T10:00:00Z', 'days-3']), fileMissing: true, body: OBJ('r', 'q') });
 check('Tier B behaves the same as Tier A', r.writes.length, 1);
 check('Tier B names its own procedure', r.writes[0].text.includes('**Procedure:** Tier B'), true);
 
@@ -381,6 +396,32 @@ r = await run({ pull: TIER('a'), fileMissing: false, file: noVoteFile(OTHERS),
   putFails: [422], body: OBJ('mine', 'my route') });
 check('a lost create race retries and still records', r.writes.length, 1);
 check('and keeps the objection that won the race', r.writes[0].text.includes('Reason: theirs.'), true);
+
+/* The window is enforced, not disclaimed. It is computed from the opened: label
+   and §2's period for the tier the first time, then read from the file — one
+   answer, the same one the dashboard counts down. */
+
+r = await run({ pull: TIER('a'), file: noVoteFile('', '2026-01-01T12:00:00+00:00'), body: OBJ('r', 'q') });
+check('an objection after the window closed is refused', r.writes.length, 0);
+check('and says when it closed', has(r.comments[0], '2026-01-01T12:00:00+00:00'), true);
+check('and does not rule the objection out of time',
+  has(r.comments[0], 'not a ruling that your objection is out of time'), true);
+
+r = await run({ pull: TIER('a', []), fileMissing: true, body: OBJ('r', 'q') });
+check('no opened: label means the period cannot be known', r.writes.length, 0);
+check('and says so rather than guessing', has(r.comments[0], 'cannot tell when the deliberation period'), true);
+
+/* §2: a Tier B proposal runs for "a stated period of less than seven days", and
+   a period never stated cannot have elapsed. */
+r = await run({ pull: TIER('b'), fileMissing: true, body: OBJ('r', 'q') });
+check('Tier B with no days- label is refused', r.writes.length, 0);
+check('and cites the stated-period requirement', has(r.comments[0], 'stated period'), true);
+
+/* The period for Tier A is read from docs/data.json with the sentence it came
+   from, never written into this workflow. */
+r = await run({ pull: TIER('a'), fileMissing: true, dataJson: '{"procedures":{}}', body: OBJ('r', 'q') });
+check('no recorded period for Tier A is refused, not assumed', r.writes.length, 0);
+check('and names the file that should hold it', has(r.comments[0], 'docs/data.json'), true);
 
 const passed = results.filter(Boolean).length;
 console.log(`\n${passed}/${results.length} passed`);
