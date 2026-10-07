@@ -170,7 +170,23 @@
   .why a{color:inherit;text-decoration:underline;text-underline-offset:2px}
   .why a:hover{color:var(--ink)}
   .why a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
-  .rt{grid-column:2;grid-row:1/span 2;text-align:right;white-space:nowrap}
+  /* The rail spans the whole row so the action can sit under the deadline it
+     belongs to. A minimum width rather than auto: the countdown, the instant and
+     the button must line up down the page, and an auto column reflows with every
+     row's longest string. 11.5rem leaves the main column on --prose at the
+     page's 62rem measure, which is the width the prose was set for. */
+  .rt{grid-column:2;grid-row:1;text-align:right;white-space:nowrap;
+    min-width:11.5rem;align-self:start}
+  /* A sibling of .rt rather than a child, so the two stack in the rail on a wide
+     screen and can be re-ordered independently on a narrow one, where the action
+     belongs at the END of the row and the countdown near the top. */
+  .rail{grid-column:2;grid-row:2/span 2;align-self:start;text-align:right;
+    margin-top:.75rem}
+  /* Full width of the rail, so a column of buttons reads as a column rather
+     than as a ragged edge. */
+  .rail .acts{display:flex;flex-direction:column;align-items:stretch;gap:.4rem;margin:0}
+  .rail .act{justify-content:center;text-align:center}
+  .rail .actalt{text-align:center;font-size:var(--t0)}
   /* The clock is deliberately NOT the biggest thing on a row. Knowing a vote
      closes in 19 hours affords nothing; the gap to the threshold does. */
   .rem{display:block;font:400 var(--t1)/1.3 var(--mono);font-variant-numeric:tabular-nums;color:var(--muted)}
@@ -239,13 +255,9 @@
     font:500 var(--t0)/1 var(--ui);padding:.5rem .85rem}
   .sheetx:hover{color:var(--ink);border-color:var(--muted)}
 
-  /* Words left, drawing right. Below the breakpoint it stacks, because at
-     phone width two columns of this are two columns of nothing. */
-  .vote.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);
-    column-gap:1.75rem;align-items:start}
-  .vleft{min-width:0}
-  .vright{min-width:0;padding-top:.1rem}
-
+  /* One column, in reading order: what it is, where it stands, the drawing of
+     where it stands, and the two ways to ask about it. The action is not here —
+     it is in the rail, under the deadline. */
   .abs{display:block;font:400 var(--t0)/1.5 var(--mono);color:var(--faint);font-variant-numeric:tabular-nums}
   .urgent .rem{color:var(--urgent)}
   .soon .rem{color:var(--soon)}
@@ -449,15 +461,15 @@
 
   /* ---- the action ----------------------------------------------------- */
   .acts{display:flex;flex-wrap:wrap;align-items:center;gap:.9rem;margin-top:.5rem}
-  .why a.act{display:inline-flex;align-items:center;justify-content:center;min-height:2.5rem;
+  a.act{display:inline-flex;align-items:center;justify-content:center;min-height:2.5rem;
     padding:0 1.3rem;border:1px solid var(--accent);border-radius:999px;background:transparent;
     color:var(--accent);text-decoration:none;font:600 var(--t1)/1 var(--ui);letter-spacing:.01em}
-  .why a.act:hover{background:var(--accent);color:var(--bg)}
-  .why a.act:focus-visible{background:var(--accent);color:var(--bg);
+  a.act:hover{background:var(--accent);color:var(--bg)}
+  a.act:focus-visible{background:var(--accent);color:var(--bg);
     outline:2px solid var(--accent);outline-offset:3px}
-  .why a.actalt{display:inline-flex;align-items:center;min-height:2.5rem;padding:0 .15rem;
+  a.actalt{display:inline-flex;align-items:center;min-height:2.5rem;padding:0 .15rem;
     color:var(--faint);text-decoration:underline;text-underline-offset:3px;font-size:var(--t0)}
-  .why a.actalt:hover{color:var(--ink)}
+  a.actalt:hover{color:var(--ink)}
   /* The hand-edit warning rides on the action line rather than sitting under
      it as its own paragraph. It was the same three lines on every vote row —
      the most repeated block on the page — and it only concerns somebody who
@@ -567,7 +579,10 @@
      before the number, which is where the eye starts on a phone anyway. */
     .warns{position:static;width:auto;display:inline-flex;margin-right:.4rem;
       vertical-align:-.1em}
-    .vote.split{grid-template-columns:minmax(0,1fr);row-gap:.6rem}
+    /* The rail is not a rail at this width: it stacks into the flow, and the
+       action goes full width at the end of the row, where a thumb is. */
+    .rail{margin-top:.6rem}
+    .rail .acts{align-items:stretch}
     .what{font-size:var(--t0)}
     h2{font-size:1.15rem}
     a.btn{padding:.35rem .75rem}
@@ -576,7 +591,13 @@
     .lbl{font-size:.95rem;line-height:1.3}
     /* The time drops under the title and reads as a sentence rather than as a
        sidebar — but the absolute date stays, always. */
-    .rt{grid-column:1;grid-row:auto;text-align:left;margin-top:.2rem}
+    /* One column, and explicit order: the action goes last, after everything
+       that tells you whether to take it, where a thumb is. */
+    .lbl{order:1}
+    .rt{order:2;grid-column:1;grid-row:auto;text-align:left;margin-top:.2rem;min-width:0}
+    .meta{order:3}
+    .why{order:4}
+    .rail{order:5;grid-column:1;grid-row:auto;text-align:left;margin-top:.7rem}
     .rem,.abs{display:inline}
     .abs::before{content:" · "}
     .meta{line-height:1.55}
@@ -602,8 +623,8 @@
        easiest thing on it to hit. */
     .acts{display:block}
     .acts>*{margin-top:.45rem}
-    .why a.act{display:flex;width:100%;min-height:2.75rem;font-size:var(--t2)}
-    .why a.actalt{display:flex;width:100%;min-height:2.75rem;justify-content:center}
+    a.act{display:flex;width:100%;min-height:2.75rem;font-size:var(--t2)}
+    a.actalt{display:flex;width:100%;min-height:2.75rem;justify-content:center}
   }
   @media (prefers-reduced-motion:no-preference){
     a,summary{transition:color .12s ease,background-color .12s ease,border-color .12s ease}
@@ -1028,13 +1049,20 @@ function noteBtn(label,title,body){
     title, body);
 }
 
-function row(sr,label,meta,remTxt,abs,cls,why){
+/* The right-hand rail carries the deadline AND the action, in that order: the
+   countdown, the instant it runs to, then the one thing to do before it. They
+   are one thought — do this before that — and the action used to sit at the
+   bottom of the left column, as far from its deadline as the row allowed.
+   Everything in words stays on the left, in reading order: what it is, where it
+   stands, the drawing of where it stands, and the two ways to ask about it. */
+function row(sr,label,meta,remTxt,abs,cls,why,act){
   return `<div class="r ${cls||""}">
     <div class="lbl">${label}</div>
     <div class="rt"><span class="rem">${remTxt||""}${sr?`<span class="sr"> \u2014 ${sr}</span>`:""}</span>${
       abs?`<span class="abs">${abs}</span>`:""}</div>
     ${meta?`<div class="meta">${meta}</div>`:""}
-    ${why?`<div class="why">${why}</div>`:""}</div>`;
+    ${why?`<div class="why">${why}</div>`:""}
+    ${act?`<div class="rail">${act}</div>`:""}</div>`;
 }
 
 async function collect(){
@@ -1366,13 +1394,13 @@ function render(d){
        at Layer 3, Layer 4 and re-ratification, toleration and abstention and
        silence are the same number, and a member who picks toleration believing
        it helps has done nothing. */
-    let voteWhy="";
+    let voteWhy="", voteAct="";
     if(vote&&!vote.holdsVote){
       /* Tier A and Tier B hold no vote (§2): the proposal passes absent a stated
          objection. So there is nothing to count, and the file exists only because
          somebody objected — which is the one act that is decisive at these tiers.
          Everything the voting block shows would be false here. */
-      const L=[], os=vote.objections;
+      const L=[], A=[], os=vote.objections;
       if(os.length){
         L.push(`<p class="yesonly"><strong>${os.length===1?"An objection has":os.length+" objections have"}
           been recorded, so this cannot pass on silence.</strong> §2 moves it up a tier
@@ -1388,15 +1416,16 @@ function render(d){
       L.push(`<p class="vnote">No vote is held at this tier, so there is nothing to count and no
         threshold to reach. Whether the window elapsed without objection is a Record Keeper's to
         verify (\u00a73).</p>`);
-      L.push(`<div class="acts"><a class="act" href="https://github.com/${REPO}/issues/new`
+      A.push(`<div class="acts"><a class="act" href="https://github.com/${REPO}/issues/new`
         +`?template=vote.yml&title=${encodeURIComponent("Vote: PR #"+pr.number)}&pr=${pr.number}">Object to this proposal</a>`
         +`<a class="actalt" href="https://github.com/${REPO}/blob/${encodeURIComponent(pr.head.ref)}/votes/pr-${pr.number}.md">Read votes/pr-${pr.number}.md</a></div>`);
       voteWhy=`<div class="vote">${L.join("")}</div>`;
+      voteAct=A.join("");
     }else if(vote){
       /* Four things, each its own line, in the order a member needs them.
          Anything wrong with the vote itself comes first, because it changes what
          the rest of the block means. */
-      const c=vote.counts, L=[], R=[];
+      const c=vote.counts, L=[], A=[], LINKS=[];
 
       /* Two clocks, and until now nothing compared them. The countdown on this
          row is computed from the opened: label and the period the layer or tier
@@ -1465,7 +1494,7 @@ function render(d){
            answer twice and differently. A member who tolerated is a filled
            slot above and a struck slot below, in the same column. That pair
            is what the page used to have to explain in a sentence. */
-        R.push(`<div class="lanes" aria-hidden="true">`
+        L.push(`<div class="lanes" aria-hidden="true">`
           +lane(pr.number,"the quorum — any mark at all counts, out of all "+vote.roll,
                 plan,vote.roll,vote.required)
           +lane(pr.number,"the majority — preference against objection only",
@@ -1478,14 +1507,14 @@ function render(d){
           preferences recorded, out of all ${vote.roll} members${short>0
             ?` — <strong>${short} more needed</strong> for the ${vote.required} this procedure asks for`
             :` — the ${vote.required} this procedure asks for is reached, and whether it carries is a Record Keeper's to verify (§3)`}${objn}.</p>`);
-        R.push(`<div class="lanes" aria-hidden="true">`
+        L.push(`<div class="lanes" aria-hidden="true">`
           +lane(pr.number,"of all "+vote.roll+" members — only a filled mark counts",
                 plan,vote.roll,vote.required)
           +`</div>`);
       }else{
         L.push(`<p class="vask"><b>${vote.affirmative}</b>
           preferences recorded${objn}. This vote states no threshold, so nothing here draws one.</p>`);
-        R.push(`<div class="lanes" aria-hidden="true">`
+        L.push(`<div class="lanes" aria-hidden="true">`
           +lane(pr.number,"of all "+vote.roll+" members",plan,vote.roll,null)
           +`</div>`);
       }
@@ -1542,7 +1571,7 @@ function render(d){
           <p>An objection is not counted here either, and that is not the same as not mattering — it
           is opposition, stated with a reason and a route forward. Eight preferring and six objecting
           still carries.</p>`);
-      R.push(noteBtn("What the marks mean", "What the marks mean, and when they count",
+      LINKS.push(noteBtn("What the marks mean", "What the marks mean, and when they count",
         KEY.join("")));
       /* Grouped by arithmetic effect, but only where the arithmetic has a clean
          binary. At Layer 3, Layer 4 and re-ratification the threshold is purely
@@ -1570,7 +1599,7 @@ function render(d){
           ? `<p class="names"><strong>${label} (${by(p).length})</strong><br>${
               by(p).map(m=>esc(m.name)+(m.date?` <span class="when">${esc(m.date)}</span>`:"")).join(", ")}</p>`
           : "";
-        R.push(noteBtn("See who has voted","Who has voted, and how",
+        LINKS.push(noteBtn("See who has voted","Who has voted, and how",
           grp("preference","Preference")+grp("objection","Objection")
           +grp("toleration","Toleration")+grp("abstention","Abstention")
           +(vote.awaiting.length
@@ -1604,7 +1633,7 @@ function render(d){
         L.push(`<p class="vnote">The window closed ${fmt(enforced)}, so a position submitted now is refused.
           Next: a Record Keeper writes the result into the file with the arithmetic shown, and verifies it
           before merging (§3).</p>`);
-        L.push(`<div class="acts"><a class="actalt" href="https://github.com/${REPO}/blob/${encodeURIComponent(pr.head.ref)}/votes/pr-${pr.number}.md">Read votes/pr-${pr.number}.md</a></div>`);
+        A.push(`<div class="acts"><a class="actalt" href="https://github.com/${REPO}/blob/${encodeURIComponent(pr.head.ref)}/votes/pr-${pr.number}.md">Read votes/pr-${pr.number}.md</a></div>`);
       }else{
         /* The form first, the file second. Opening an issue needs only read
            access, so it is the one route that works for a member who cannot push
@@ -1616,7 +1645,7 @@ function render(d){
            it matters only when the form has already failed. record-vote.yml
            gives it in every refusal, with the same warning, which is the moment
            it is relevant. */
-        L.push(`<div class="acts"><a class="act" href="https://github.com/${REPO}/issues/new`
+        A.push(`<div class="acts"><a class="act" href="https://github.com/${REPO}/issues/new`
           +`?template=vote.yml&title=${encodeURIComponent("Vote: PR #"+pr.number)}&pr=${pr.number}">Record your position</a></div>`);
       }
       /* A clear left/right divide: everything in words on the left, the drawing
@@ -1625,19 +1654,21 @@ function render(d){
          under the marks where it read as a caption on the drawing. */
       /* The two explanations are one group, and were rendering as one run-on
          string without it. */
-      const Rl=R.filter(x=>x.includes("notebtn")), Rm=R.filter(x=>!x.includes("notebtn"));
-      const Rj=Rm.join("")+(Rl.length?`<div class="vlinks">${Rl.join("")}</div>`:"");
-      voteWhy=`<div class="vote${R.length?" split":""}">`
-        +`<div class="vleft">${L.join("")}</div>`
-        +(R.length?`<div class="vright">${Rj}</div>`:"")
+      /* The two explanations are one group and were rendering as one run-on
+         string without a wrapper. They sit under the drawing they explain. */
+      voteWhy=`<div class="vote">${L.join("")}`
+        +(LINKS.length?`<div class="vlinks">${LINKS.join("")}</div>`:"")
         +`</div>`;
+      voteAct=A.join("");
     }else if((d.roll||[]).length){
       /* This procedure votes and no file exists yet, so offer to open one —
          prefilled with the procedure, the threshold computed once from the
          frozen roll, the window already running, and every member's row. */
       const f=voteFileFor(pr,win,d.cfg.thresholds||{},d.roll,d.rollSha);
-      if(f) voteWhy=`<div class="vote"><p class="vnote">This procedure votes, and no positions are recorded yet.</p>`
-        +`<div class="acts"><a class="act" href="${newVoteURL(pr.head.ref,`votes/pr-${pr.number}.md`,f)}">Start a vote</a></div></div>`;
+      if(f){
+        voteWhy=`<div class="vote"><p class="vnote">This procedure votes, and no positions are recorded yet.</p></div>`;
+        voteAct=`<div class="acts"><a class="act" href="${newVoteURL(pr.head.ref,`votes/pr-${pr.number}.md`,f)}">Start a vote</a></div>`;
+      }
     }
 
     /* Tier A and Tier B hold no vote at all, so nothing above draws one —
@@ -1661,7 +1692,7 @@ function render(d){
         Tier ${win.tier==="a"?"B":"C"}, to be deliberated again${win.tier==="a"?"":" with a vote"}.
         An objection carries a reason and a route forward:
         <a href="${pr.html_url}">read it</a>.</p></div>`;
-    else if(!vote&&(win.tier==="a"||win.tier==="b")&&win.closes)
+    else if(!vote&&(win.tier==="a"||win.tier==="b")&&win.closes){
       /* The form is the route now. It used to send a member to the proposal
          thread instead, because record-vote.yml refused whenever votes/pr-N.md
          did not exist and at these tiers it never does — a button that sends
@@ -1673,10 +1704,11 @@ function render(d){
         <p class="yesonly"><strong>No vote is held at Tier ${win.tier.toUpperCase()}.</strong>
         Preference, toleration, abstention and saying nothing are the same act here: absent a stated
         objection, it passes. One objection — with a reason and a route forward, as §2 requires —
-        moves it to Tier ${win.tier==="a"?"B":"C"} rather than stopping it.</p>
-        <div class="acts"><a class="act" href="https://github.com/${REPO}/issues/new`
-        +`?template=vote.yml&title=${encodeURIComponent("Vote: PR #"+pr.number)}&pr=${pr.number}">Object to this proposal</a>
-        <a class="actalt" href="${pr.html_url}">or say so on the proposal</a></div></div>`;
+        moves it to Tier ${win.tier==="a"?"B":"C"} rather than stopping it.</p></div>`;
+      voteAct=`<div class="acts"><a class="act" href="https://github.com/${REPO}/issues/new`
+        +`?template=vote.yml&title=${encodeURIComponent("Vote: PR #"+pr.number)}&pr=${pr.number}">Object to this proposal</a>`
+        +`<a class="actalt" href="${pr.html_url}">or say so on the proposal</a></div>`;
+    }
 
     /* Attached here, not where the label is built: the vote block is read after
        it, and that is where two of the three warnings are discovered. */
@@ -1693,7 +1725,7 @@ function render(d){
       const when=win.minimum
         ? `closes no earlier than ${fmt(win.closes)}`
         : `closes ${fmt(win.closes)}`;
-      live.push({ms:r.ms,html:row(r.word,lbl,meta,r.txt,when,r.cls,voteWhy)});
+      live.push({ms:r.ms,html:row(r.word,lbl,meta,r.txt,when,r.cls,voteWhy,voteAct)});
     } else {
       // The state is a tag now, so the right column stays empty rather than
       // carrying a word that needed decoding. sr keeps it for screen readers.
@@ -1703,7 +1735,7 @@ function render(d){
       // countdown becomes its own paragraph beneath it rather than a middot
       // joined onto the end of a <div>.
       noclock.push(row(st?st.t:"",lbl,meta,"","","idle",
-        voteWhy+(win.why.length?`<p class="vnote">${win.why.join(" · ")}</p>`:"")));
+        voteWhy+(win.why.length?`<p class="vnote">${win.why.join(" · ")}</p>`:""),voteAct));
     }
   }
   live.sort((a,b)=>a.ms-b.ms);
