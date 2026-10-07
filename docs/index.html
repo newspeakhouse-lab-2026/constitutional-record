@@ -199,16 +199,20 @@
   /* In the gutter, not in the line. Inline they pushed the title right, so a
      warned row's title no longer lined up with its neighbours' — and the thing
      a reader scans down a list of proposals is the left edge of the titles. */
-  .warns{position:absolute;left:0;top:2.02rem;width:2.7rem;
-    display:flex;justify-content:flex-end;gap:.18rem}
+  .warns{position:absolute;left:0;top:1.9rem;width:2.7rem;
+    display:flex;justify-content:flex-end;gap:.1rem}
+  /* The TARGET is 24x24 (WCAG 2.2 SC 2.5.8); the triangle drawn inside it stays
+     the size it was. It was 18x17 — the smallest control on the page, on the
+     warning that decides whether a position will be accepted at all. */
   .warnbtn{display:inline-flex;align-items:center;justify-content:center;
-    width:1.15rem;height:1.05rem;vertical-align:-.1em;
+    width:1.5rem;height:1.5rem;margin:-.22rem;vertical-align:-.35em;
     border:0;background:none;cursor:pointer;padding:0;position:relative;
     font:700 .62rem/1 var(--ui);color:var(--bg)}
-  .warnbtn::before{content:"";position:absolute;inset:0;background:var(--urgent);
-    clip-path:polygon(50% 0,100% 100%,0 100%)}
+  .warnbtn::before{content:"";position:absolute;left:50%;top:50%;
+    width:1.15rem;height:1.05rem;transform:translate(-50%,-50%);
+    background:var(--urgent);clip-path:polygon(50% 0,100% 100%,0 100%)}
   .warnbtn span,.warnbtn{z-index:0}
-  .warnbtn::after{content:"!";position:relative;top:.17em}
+  .warnbtn::after{content:"!";position:relative;top:.14em}
   .warnbtn:hover::before{filter:brightness(1.15)}
   .warnbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
 
@@ -217,7 +221,7 @@
   /* They were two buttons with no whitespace between them, so they read as one
      run-on string: "What the marks meanSee who has voted". */
   .vlinks{display:flex;flex-wrap:wrap;gap:.35rem 1.25rem;margin-top:.5rem}
-  .notebtn{border:0;background:none;padding:0;cursor:pointer;text-align:left;
+  .notebtn{border:0;background:none;padding:.3rem 0;min-height:1.5rem;cursor:pointer;text-align:left;
     font:400 var(--t0)/1.5 var(--ui);color:var(--accent);
     text-decoration:underline;text-underline-offset:2px;
     text-decoration-color:color-mix(in srgb,var(--accent) 45%,transparent)}
@@ -238,6 +242,8 @@
   .sheet form{padding:1.15rem 1.3rem 1rem;max-height:80vh;overflow-y:auto;
     text-align:left;position:static;background:none;margin-top:0}
   .sheet h3{font:600 var(--t2)/1.3 var(--ui);margin:0 0 .6rem}
+  .sheet h3:focus{outline:none}
+  .sheet h3:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
   .sheetbody{font:400 var(--t1)/1.6 var(--ui);color:var(--muted)}
   .sheetbody p{margin:0 0 .65rem}
   .sheetbody p:last-child{margin-bottom:0}
@@ -346,7 +352,10 @@
   .c.t{border:1px solid var(--mark)}
   /* never answered: the slot is drawn and left open. An empty chair, not a
      zero. This is the mark the page is quietly about. */
-  .c.s{border:1px dotted var(--mark);opacity:.75}
+  /* Measured at 2.33:1 against the ground, under the 3:1 WCAG 1.4.11 asks of a
+     non-text mark — on the mark this page is quietly about. The dotted border
+     keeps it distinct from a tolerated slot without relying on weight alone. */
+  .c.s{border:1px dotted var(--mark);opacity:1}
   /* struck out of THIS lane's denominator. The slot is still drawn, in the
      same column as the member it belongs to, and then crossed through: not
      "there is nobody here" but "this answer is not counted here". */
@@ -512,7 +521,10 @@
   dialog h3{font:400 var(--t3)/1.2 var(--serif);margin:0 0 .6rem}
   .pick{display:block;border:1px solid var(--line);border-radius:3px;padding:.75rem .85rem;
     margin:.6rem 0;text-decoration:none;color:var(--ink);background:var(--sunk)}
-  .pick:hover,.pick:focus-visible{border-color:var(--accent);outline:none}
+  .pick:hover{border-color:var(--accent)}
+  /* These two were the only controls on the page that suppressed the outline, and
+     a 1px border change is under the 2px perimeter SC 2.4.11 asks for. */
+  .pick:focus-visible{border-color:var(--accent);outline:2px solid var(--accent);outline-offset:2px}
   .pick b{font:400 var(--t2)/1.3 var(--serif)}
   .pick i{font-style:normal;color:var(--faint);font-size:var(--t0);letter-spacing:.08em;
     text-transform:uppercase;margin-left:.5rem}
@@ -521,7 +533,7 @@
   .pickwrap .pick{margin:0}
   .areain{display:block;width:100%;margin:.45rem 0 0;padding:.5rem .6rem;font:inherit;
     font-size:var(--t1);border:1px solid var(--rule);border-radius:3px;background:var(--bg);color:var(--ink)}
-  .areain:focus{outline:none;border-color:var(--accent)}
+  .areain:focus{border-color:var(--accent);outline:2px solid var(--accent);outline-offset:1px}
   .areapath{display:block;font:400 var(--t0)/1.5 var(--mono);color:var(--faint);margin-top:.35rem}
   dialog form{margin-top:1rem;text-align:right;position:sticky;bottom:-1.3rem;
     background:linear-gradient(to top,var(--bg) 60%,transparent);padding-bottom:1.3rem}
@@ -1024,8 +1036,8 @@ function lane(seed,key,plan,n,at){
 const MODALS=[]; let MODAL_N=0;
 function modal(trigger,title,body,kind){
   const id=`m${++MODAL_N}`;
-  MODALS.push(`<dialog id="${id}" class="sheet"><form method="dialog">
-    <h3>${title}</h3><div class="sheetbody">${body}</div>
+  MODALS.push(`<dialog id="${id}" class="sheet" aria-labelledby="${id}t"><form method="dialog">
+    <h3 id="${id}t" tabindex="-1">${title}</h3><div class="sheetbody">${body}</div>
     <button class="sheetx" value="close">Close</button></form></dialog>`);
   return trigger(id);
 }
@@ -1918,7 +1930,12 @@ function render(d){
       const b=e.target.closest("[data-sheet]");
       if(!b) return;
       const d=document.getElementById(b.getAttribute("data-sheet"));
-      if(d&&typeof d.showModal==="function") d.showModal();
+      if(d&&typeof d.showModal==="function"){
+        d.showModal();
+        /* Native showModal() focuses the first focusable element, which here is
+           Close — so the content was announced only if you browsed backwards. */
+        const h=d.querySelector("h3[tabindex]"); if(h) h.focus();
+      }
     });
   }
   /* "read at 02:20" was the page describing its own fetch in its own vocabulary:
