@@ -91,6 +91,30 @@ clone` retrieves none of it, and nor does anything else that survives the
 platform. The one thing Section 2 insists an objection contain must not be the
 one thing kept outside the repository.
 
+## Tier A and Tier B hold no vote
+
+Section 2 passes a proposal at these tiers absent a stated objection. There is
+nothing to count, so the file has **no table** — and no roll, because nobody is
+being polled.
+
+It exists only when somebody objects. A file asserting that nobody did would be
+asserting a negative nothing can check: most deliberation runs in the governance
+channel, and no file can see it.
+
+**The objection still belongs in the Record, and more plainly than anywhere
+else.** This is the one place a single objection is decisive — it blocks lazy
+consensus and moves the proposal up a tier. The reason and the route forward
+Section 2 requires are the whole content of the file.
+
+**It states no window.** The deliberation clock for these tiers is on the
+proposal; a second one here would be a second clock to disagree with the first.
+Each objection carries its own date, and whether that fell inside the window is
+verified, not computed.
+
+If the proposal reaches a tier that votes, the table is added to this same file
+and the `Procedure:` line is updated. The earlier objections stay: they were
+deliberation, and an escalation no more clears them than a restart does.
+
 ## The result
 
 Written into the file when the window closes, with the arithmetic shown.

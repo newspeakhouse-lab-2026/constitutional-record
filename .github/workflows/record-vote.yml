@@ -300,6 +300,11 @@ jobs:
                 `This workflow's token cannot write to a branch in a fork, so it cannot record your ` +
                 `position there. Ask for push access to this repository, or record it by hand.`);
             }
+            /* label-proposals.yml writes tier-a / tier-b / tier-c from the pull
+               request body. Only the first two hold no vote. */
+            const prLabels = (pull.labels || []).map(l => String((l && l.name) || ''));
+            const noVoteTier = prLabels.includes('tier-a') ? 'Tier A'
+                             : prLabels.includes('tier-b') ? 'Tier B' : null;
             const branch = pull.head.ref;
             if (branch === DEFAULT_BRANCH) {
               return await refuse(`Pull request #${n}'s branch is \`${branch}\`, this repository's default branch. ` +
@@ -357,24 +362,11 @@ jobs:
             const renderRow = c => '| ' + c.join(' | ') + ' |';
             const quote = s => s.replace(/\r/g, '').split('\n').map(l => '> ' + l).join('\n');
 
-            function apply(text) {
-              const t = parseTable(text);
-              if (!t) throw new Error('no table found in the vote file');
-              const posCol = t.header.findIndex(h => /^position$/i.test(h));
-              const dateCol = t.header.findIndex(h => /^date$/i.test(h));
-              if (posCol < 0 || dateCol < 0) throw new Error('the table has no Position or Date column');
-              const hits = t.rows.map((r, i) => [r, i]).filter(([r]) => r[0].replace(/\**|`/g, '') === me.name);
-              if (hits.length === 0) throw new Error(`no row for ${me.name}`);
-              if (hits.length > 1) throw new Error(`${hits.length} rows name ${me.name}`);
-              const [, idx] = hits[0];
-              const row = [...t.rows[idx]];
-              row[posCol] = position;
-              row[dateCol] = DATE;
-              const out = [...t.lines];
-              out[t.start + 2 + idx] = renderRow(row);
-              let s = out.join('\n');
-
-              // The member's own block, replaced wholly rather than appended to.
+            /* The member's own block, replaced wholly rather than appended to.
+               Split out of apply() because a proposal at Tier A or Tier B has no
+               table to put a row in — Section 2 holds no vote there — and the
+               objection is the whole of what gets written. */
+            function writeBlock(s) {
               const anchor = `<!-- ${isObjection ? 'objection' : 'note'}: ${me.id} -->`;
               const heading = isObjection ? '## Objections' : '## Notes';
               const parts = isObjection
@@ -392,6 +384,84 @@ jobs:
                 else s = s.replace(/\s*$/, '\n\n' + heading + '\n\n' + block + '\n');
               }
               return s.replace(/\s*$/, '\n');
+            }
+
+            function apply(text) {
+              const t = parseTable(text);
+              if (!t) throw new Error('no table found in the vote file');
+              const posCol = t.header.findIndex(h => /^position$/i.test(h));
+              const dateCol = t.header.findIndex(h => /^date$/i.test(h));
+              if (posCol < 0 || dateCol < 0) throw new Error('the table has no Position or Date column');
+              const hits = t.rows.map((r, i) => [r, i]).filter(([r]) => r[0].replace(/\**|`/g, '') === me.name);
+              if (hits.length === 0) throw new Error(`no row for ${me.name}`);
+              if (hits.length > 1) throw new Error(`${hits.length} rows name ${me.name}`);
+              const [, idx] = hits[0];
+              const row = [...t.rows[idx]];
+              row[posCol] = position;
+              row[dateCol] = DATE;
+              const out = [...t.lines];
+              out[t.start + 2 + idx] = renderRow(row);
+
+              return writeBlock(out.join('\n'));
+            }
+
+            /* Tier A and Tier B hold no vote: Section 2 passes the proposal absent a
+               stated objection. So the file has no table, no roll to freeze and no
+               threshold — the reasons this workflow refuses to open a vote do not
+               arise, and writing the objection down decides nothing.
+
+               It states no window. The deliberation clock for these tiers lives in
+               the proposal's labels, and copying it here would be a second clock to
+               disagree with the first. The objection carries its own date; whether
+               that fell inside the window is a Record Keeper's to verify (Section 3),
+               which is right in any case because most deliberation happens in the
+               governance channel this workflow cannot see. */
+            function objectionFile(tier, number, title) {
+              return [
+                `# Objections — PR #${number}: ${String(title).replace(/[\r\n]/g, ' ').slice(0, 200)}`, '',
+                `**Procedure:** ${tier}`, '',
+                `Section 2 passes a ${tier} proposal absent a stated objection, so no vote is`,
+                'held and this file has no table. It records the objections, which Section 2',
+                'requires to carry a reason and a route forward, and which nothing else in this',
+                'repository holds — a reason living only in a pull request comment is not in the',
+                'Record, because `git clone` retrieves none of it.', '',
+                '**A single stated objection is enough.** Section 2 moves the proposal up a tier;',
+                'it never moves down. Nothing here decides that — it is written down so a Record',
+                'Keeper can verify it.', '',
+                '## Objections', '',
+              ].join('\n');
+            }
+
+            /* The table invariants cannot run on a file that has no table, and
+               "exactly one row differs" is meaningless here. What has to hold is
+               narrower and stronger: nothing outside the submitter's own block may
+               move. Every other member's objection is compared byte for byte. */
+            function blocksOf(s) {
+              const out = new Map();
+              const re = /<!-- (objection|note): (\d+) -->([\s\S]*?)(?=\n<!-- (?:objection|note): |\n## |$)/g;
+              let m;
+              while ((m = re.exec(s))) out.set(`${m[1]}:${m[2]}`, m[3]);
+              return out;
+            }
+            function invariantsNoTable(before, after) {
+              if (parseTable(before)) return 'the file this was built from has a table after all';
+              if (parseTable(after)) return 'the result grew a table';
+              const mine = `${isObjection ? 'objection' : 'note'}:${me.id}`;
+              const b = blocksOf(before), a = blocksOf(after);
+              for (const [k, v] of b) {
+                if (k === mine) continue;
+                if (!a.has(k)) return `someone else's block (${k}) disappeared`;
+                if (a.get(k) !== v) return `someone else's block (${k}) changed`;
+              }
+              const added = [...a.keys()].filter(k => !b.has(k));
+              if (added.length > 1 || (added.length === 1 && added[0] !== mine)) {
+                return `${added.length} block(s) appeared, expected at most this member's own`;
+              }
+              const head = s => s.split('\n').filter(l => l.startsWith('**Procedure:**'))[0] || null;
+              if (head(before) !== head(after)) return 'the **Procedure:** line changed';
+              if (/[\x00-\x09\x0B-\x1F\x7F]/.test(after)) return 'the result contains a control character';
+              if (after.length - before.length > 65536) return 'the result grew by more than 64KB';
+              return null;
             }
 
             /* Asserted before any write. Failing closed is right: the cost of
@@ -453,11 +523,97 @@ jobs:
                     `a statement that this workflow could not find out. Nothing has been written. Submit the ` +
                     `form again in a few minutes, or edit the file by hand.\n\n` + byHand(branch, n));
                 }
-                return await refuse(`There is no \`${path}\` on branch \`${branch}\`, so no vote is open to record a ` +
-                  `position in. This workflow will not create one: opening a vote means naming the procedure, ` +
-                  `freezing who may vote and writing out the threshold, which are a member's decisions. ` +
-                  `Whoever is running the vote can open it from the dashboard, or from ` +
-                  `\`.github/instrument-templates/vote.md\`.`, branch, n);
+                if (!noVoteTier) {
+                  return await refuse(`There is no \`${path}\` on branch \`${branch}\`, so no vote is open to record a ` +
+                    `position in. This workflow will not create one: opening a vote means naming the procedure, ` +
+                    `freezing who may vote and writing out the threshold, which are a member's decisions. ` +
+                    `Whoever is running the vote can open it from the dashboard, or from ` +
+                    `\`.github/instrument-templates/vote.md\`.`, branch, n);
+                }
+                if (!isObjection) {
+                  return await refuse(`#${n} is a **${noVoteTier}** proposal, and Section 2 holds no vote at that ` +
+                    `tier — it passes absent a stated objection. So there is nothing for a **${position}** to be ` +
+                    `recorded in, and recording one would suggest a vote was running when none was.\n\n` +
+                    `An **objection** does have an effect here: a single stated one is enough to move the ` +
+                    `proposal up a tier. If that is what you mean, submit the form again choosing objection, ` +
+                    `with its reason and a route forward.\n\n` +
+                    `Support for a ${noVoteTier} proposal is expressed by saying so in the governance channel ` +
+                    `or on the proposal itself, where the deliberation happens.`, branch, n);
+                }
+                /* Creating it. Nothing is being decided: the procedure comes from
+                   the proposal's own label, there is no roll and no threshold, and
+                   the objection is the member's own words. */
+                got = { text: null, sha: undefined };
+              }
+
+              /* A Tier A or Tier B file states no window, by design — see
+                 objectionFile. Everything from here to the write is about a vote,
+                 so the no-table path takes its own route. */
+              const creating = got.text === null;
+              const base = creating ? objectionFile(noVoteTier, n, pull.title) : got.text;
+              const noTable = !parseTable(base);
+
+              if (noTable) {
+                let next2;
+                try { next2 = writeBlock(base); }
+                catch (e) {
+                  return await brokenTooling(`I could not write your objection into \`${path}\`: ${e.message}.` +
+                    `\n\n` + byHand(branch, n));
+                }
+                if (next2 === base && !creating) {
+                  await say(`Your objection is already recorded on #${n}, word for word — nothing to change. ` +
+                    `It stands as it is.`);
+                  return await close('vote-recorded');
+                }
+                const bad2 = invariantsNoTable(base, next2);
+                if (bad2) {
+                  return await brokenTooling(`I built a new version of \`${path}\` and then refused to write it, ` +
+                    `because it failed an internal check: **${bad2}**.\n\n` +
+                    `**Your objection has not been recorded, and nothing in the file has changed.**\n\n` +
+                    byHand(branch, n));
+                }
+                try {
+                  const res2 = await github.rest.repos.createOrUpdateFileContents({
+                    owner, repo, path, branch, sha: got.sha,
+                    content: Buffer.from(next2, 'utf8').toString('base64'),
+                    message: `Record objection from ${me.name} on PR #${n} (${noVoteTier})\n\n` +
+                      `Submitted through issue #${issue.number} by @${actorLogin} (account id ${actorId}) ` +
+                      `at ${issue.created_at}.\nTranscribed by .github/workflows/record-vote.yml. ` +
+                      `The objection is the member's; this commit only writes it down.`,
+                    author: { name: me.name, email: `${me.id}+${me.login}@users.noreply.github.com` },
+                  });
+                  await say([
+                    `Recorded your **objection** for **${me.name}** on [#${n}](${pull.html_url}).`,
+                    '',
+                    `${res2.data.commit.html_url} — \`${path}\` on \`${branch}\``,
+                    '',
+                    `**#${n} is a ${noVoteTier} proposal, so there is no vote.** Section 2 passes one absent a`,
+                    'stated objection, and a single stated objection is enough to move it up a tier.',
+                    '',
+                    '**This workflow has not decided that, and cannot.** It does not know whether your',
+                    'objection fell inside the deliberation window — most of that runs in the governance',
+                    'channel, which it cannot see. Your objection carries its date; Section 3 gives the',
+                    'verification to a Record Keeper.',
+                    '',
+                    'Changed your mind, or want to add to it? Submit the form again — your block is',
+                    'replaced, not duplicated, and the earlier wording stays in the file\'s history.',
+                  ].join('\n'));
+                  await github.rest.issues.addLabels({
+                    owner, repo, issue_number: issue.number, labels: ['objection'],
+                  }).catch(() => {});
+                  await github.rest.issues.addLabels({
+                    owner, repo, issue_number: n, labels: ['objection'],
+                  }).catch(() => {});
+                  return await close('vote-recorded');
+                } catch (e) {
+                  /* 422 also covers "it already exists" on a create, which is the
+                     race this loop exists for: go back and read what landed. */
+                  const stale2 = e.status === 409 || e.status === 422;
+                  if (!stale2) throw e;
+                  core.notice(`attempt ${attempt}: \`${path}\` changed under us (${e.status}); re-reading`);
+                  await sleep(400 * 2 ** (attempt - 1) + Math.floor(Math.random() * 400));
+                  continue;
+                }
               }
 
               // Checked against these bytes on every attempt, not once before the

@@ -20,6 +20,11 @@ import sys
 POSITIONS = ("preference", "toleration", "abstention", "objection")
 
 # What a member writes in **Procedure:** -> the key in data.json's thresholds.
+# Tier A and Tier B hold no vote at all: §2 passes the proposal absent a stated
+# objection. Their files carry objections and no table, and that is correct, not
+# a defect — so they are named here rather than inferred from a missing table.
+NO_VOTE = {"tier a", "tier b"}
+
 PROCEDURES = {
     "tier a": None, "tier b": None,          # no vote: pass absent an objection
     "tier c": "tier-c",
@@ -31,6 +36,16 @@ PROCEDURES = {
     "remedy": "remedy", "§4 remedy": "remedy",
     "removal": "removal", "§4 removal": "removal",
 }
+
+
+def objections_in(text):
+    """Who objected, and when. Bounded to the Objections section: ## Notes holds
+    blocks of the same shape, and counting those as objections would be wrong."""
+    m = re.search(r"^## Objections\s*$(.*?)(?=^## |\Z)", text, re.M | re.S)
+    if not m:
+        return []
+    return [(n.strip(), d.strip())
+            for n, d in re.findall(r"^\*\*(.+?)\*\*\s*[\u2014-]\s*(\S+)", m.group(1), re.M)]
 
 
 def ceil_div(a, b):
@@ -52,7 +67,15 @@ def required(spec, d):
     return None
 
 
-def tally(procedure, roll, counts, thresholds, excluded=0):
+def tally(procedure, roll, counts, thresholds, excluded=0, no_vote=False, objections=()):
+    if no_vote:
+        # Distinct from "no threshold recorded", which says something is missing.
+        # Nothing is missing: §2 holds no vote at these tiers.
+        return {"procedure": procedure, "electorate": roll, "counts": dict.fromkeys(POSITIONS, 0),
+                "responders": 0, "nonResponse": 0, "verdict": "no-vote",
+                "objections": list(objections), "source": "\u00a72",
+                "note": ("no vote is held at this tier: \u00a72 passes the proposal absent a stated "
+                         "objection, and a single stated one moves it up a tier")}
     spec = thresholds.get(procedure)
     electorate = roll - excluded
     got = {p: int(counts.get(p, 0)) for p in POSITIONS}
@@ -140,6 +163,18 @@ def parse(text):
     if len(rows) != len(set(rows)):
         dupes = sorted({n for n in rows if rows.count(n) > 1})
         return None, f"duplicated row(s) for {', '.join(dupes)}, so the denominator is ambiguous"
+    holds_vote = raw.lower() not in NO_VOTE
+    objections = objections_in(text)
+    if not holds_vote:
+        # The reverse of the usual complaint: a table here means the Procedure
+        # line was never updated when a vote was opened, which would hand every
+        # reader the wrong arithmetic.
+        if rows:
+            return None, (f'**Procedure:** says "{raw}", which holds no vote, but the file has a table. '
+                          "If a vote was opened, the Procedure line has to say which one.")
+        return {"procedure": key, "roll": 0, "counts": counts, "excluded": 0,
+                "holdsVote": False, "objections": objections,
+                "restarted": None, "earlier": []}, None
     if not rows:
         return None, "no table rows, so there is nobody to count"
 
@@ -150,11 +185,21 @@ def parse(text):
         return None, f"**Entitled to vote:** says {stated.group(1)} members but the table has {len(rows)} rows"
 
     return {"procedure": key, "roll": len(rows), "counts": counts, "excluded": excluded,
+            "holdsVote": True, "objections": objections,
             "restarted": restarted.group(1).strip() if restarted else None,
             "earlier": earlier}, None
 
 
 def fmt(r, restarted=None, earlier=()):
+    if r.get("verdict") == "no-vote":
+        obj = r.get("objections") or []
+        lines = [f"{r['note']}."]
+        lines.append(f"  {len(obj)} objection(s) recorded"
+                     + (": " + "; ".join(f"{n} ({d})" for n, d in obj) if obj else ""))
+        lines.append("  NO VERDICT HERE — whether the window elapsed without objection is visible in "
+                     "the governance channel, which this script cannot read.")
+        lines.append("  Advisory. \u00a73 gives the outcome to a Record Keeper.")
+        return "\n".join(lines)
     rnd = f", round {len(earlier) + 1}" if earlier else ""
     lines = [f"{r['procedure']} — {r['electorate']} entitled to vote{rnd}"]
     for n, line in earlier:
@@ -208,7 +253,9 @@ def main(argv):
             rc = 1
             continue
         print(fmt(tally(parsed["procedure"], parsed["roll"], parsed["counts"],
-                        thresholds, parsed["excluded"]),
+                        thresholds, parsed["excluded"],
+                        no_vote=not parsed.get("holdsVote", True),
+                        objections=parsed.get("objections") or ()),
                   parsed.get("restarted"), parsed.get("earlier") or ()))
     return rc
 

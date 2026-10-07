@@ -65,6 +65,19 @@ const voteFile = (rows = { Ada: '—', Blaise: '—', Carl: '—' }, closes = '2
   '## Result', '', '## Objections', '',
 ].join('\n');
 
+/* Tier A and Tier B hold no vote (§2): no table, no roll, no threshold, no
+   window. The file exists only because somebody objected. */
+const noVoteFile = (blocks = '') => [
+  '# Objections — PR #14: a proposal', '',
+  '**Procedure:** Tier A', '',
+  'Section 2 passes a Tier A proposal absent a stated objection, so no vote is',
+  'held and this file has no table.', '',
+  '## Objections', '', blocks,
+].join('\n');
+
+const TIER = tier => ({ state: 'open', draft: false, labels: [{ name: `tier-${tier}` }],
+  head: { ref: 'feature', repo: { full_name: 'o/r' } }, html_url: 'PRURL' });
+
 const b64 = s => Buffer.from(s, 'utf8').toString('base64');
 
 /* Octokit puts the HTTP status on the error it throws, and the workflow now
@@ -311,6 +324,63 @@ check('and the proposal itself', r.labelled.includes('objection@14'), true);
 r = await run();
 check('a preference labels neither as an objection',
   r.labelled.filter(x => x.startsWith('objection')), []);
+
+
+/* ---- Tier A and Tier B: no vote, and the objection is the decisive act ----
+   This was the gap: the workflow refused whenever no vote file existed, so the
+   one place a single objection decides anything was the one place nothing could
+   record it. */
+
+r = await run({ pull: TIER('a'), fileMissing: true, body: OBJ('the bins are full by Tuesday', 'a second collection') });
+check('Tier A objection with no file creates one', r.writes.length, 1);
+check('the created file has no table', /^\s*\|/m.test(r.writes[0].text), false);
+check('the created file names the procedure', r.writes[0].text.includes('**Procedure:** Tier A'), true);
+check('the created file states no window', r.writes[0].text.includes('**Closes:**'), false);
+check('the reason is written verbatim', r.writes[0].text.includes('the bins are full by Tuesday'), true);
+check('the route forward is written verbatim', r.writes[0].text.includes('a second collection'), true);
+check('it is created without a sha', r.writes[0].sha, undefined);
+check('the objection labels the proposal, not only the issue',
+  r.labelled.includes('objection@14') && r.labelled.includes('objection@7'), true);
+
+r = await run({ pull: TIER('b'), fileMissing: true, body: OBJ('r', 'q') });
+check('Tier B behaves the same as Tier A', r.writes.length, 1);
+check('Tier B names its own procedure', r.writes[0].text.includes('**Procedure:** Tier B'), true);
+
+/* A position other than an objection has no effect at these tiers, and
+   recording one would suggest a vote was running when none was. */
+r = await run({ pull: TIER('a'), fileMissing: true });
+check('a preference at Tier A writes nothing', r.writes.length, 0);
+check('and says why, naming the tier', has(r.comments[0], 'holds no vote at that tier'), true);
+check('and points at the thing that does have an effect', has(r.comments[0], 'single stated one is enough'), true);
+
+/* Without a tier-a/tier-b label the old refusal is unchanged: this workflow
+   still will not open a vote, because that names a procedure, freezes a roll and
+   writes a threshold. */
+r = await run({ pull: TIER('c'), fileMissing: true, body: OBJ('r', 'q') });
+check('Tier C with no file still refuses to open a vote', r.writes.length, 0);
+check('and gives the original reason', has(r.comments[0], 'will not create one'), true);
+
+/* Someone else's objection is in the file already. */
+const OTHERS = '<!-- objection: 222 -->\n**Blaise Pascal** — 2026-05-01\n\n> Reason: theirs.\n>\n> Route forward: theirs.\n';
+r = await run({ pull: TIER('a'), file: noVoteFile(OTHERS), body: OBJ('mine', 'my route') });
+check('a second objection is added, not substituted', r.writes.length, 1);
+check("the other member's block survives", r.writes[0].text.includes('Reason: theirs.'), true);
+check('and the new one is there too', r.writes[0].text.includes('Reason: mine'), true);
+
+/* Submitting the same objection twice changes nothing and says so. */
+const MINE = '<!-- objection: 111 -->\n**Ada Lovelace** — 2026-06-01' +
+  '\n\n> Reason: mine\n> \n> Route forward: my route\n';
+r = await run({ pull: TIER('a'), file: noVoteFile(MINE), body: OBJ('mine', 'my route') });
+check('resubmitting an identical objection writes nothing', r.writes.length, 0);
+check('and says it already stands', has(r.comments[0], 'already recorded'), true);
+check('and still closes as recorded', r.added.includes('vote-recorded'), true);
+
+/* Two members objecting at once. A create loses the race with a 422; the retry
+   re-reads and finds the file the other member made. */
+r = await run({ pull: TIER('a'), fileMissing: false, file: noVoteFile(OTHERS),
+  putFails: [422], body: OBJ('mine', 'my route') });
+check('a lost create race retries and still records', r.writes.length, 1);
+check('and keeps the objection that won the race', r.writes[0].text.includes('Reason: theirs.'), true);
 
 const passed = results.filter(Boolean).length;
 console.log(`\n${passed}/${results.length} passed`);

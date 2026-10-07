@@ -412,6 +412,19 @@ function voteOf(text){
   /* A material change restarts the deliberation period (§2): the positions are
      cleared and the vote runs again. Without showing it, a member whose row was
      cleared reads "awaiting you" with no idea why. */
+  /* Tier A and Tier B hold no vote at all: §2 passes the proposal absent a
+     stated objection. Their files carry objections and no table, which is
+     correct rather than broken — so the procedure is read, not inferred from
+     the missing table. If such a file does have a table, the table wins here
+     and check-record.py reports the contradiction: a page that silently showed
+     nothing would hide a real vote. */
+  const proc=((text.match(/^\*\*Procedure:\*\*[^\S\n]*(.+)$/m)||[])[1]||"").replace(/\*/g,"").trim();
+  const noVoteProc=/^tier\s*[ab]$/i.test(proc);
+  /* Bounded to its own section: ## Notes holds blocks of the same shape, and
+     counting those as objections would be wrong. */
+  const objSec=(text.split(/^## Objections[^\n]*$/m)[1]||"").split(/^## /m)[0];
+  const objections=[...objSec.matchAll(/^\*\*(.+?)\*\*\s*[—-]\s*(\S+)/gm)]
+    .map(m=>({name:m[1].trim(), date:m[2].trim()}));
   const restarted=((text.match(/^\*\*Restarted:\*\*[^\S\n]*(.+)$/m)||[])[1]||"").trim();
   const carries=(text.match(/^\*\*Carries if:\*\*([^\n]*)$/m)||[])[1]||"";
   const quorumOnly=/quorum/i.test(carries);
@@ -437,8 +450,10 @@ function voteOf(text){
   const figures=text.match(/^Affirmative\s+(\d+)\s+of\s+(\d+),\s*needed\s+(\d+)/m);
   const earlier=[...text.matchAll(/^\*\*Round\s+(\d+)\*\*\s*—\s*([^\n]+)/gm)]
     .map(m=>({n:+m[1], line:m[2].trim()}));
-  if(!rows) return null;
-  return {counts, roll:rows, required:need?+need[1]:null, quorumOnly, restarted,
+  const holdsVote=!noVoteProc||rows>0;
+  if(!rows&&holdsVote) return null;
+  return {procedure:proc, holdsVote, objections,
+          counts, roll:rows, required:need?+need[1]:null, quorumOnly, restarted,
           result:verdict?{carried:verdict[1]==="Carried",
             affirmative:figures?+figures[1]:null, of:figures?+figures[2]:null,
             needed:figures?+figures[3]:null}:null,
@@ -708,7 +723,18 @@ async function collect(){
   const wins=new Map(prs.map(p=>[p.number,windowOf(p,cfg.procedures||{})]));
   await Promise.all(prs.filter(p=>{
     const w=wins.get(p.number);
-    return w.layer==="3"||w.layer==="4"||w.tier==="c";
+    if(w.layer==="3"||w.layer==="4"||w.tier==="c") return true;
+    /* Tier A and Tier B hold no vote, so there is usually no file and fetching
+       one for every such proposal would spend calls to learn nothing — a cold
+       load already costs 25-30 against a ceiling of 60 an hour shared by the
+       whole building. The file exists only when somebody objected, and the
+       workflow that writes it labels the proposal in the same breath, so the
+       label is the cheap signal that there is something to read.
+       The cost of that: an objection written into the file by hand, without the
+       label, is invisible here until the label is added. The file is still the
+       Record; it is this page that is behind. */
+    return (w.tier==="a"||w.tier==="b")
+      && (p.labels||[]).some(l=>String(l.name||"")==="objection");
   }).map(async p=>{
     const k=`vote:${p.number}:${p.updated_at}`;
     let t=null;
@@ -822,7 +848,10 @@ function render(d){
     const tp=win.tier&&(d.cfg.procedures||{})["tier-"+win.tier];
     const st=win.closes?null:stateOf(win);
     const tags=[`<span class="tag ty">Proposal</span>`,
-                vote?`<span class="tag st" title="A vote is recorded in votes/pr-${pr.number}.md on this proposal's branch">VOTE OPEN</span>`:"",
+                /* A file at Tier A or Tier B is objections, not a vote (§2 holds
+                   none there), so the tag would be false on the one row where the
+                   distinction decides what a member can do. */
+                vote&&vote.holdsVote?`<span class="tag st" title="A vote is recorded in votes/pr-${pr.number}.md on this proposal's branch">VOTE OPEN</span>`:"",
                 win.layer?`<span class="tag" title="${esc(LAYER[win.layer]||"")}">L${win.layer}</span>`:"",
                 win.tier?`<span class="tag" title="${esc(tp?tp.source+": “"+tp.quote+"”":"")}">${win.tier.toUpperCase()}</span>`:"",
                 st?`<span class="tag st" title="${esc(st.d)}">${esc(st.t)}</span>`:"",
@@ -870,7 +899,32 @@ function render(d){
        silence are the same number, and a member who picks toleration believing
        it helps has done nothing. */
     let voteWhy="";
-    if(vote){
+    if(vote&&!vote.holdsVote){
+      /* Tier A and Tier B hold no vote (§2): the proposal passes absent a stated
+         objection. So there is nothing to count, and the file exists only because
+         somebody objected — which is the one act that is decisive at these tiers.
+         Everything the voting block shows would be false here. */
+      const L=[], os=vote.objections;
+      if(os.length){
+        L.push(`<p class="yesonly"><strong>${os.length===1?"An objection has":os.length+" objections have"}
+          been recorded, so this cannot pass on silence.</strong> §2 moves it up a tier
+          \u2014 to Tier ${win.tier==="a"?"B":"C"}, never down.</p>`);
+        L.push(`<p class="vnote">Objecting: ${os.map(o=>esc(o.name)).join(", ")}. Each objection carries
+          a reason and a route forward, in the file.</p>`);
+      }else{
+        L.push(`<p class="vnote">No objection is recorded. This page cannot tell you that none was raised:
+          most deliberation runs in the governance channel, which it cannot see.</p>`);
+      }
+      /* No countdown is read off this file: it states no window, so that the
+         deliberation clock lives in one place rather than two. */
+      L.push(`<p class="vnote">No vote is held at this tier, so there is nothing to count and no
+        threshold to reach. Whether the window elapsed without objection is a Record Keeper's to
+        verify (\u00a73).</p>`);
+      L.push(`<div class="acts"><a class="act" href="https://github.com/${REPO}/issues/new`
+        +`?template=vote.yml&title=${encodeURIComponent("Vote: PR #"+pr.number)}&pr=${pr.number}">Object to this proposal</a>`
+        +`<a class="actalt" href="https://github.com/${REPO}/blob/${encodeURIComponent(pr.head.ref)}/votes/pr-${pr.number}.md">Read votes/pr-${pr.number}.md</a></div>`);
+      voteWhy=`<div class="vote">${L.join("")}</div>`;
+    }else if(vote){
       /* Four things, each its own line, in the order a member needs them.
          Anything wrong with the vote itself comes first, because it changes what
          the rest of the block means. */

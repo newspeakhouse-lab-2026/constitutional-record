@@ -25,6 +25,34 @@ taking the position of not taking one, from never answering.
 Then delete this comment.
 -->
 
+<!--
+TIER A AND TIER B USE A SHORTER FORM. Section 2 holds no vote at those tiers: the
+proposal passes absent a stated objection. So the file has no table, no roll and
+no threshold, it states no window, and it exists only because somebody objected.
+All of it is:
+
+    # Objections — PR #NNN: <proposal title>
+
+    **Procedure:** Tier A
+
+    Section 2 passes a Tier A proposal absent a stated objection, so no vote is
+    held and this file has no table.
+
+    ## Objections
+
+    **<member>** — <date>
+
+    > Reason: <verbatim>
+    >
+    > Route forward: <verbatim>
+
+If the proposal later reaches a tier that votes, add the table below to that same
+file and update the Procedure: line. Do not clear the objections — they were
+deliberation, and an escalation no more clears them than a restart does.
+
+Everything from here down is the full form, for a tier that votes.
+-->
+
 # Vote — PR #NNN: <proposal title>
 
 **Procedure:** <Tier C | Layer 3 Policy | Layer 4 Constitutional | Emergency | Re-ratification | §3.9 recall | §4 remedy | §4 removal>

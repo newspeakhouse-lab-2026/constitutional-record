@@ -175,6 +175,32 @@ const orphan = voteOf([
 ].join('\n'));
 check('a restart implies at least two rounds', orphan.rounds, 2);
 
+/* Tier A and Tier B hold no vote (§2), so their files have no table. voteOf
+   used to return null for any table-less file, which is why the one place an
+   objection is decisive was the one place the page could show nothing. Same
+   cases as the Python tally, from the same file. */
+function noVoteFixture(c) {
+  const out = [`# Objections — PR #1: fixture`, '', `**Procedure:** ${c.procedure}`, ''];
+  if (c.table) {
+    out.push('| Member | Position | Date |', '|---|---|---|', '| M1 | objection | 2026-10-07 |');
+    for (let i = 2; i <= 14; i++) out.push(`| M${i} | — | |`);
+    out.push('');
+  }
+  out.push('## Objections', '');
+  for (const o of c.objections) out.push(`**${o.name}** — ${o.date}`, '', '> Reason: fixture.', '>',
+    '> Route forward: fixture.', '');
+  /* A Notes block of the same shape, present in every fixture: counting it as
+     an objection is the mistake the section bound exists to prevent. */
+  out.push('## Notes', '', '**M9** — 2026-10-07', '', '> Fixture note.', '');
+  return out.join('\n');
+}
+for (const c of (corpus.noVoteCases || [])) {
+  const v = voteOf(noVoteFixture(c));
+  check(`no vote: ${c.name}`,
+    v === null ? 'returned null' : [v.holdsVote, v.objections.length],
+    [c.expect.holdsVote, c.expect.objections]);
+}
+
 const passed = results.filter(Boolean).length;
 console.log(`\n${passed}/${results.length} passed`);
 process.exit(results.every(Boolean) ? 0 : 1);

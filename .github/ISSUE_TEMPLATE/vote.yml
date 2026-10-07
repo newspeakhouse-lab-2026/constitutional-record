@@ -10,6 +10,8 @@ body:
 
         A workflow writes your row into `votes/pr-{number}.md` on the proposal's own branch, as you, and replies with a link to the commit. If it cannot, it says why, and you can edit the file directly — that always works.
 
+        **At Tier A and Tier B there is no vote.** Section 2 passes those absent a stated objection, so only an **objection** has an effect there — a single stated one is enough to move the proposal up a tier. Choose it and your reason and route forward are written into the Record; choose anything else and this form will say why it cannot record it.
+
   - type: input
     id: pr
     attributes:

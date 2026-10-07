@@ -191,7 +191,9 @@ def main():
             warn(path, f"this vote cannot be recounted: {err}")
             continue
         got = tally.tally(parsed["procedure"], parsed["roll"], parsed["counts"],
-                          data.get("thresholds", {}), parsed["excluded"])
+                          data.get("thresholds", {}), parsed["excluded"],
+                          no_vote=not parsed.get("holdsVote", True),
+                          objections=parsed.get("objections") or ())
         clean = re.sub(r"<!--.*?-->", "", text, flags=re.S)
         # A restart means a round closed. If its outcome was never written into
         # Earlier rounds, it survives only in git history — which is still the
@@ -204,6 +206,16 @@ def main():
         if not stated:
             continue  # no result written yet: an open vote, not a defect
         said = stated.group(1) == "Carried"
+        if got.get("verdict") == "no-vote":
+            # §2: a single stated objection blocks lazy consensus and moves the
+            # proposal up a tier. A file recording both an objection and a pass
+            # is the one contradiction that matters at these tiers.
+            if said and got.get("objections"):
+                who = ", ".join(n for n, _ in got["objections"])
+                warn(path, f'the result says "Carried" but this file records an objection from {who}. '
+                           "At Tier A and Tier B a single stated objection blocks lazy consensus and moves "
+                           "the proposal up a tier (\u00a72), so one of the two is wrong.")
+            continue
         if got.get("verdict") == "none":
             warn(path, f'the result says "{stated.group(1)}", but {got["note"]} for this procedure, '
                        f"so no arithmetic can confirm it. Record who decided and on what reading.")
