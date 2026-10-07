@@ -33,6 +33,14 @@ body:
       required: true
 
   - type: textarea
+    id: note
+    attributes:
+      label: Anything that would move your position
+      description: "Optional, and most useful on **toleration**. Section 2 defines toleration as having no reasoned objection — if something would change that, say what. Written into the vote file under Notes, word for word, and replaced rather than duplicated if you submit again."
+    validations:
+      required: false
+
+  - type: textarea
     id: reason
     attributes:
       label: Your reason — required if you are objecting
