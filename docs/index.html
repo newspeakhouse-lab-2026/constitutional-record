@@ -96,6 +96,7 @@
      can read "running" here and be refused by the workflow, or the reverse.
      That is a real problem with the Record, not a clock running out. */
   .clash{color:var(--urgent);font-weight:600}
+  .tag.objected{border-color:var(--urgent);color:var(--urgent);font-weight:600}
   /* Reference material is genuinely static; live signals a tier below the clocks
      — quiet counters, comment counts, endorsement progress — are not, and were
      styled as though they were. */
@@ -825,11 +826,27 @@ function render(d){
                 win.layer?`<span class="tag" title="${esc(LAYER[win.layer]||"")}">L${win.layer}</span>`:"",
                 win.tier?`<span class="tag" title="${esc(tp?tp.source+": “"+tp.quote+"”":"")}">${win.tier.toUpperCase()}</span>`:"",
                 st?`<span class="tag st" title="${esc(st.d)}">${esc(st.t)}</span>`:"",
-                ...(win.other||[]).map(l=>`<span class="tag">${esc(l)}</span>`)].join("");
+                /* An objection is not furniture. At Tier A or Tier B a single
+                   stated one blocks lazy consensus and moves the proposal up a
+                   tier (§2), so it is the most consequential thing that can be
+                   on the row; above those tiers it is recorded opposition that
+                   the tally already counts. Same label, two weights. */
+                (win.other||[]).includes("objection")
+                  ? (win.tier==="a"||win.tier==="b"
+                      ? `<span class="tag objected">OBJECTED</span>`
+                      : `<span class="tag st">OBJECTION</span>`)
+                  : "",
+                ...(win.other||[]).filter(l=>l!=="objection")
+                   .map(l=>`<span class="tag">${esc(l)}</span>`)].join("");
     const lbl=`<span class="num">#${pr.number}</span><a href="${pr.html_url}">${esc(pr.title)}</a>`;
     const age=Math.floor((Date.now()-+new Date(pr.created_at))/DAY);
     const quiet=Math.floor((Date.now()-+new Date(pr.updated_at))/DAY);
     const bits=["@"+esc(pr.user.login), `filed ${age}d ago`];
+    /* Why it matters, not just that it happened — the tag alone does not say
+       that lazy consensus has stopped. */
+    if((win.other||[]).includes("objection")&&(win.tier==="a"||win.tier==="b"))
+      bits.push(`<span class="clash">lazy consensus is blocked — §2 moves this to Tier `
+        +`${win.tier==="a"?"B":"C"}</span>`);
     if(quiet>=7) bits.push(`<span class="q7">quiet ${quiet}d</span>`);
     // A Tier A with no comments is passing normally, not stalling.
     bits.push(notes?`${notes} note${notes>1?"s":""}`:`<span class="quiet">no comment</span>`);

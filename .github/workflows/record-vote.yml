@@ -531,9 +531,20 @@ jobs:
                 /* One form means everything arrives labelled `vote`. An
                    objection moves an Ordinary proposal up a tier (§2), so it has
                    to stay findable. */
-                if (isObjection) await github.rest.issues.addLabels({
-                  owner, repo, issue_number: issue.number, labels: ['objection'],
-                }).catch(() => {});
+                if (isObjection) {
+                  await github.rest.issues.addLabels({
+                    owner, repo, issue_number: issue.number, labels: ['objection'],
+                  }).catch(() => {});
+                  /* And on the proposal itself, which is what anyone looking at
+                     the Record sees. An objection is decisive at Tier A and Tier
+                     B — a single one blocks lazy consensus and moves the proposal
+                     up a tier — and until this label existed a blocked proposal
+                     looked exactly like one sailing through. The labels API takes
+                     a pull request by its number like any issue. */
+                  await github.rest.issues.addLabels({
+                    owner, repo, issue_number: n, labels: ['objection'],
+                  }).catch(() => {});
+                }
                 return close('vote-recorded');
               } catch (e) {
                 const stale = e.status === 409 || (e.status === 422 && /sha|does not match|expected/i.test(e.message || ''));

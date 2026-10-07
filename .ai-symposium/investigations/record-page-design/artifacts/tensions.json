@@ -1,0 +1,70 @@
+{
+  "_comment": "Steelmanned both ways, per the AI Symposium protocol and this brief's explicit instruction: named as choices with costs, not resolved by cleverness. Numbering continues from ../record-votes-panel/artifacts/tensions.json (T1-T3 there); this panel's are T1-T4, distinguished by investigation if ever read together.",
+  "investigation": "record-page-design",
+  "tensions": [
+    {
+      "id": "T1",
+      "title": "Proximity-to-action vs. primacy-within-the-scan, for the vote block's position inside a row",
+      "pole_a": {
+        "position": "Keep the critical sentence ('only preference counts as a yes') immediately before the action button, as the page does now (lines 920-922, 946).",
+        "steelman": "Fogg/Fitts: once a reader has decided to act, the thing most likely to change their mind about *how* to act should be the last thing they see before the control that lets them act on it. The author's own commit history (c841040, a5ce95a) shows this was deliberately moved here from three clauses after the button -- a tested improvement, not a guess.",
+        "cost": "None additional -- this is the status quo."
+      },
+      "pole_b": {
+        "position": "Move the critical sentence higher in the card -- e.g. immediately under the 'where it stands' headline (.vhead) -- so a reader who scans and leaves before reaching the bottom of a long Tier C block still sees it.",
+        "steelman": "Nielsen/eyetracking [S10]: F-shaped scanning means attention decays sharply moving down a block, and the realistic worst case (Tier C, mid-dispute) can put this sentence eighth or ninth in the card, well past where most scanning readers have already disengaged.",
+        "cost": "Breaks the proximity-to-action ordering Fogg argues for, and duplicates content if both positions are kept (sentence near top AND near button) -- adding length to a card already too long by Nielsen's own complaint."
+      },
+      "resolution": "Not resolved. The panel's actual recommendation (R8) addresses this partially by making the *tally itself* carry the grouping visually, so a reader who disengages before the sentence still saw the shape of the answer in the tally above it -- but this is a workaround for Layer 3/4/re-ratification only, and does not resolve the ordering question for Tier C, where R8 does not apply.",
+      "source_panel": "panels/panel-01-design.md, Hour 6-12"
+    },
+    {
+      "id": "T2",
+      "title": "Can a visual grouping replace the toleration sentence -- yes for three procedures, unresolved for the fourth (Tier C)",
+      "pole_a": {
+        "position": "Ship R8 (group the tally by arithmetic effect) for Layer 3, Layer 4, and re-ratification, and explicitly leave Tier C on sentence-only treatment rather than inventing a dual-grouping visual under time pressure.",
+        "steelman": "Tier C genuinely has two non-nesting groupings at once -- toleration and abstention sit on the 'counts' side of quorum's line and the 'doesn't count' side of the majority's line, in the same vote. A single two-colour grouping cannot represent two different partitions of the same four numbers without becoming two separate renderings, which reintroduces the length problem Nielsen already flagged. Honest partial progress, shipped now, beats an untested dual-grammar gauge invented in one sitting.",
+        "cost": "The procedure members most need help with -- the one with both a quorum and a majority, two tiers of arithmetic in one vote -- is also the one this panel's new idea does nothing for. The brief's hardest question is answered 'yes, for three quarters of the cases' rather than fully."
+      },
+      "pole_b": {
+        "position": "Attempt a dual grouping for Tier C too -- e.g. two short grouped lines, one headed 'toward quorum' and one headed 'toward the majority,' reusing the same four counts.",
+        "steelman": "Consistency: a member who has learned 'grouped tally = read the groups, not the words' on a Layer 3 proposal and then hits a Tier C proposal rendered the old flat way has to re-learn a different reading strategy mid-session, which is its own cost that R8-for-three-procedures-only creates.",
+        "cost": "Doubles the printed numbers on the Tier C tally specifically (the same four counts shown twice, grouped two different ways), on exactly the card Nielsen already measured as too long before a reader reaches the critical sentence. Untested within this panel -- no mockup was built, no member saw a draft of it. Shipping it now would be designing under exactly the time pressure the brief warns against, for the highest-stakes procedure on the page."
+      },
+      "resolution": "Not resolved -- named by the panel as the sharpest open question, deliberately not forced to a conclusion. The user's own framing ('this is the question I most want the panel on') is honoured by saying plainly where the clean answer runs out, rather than by manufacturing a dual-grouping design that no one on the panel has actually seen render.",
+      "source_panel": "panels/panel-01-design.md, Hour 12-18"
+    },
+    {
+      "id": "T3",
+      "title": "Grouping toleration with abstention and silence by arithmetic effect also erases a real distinction between them",
+      "pole_a": {
+        "position": "Group preference+objection vs. toleration+abstention+silence visually (R8), because that is the distinction the Constitution's arithmetic actually makes, and the brief's own framing treats the three as 'arithmetically identical' and therefore equivalent for this page's purpose.",
+        "steelman": "The page's job is to show what counts, not to editorialise about intent. A member who chose toleration deliberately and a member who never opened the link produced the same constitutional effect; showing that plainly, even at the cost of flattening intent, is accurate and is what the brief asked for.",
+        "cost": "None beyond T2's scope limits -- this is the recommended design (R8)."
+      },
+      "pole_b": {
+        "position": "Preserve toleration as visually distinct from abstention and silence, even though they count the same at Layer 3/4/re-ratification, because they are not the same *social* fact: a member who chose toleration engaged with the proposal and said something, even if the Constitution doesn't credit it.",
+        "steelman": "A page that visually erases the difference between 'I considered this and chose not to block it' and 'I never looked' may itself contribute to members not bothering to distinguish the two in their own heads next time -- flattening the record's memory of who engaged, not just who the arithmetic credits.",
+        "cost": "Keeping the distinction visible means the grouping in R8 can't be a clean two-way split -- it would need a third, intermediate visual weight for toleration specifically, which reintroduces exactly the complexity R8 was designed to remove, for a distinction this page's stated job (report counts and thresholds, per the brief's own constraint) may not be the right place to preserve."
+      },
+      "resolution": "Not resolved. Noted as a genuine cost of R8 rather than ignored. The panel's working view, not a resolution: the Record's git history already preserves who chose what and when, in full, forever, in the vote file itself -- the dashboard erasing a distinction the underlying Record keeps intact is a narrower loss than it would be if the information were gone entirely.",
+      "source_panel": "panels/panel-01-design.md, Hour 12-18"
+    },
+    {
+      "id": "T4",
+      "title": "A 0.12-margin accessibility pass vs. the cost of touching a token used everywhere",
+      "pole_a": {
+        "position": "Leave --faint as it is. 4.62:1 in dark mode clears the 4.5:1 AA floor for small text [S7]; the margin is thin but the number passes.",
+        "steelman": "Nothing is broken. Spending effort hardening a passing number, with four weeks until the Constitution expires and a members' vote still to run, is effort not spent on the recommendations that fix something that is actually wrong (R6-R10).",
+        "cost": "None, if the token is never touched again for an unrelated reason."
+      },
+      "pole_b": {
+        "position": "Give --faint (dark) a small amount of additional headroom now, since it colours .abs -- the one element the author explicitly fought to keep visible on phones -- and a future unrelated tweak to the token could silently drop it below 4.5:1 with nobody rerunning the arithmetic to notice.",
+        "steelman": "The page's own CSS comments show a culture of computing contrast rather than asserting it (the accent-ring comment, lines 107-110). A token three lines away from the one the author actually checked, used for the same conceptual tier of 'quiet but load-bearing' text, not being checked is an oversight the page's own stated standard would want closed.",
+        "cost": "Touches a token used in .abs, .num, .budget, and .stamp simultaneously -- a change made for one element's sake affects three others that were not the reason for the change, and needs the same arithmetic rerun for all four before shipping."
+      },
+      "resolution": "Not resolved -- logged as a watch-item rather than a numbered recommendation, since it passes today. Worth revisiting the next time any token in :root is touched for an unrelated reason, not worth a standalone change now.",
+      "source_panel": "panels/panel-01-design.md, Hour 6-12"
+    }
+  ]
+}

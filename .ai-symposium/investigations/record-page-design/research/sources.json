@@ -1,0 +1,169 @@
+{
+  "_comment": "Each source is either (a) verified by web search this session, (b) computed directly from the repository's own files, or (c) marked unverified. Citation IDs used in the transcript as [S#].",
+  "sources": [
+    {
+      "id": "S1",
+      "type": "repo-file",
+      "title": "docs/index.html, full file (1174 lines), branch record-votes",
+      "note": "Primary subject. Style block lines 8-213; markup 215-251; script 253-1173. Read in full before any judgement, per the brief.",
+      "verified": true
+    },
+    {
+      "id": "S2",
+      "type": "repo-file",
+      "title": "docs/data.json",
+      "note": "Constitutional facts and the exact sentences they are copied from (§2 quotes for tiers, layers, thresholds, rounding).",
+      "verified": true
+    },
+    {
+      "id": "S3",
+      "type": "repo-file",
+      "title": ".github/scripts/tally.py",
+      "note": "The arithmetic authority the page's figures are checked against; confirms majority uses d//2+1, fraction uses ceil_div.",
+      "verified": true
+    },
+    {
+      "id": "S4",
+      "type": "repo-file",
+      "title": "tools/preview/build.py",
+      "note": "Confirms the preview tool targets newspeakhouse-lab-2026/record-sandbox exclusively and never the live Record.",
+      "verified": true
+    },
+    {
+      "id": "S5",
+      "type": "repo-file",
+      "title": "git log --oneline -- docs/index.html (last 15 commits)",
+      "note": "All same-session work on vote rendering, CTA routing, clash-of-clocks warning, countdown demotion -- confirms 'redesigned in the last few hours' and that the prior panel's R1 finding (CTA routed to raw file editor) is already fixed at commit 205de49.",
+      "verified": true
+    },
+    {
+      "id": "S6",
+      "type": "repo-file",
+      "title": "../record-votes-panel/synthesis.md and artifacts/ (prior investigation)",
+      "note": "Read to avoid re-presenting R1 as new and to acknowledge T1 (toleration copy vs. mechanism fix) already exists in that register. Not re-litigated.",
+      "verified": true
+    },
+    {
+      "id": "S7",
+      "type": "computed",
+      "title": "WCAG 2.x relative-luminance contrast ratios for every CSS custom-property pair in :root, light and dark",
+      "note": "Computed directly with the sRGB->linear->relative-luminance formula, not estimated. Working: /scratchpad/contrast.py this session. Confirms the author's own inline claims (accent/bg 6.06:1 light, 8.27:1 dark) exactly, and adds pairs the comments don't address (faint/bg: 4.87:1 light, 4.62:1 dark -- the dark figure is 0.12 above the 4.5:1 AA floor for small text, the thinnest margin on the page).",
+      "verified": true
+    },
+    {
+      "id": "S8",
+      "type": "web",
+      "title": "WCAG 2.5.8 Target Size (Minimum), Level AA -- 24x24 CSS px; WCAG 2.5.5 Target Size (Enhanced), Level AAA -- 44x44 CSS px",
+      "url": "https://w3.org/WAI/WCAG22/Understanding/target-size-enhanced.html",
+      "note": "Confirms the page's own CSS comments (lines 159-165, 204-210) cite the correct numbers for the correct levels: 2.25rem=36px clears 24px (AA) but not 44px (AAA) on desktop; the phone override to 2.75rem=44px clears AAA.",
+      "verified": true
+    },
+    {
+      "id": "S9",
+      "type": "web",
+      "title": "B.J. Fogg, 'A Behavior Model for Persuasive Design', Persuasive 2009 (B=MAT); Fogg, Tiny Habits, 2019 (B=MAP, trigger renamed prompt)",
+      "url": "https://www.thebehavioralscientist.com/articles/fogg-behavior-model",
+      "note": "Behaviour requires motivation, ability and a prompt at the same moment. Grounds the panel's Fogg seat.",
+      "verified": true
+    },
+    {
+      "id": "S10",
+      "type": "web",
+      "title": "Jakob Nielsen, 'How Users Read on the Web', Alertbox, Oct 1997; 'F-Shaped Pattern for Reading Web Content', Alertbox, 17 Apr 2006 (eyetracking, n=232)",
+      "url": "https://www.nngroup.com/articles/f-shaped-pattern-reading-web-content-discovered/",
+      "note": "Users scan rather than read; attention concentrates top-left, decaying rightward and downward -- the empirical basis for Nielsen's reads of row order in the transcript.",
+      "verified": true
+    },
+    {
+      "id": "S11",
+      "type": "web",
+      "title": "Dieter Rams, ten principles for good design (Vitsoe, from a 1976 talk)",
+      "url": "https://designmanifestos.org/dieter-rams-ten-principles-for-good-design/",
+      "note": "Principle 10, 'as little design as possible / less, but better', and principle 4, 'makes a product understandable', both cited directly.",
+      "verified": true
+    },
+    {
+      "id": "S12",
+      "type": "web",
+      "title": "Edward Tufte, The Visual Display of Quantitative Information (1983) -- data-ink ratio, chartjunk, graphical integrity/lie factor",
+      "url": "https://chartbuddy.io/blog/tuftes-principles-for-graphical-integrity",
+      "note": "Lie factor = (size of effect shown)/(size of effect in data); 1.0 is honest. Applied to the .gauge element's proportions.",
+      "verified": true
+    },
+    {
+      "id": "S13",
+      "type": "web",
+      "title": "Loomio four-position model: agree / disagree / abstain / block, with abstain explicitly meaning 'this doesn't affect me and I'm happy with whatever the group decides'",
+      "url": "https://help.loomio.com/en/user_manual/making_decisions/consensus_process.html",
+      "note": "A real four-position deliberation tool whose 'abstain' is a genuinely different, intentionally weak-affirmative signal from Newspeak's toleration -- a direct comparator for the toleration question. Loomio also visualises disagreement as a pie chart staff describe as something 'you must pay attention to.'",
+      "verified": true
+    },
+    {
+      "id": "S14",
+      "type": "web",
+      "title": "Pluralistic ignorance (social psychology): individuals privately dissent but believe others don't, so public silence is read as agreement; Geiger & Swim suggest correcting it by showing people that others share their concern",
+      "url": "https://en.wikipedia.org/wiki/Pluralistic_ignorance",
+      "note": "Grounds the panel's discussion of why a bare 'not yet answered: X, Y, Z' list may not be the most effective nudge, and why a base-rate framing (see R7 in recommendations) could outperform it. General mechanism cited; the specific Geiger & Swim intervention-design claim is noted as plausible but not independently verified against the primary paper this session -- marked unverified at that level of detail.",
+      "verified": "partial"
+    },
+    {
+      "id": "S15",
+      "type": "web",
+      "title": "Gerber & Rogers, 'Descriptive Social Norms and Motivation to Vote: Everybody's Voting and So Should You', Journal of Politics 71(1), 2009, pp.178-191",
+      "note": "Field experiment, NJ 2005 / CA 2006 gubernatorial elections: a high-turnout descriptive-norm script raised self-reported voting probability ~7pp versus a low-turnout script, concentrated among infrequent voters. Directly relevant to whether a 'most members have already voted' framing would help or backfire on a 14-person roll where the true norm may be low participation (in which case the honest descriptive norm cuts the other way -- flagged as a tension in the transcript, not a clean win).",
+      "verified": true
+    },
+    {
+      "id": "S16",
+      "type": "web",
+      "title": "GOV.UK Service Manual / content style guide: 'open up, don't dumb down'; active voice; 'must' for legal obligation; front-loaded sentences",
+      "url": "https://www.gov.uk/service-manual/design/writing-for-user-interfaces",
+      "note": "A real, large-scale, tested precedent for rendering legal/procedural obligation in plain language without losing precision -- the closest existing institutional analogue to this page's problem. Cited by Orwell and Nielsen's seats as an available standard to hold the page's sentences against.",
+      "verified": true
+    },
+    {
+      "id": "S17",
+      "type": "web",
+      "title": "George Orwell, 'Politics and the English Language', Horizon, 1946 -- six rules, incl. 'never use the passive where you can use the active' and 'never use a long word where a short one will do'",
+      "note": "Applied directly to specific sentences in docs/index.html in the transcript (e.g. the Carries-if line, the toleration paragraph).",
+      "verified": true
+    },
+    {
+      "id": "S18",
+      "type": "web",
+      "title": "Christopher Alexander, The Timeless Way of Building (1979), 'the quality without a name'; A Pattern Language (1977)",
+      "note": "Used to ask whether the page's correctness produces 'life' or only produces correctness -- a qualitative, admittedly harder-to-falsify register, flagged as such whenever Alexander's seat makes a claim that resists the contrast-ratio treatment the rest of the panel uses.",
+      "verified": true
+    },
+    {
+      "id": "S19",
+      "type": "web",
+      "title": "Gestalt grouping principles (proximity, similarity, figure-ground) as standard UI-design vocabulary",
+      "note": "General textbook material, not attributed to a single paper; used descriptively for the row/tag/vote-block layout discussion.",
+      "verified": true
+    },
+    {
+      "id": "S20",
+      "type": "web",
+      "title": "Fitts's Law, Paul Fitts, 1954; MT = a + b*log2(2D/W)",
+      "note": "Target acquisition time grows with distance, shrinks with width -- the formal version of the reasoning already in the page's own CSS comments about the 44px CTA.",
+      "verified": true
+    },
+    {
+      "id": "S21",
+      "type": "web",
+      "title": "Matthew Butterick, Practical Typography -- tabular vs. proportional figures; many proportional fonts already support font-variant-numeric:tabular-nums without needing a full monospace face",
+      "url": "https://practicaltypography.com/grids-of-numbers.html",
+      "note": "Relevant to a minor, low-priority finding: tabular-nums applied to .rem/.abs, which already sit in a monospace stack, is redundant (harmless, but a sign the rule may have been copied rather than reasoned about for this specific case).",
+      "verified": true
+    },
+    {
+      "id": "S22",
+      "type": "web",
+      "title": "Nielsen Norman Group, 'Progress Indicators Make a Slow System Less Insufferable'",
+      "url": "https://www.nngroup.com/articles/progress-indicators/",
+      "note": "Guidance is aimed at wait-states (loading), not status gauges -- cited to note the .gauge element is doing a different job (showing a static ratio, not elapsing time) than NN/g's progress-indicator guidance covers, so that guidance is not directly transferable and is not cited as if it endorses the gauge.",
+      "verified": true
+    }
+  ]
+}

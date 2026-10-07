@@ -1,0 +1,40 @@
+{
+  "investigation_id": "record-page-design",
+  "created_at": "2026-10-06T23:43:08Z",
+  "updated_at": "2026-10-07T00:40:00Z",
+
+  "original_question": "Convene a panel on one subject only: the design of docs/index.html as a designed object (not its correctness, not the governance system behind it) -- a full design critique (hierarchy, typography, spacing, colour, the tag strip, phone/desktop, light/dark), every label and sentence judged as writing, new ideas costed, and tensions named rather than resolved, with particular focus on whether design can do better than a sentence for the preference/toleration/abstention/objection problem.",
+  "clarified_scope": "Single-panel investigation by design, per the brief's own framing -- not a multi-panel arc. Scoped explicitly away from ../record-votes-panel/ (the governance-system/vote-mechanism investigation on the same repo), whose R1-R5 and T1-T3 are read but not re-litigated. Confirmed on setup that docs/index.html had been redesigned since that panel ran and that its one unanimous finding (CTA routing) is already fixed in the current file.",
+
+  "status": "completed",
+
+  "current_panel": {
+    "number": 1,
+    "type": "design-critique",
+    "status": "completed"
+  },
+
+  "panel_history": [
+    {
+      "number": 1,
+      "type": "design-critique",
+      "file": "panels/panel-01-design.md",
+      "completed_at": "2026-10-07T00:35:00Z"
+    }
+  ],
+
+  "recommendation_count": 7,
+  "tension_count": 4,
+
+  "environment_note": "No browser/screenshot tool (e.g. Playwright MCP) was available in this session. All layout and 'what the eye lands on' claims are reasoned from the generated markup and CSS cascade, not from a rendered viewport -- flagged throughout panels/panel-01-design.md and research/research-log.md. Contrast ratios were computed directly (WCAG relative-luminance formula), not estimated. findings.md was not written as a separate file in this run -- the harness's report-file restriction applies to it; its content is folded into synthesis.md and was delivered directly to the user in the final turn.",
+
+  "pending_decisions": [],
+
+  "expert_pool": ["Don Norman", "Dieter Rams", "Edward Tufte", "B.J. Fogg", "George Orwell", "Jakob Nielsen", "Christopher Alexander"],
+
+  "next_suggested": [
+    "[A] Implementation pass -- ship R6, R9, R10 together (one small copy-and-reclassification commit, no open design questions) and R7 (since-you-were-last-here banner) separately, per the recommendations file's own priority order",
+    "[B] A focused follow-up design pass specifically on T2 -- whether a dual-grouping visual treatment for Tier C is worth prototyping and actually rendering (this panel deliberately declined to improvise one under time pressure)",
+    "[S] Stop here -- the brief asked for one panel's worth of critique, text, ideas and tensions, and that is what this produced; further panels are optional, not required to close out the brief"
+  ]
+}

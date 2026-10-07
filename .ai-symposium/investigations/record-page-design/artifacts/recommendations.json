@@ -1,0 +1,69 @@
+{
+  "_comment": "Numbered R6 onward, continuing ../record-votes-panel/artifacts/recommendations.json's R1-R5 so a reader can look up 'R<n>' once across both investigations. Each entry: exact file:line, the change, the cost, the confidence, and conditions.",
+  "investigation": "record-page-design",
+  "recommendations": [
+    {
+      "id": "R6",
+      "title": "Reclassify .q7's four uses by actual severity",
+      "change": "docs/index.html line 89: narrow the comment and the class to genuine staleness only (as already stated). Line 825 (`quiet ${quiet}d`) stays .q7/--soon -- matches. Line 831 (`targets ${pr.base.ref}, not main`) and line 917 (`${failed.length} submission(s) did not record`) move to `.clash`/--urgent -- both are real problems, the same severity class as the two-closing-times case that token already exists for. Lines 871 and 1092 (`Round ${n}`, `after ${n} rounds`) lose colour entirely -- move to `.quiet`/--muted, since they are facts, not warnings.",
+      "cost": "No new CSS token. Four call-sites change class name; zero new rules. Under 10 minutes of edit, no visual-design decision left open.",
+      "confidence": "high",
+      "conditions": "None. This is a correction against the page's own stated doctrine (line 89's comment), not a new design opinion.",
+      "panel": "panel-01-design.md"
+    },
+    {
+      "id": "R7",
+      "title": "\"Since you were last here\" diff banner",
+      "change": "In render(), after a successful collect(), store a compact snapshot (PR numbers + each one's win.closes + vote tally sum + issue count) under a new localStorage key, e.g. `rec:lastvisit`. On the next load, before overwriting it, diff against the stored snapshot and render one line above the existing .snap/.warn banners (but after them in priority -- see cost note) summarising what changed: a vote opened, a countdown crossed into its final day, new comments. Reuses data already fetched for the page itself.",
+      "cost": "Zero marginal API calls against the 60/hour ceiling -- this is the headline cost advantage over every other feature idea considered this session. Implementation: roughly 15-25 lines in render(), one new localStorage key, copy to write for the summary line. Display-order cost only: must render below the existing staleness/rate-limit banners, not above them, per Rams's ordering note in the transcript.",
+      "confidence": "medium-high",
+      "conditions": "Per-browser, per-device baseline -- a member reading on phone and later on a housemate's laptop gets two independent 'since last time' states. Not a defect (the page's whole caching model already works this way) but should be stated, not discovered by a confused member.",
+      "panel": "panel-01-design.md"
+    },
+    {
+      "id": "R8",
+      "title": "Group the vote tally by arithmetic effect, for Layer 3 / Layer 4 / re-ratification only",
+      "change": "In the vote-rendering section (around lines 896-901), for procedures where the four positions resolve to one clean binary (preference+objection decide it; toleration+abstention+silence don't), replace the flat `POS.map(...)` tally with two visually distinct groups: bold/--ink for preference+objection, muted/--muted for the rest, with a short label on each group ('these decide it' / 'these don't'). The existing explanatory sentence (lines 923-925) stays, now reinforcing a visual grouping rather than carrying the point alone. Explicitly excluded: Tier C (`vote.quorumOnly`), where the same four numbers sit in two non-nesting groupings at once -- see T2. Tier C keeps the current flat tally and sentence-only treatment.",
+      "cost": "No new CSS token (--ink and --muted already exist and already mean the right things). Roughly 15-20 lines restructuring the tally-building logic, branched on whether the procedure is quorum-counted. The real cost is the one named in T3: visually flattens the difference between a deliberate toleration and true silence, which the underlying vote file still preserves in full even though the dashboard would no longer distinguish them at a glance.",
+      "confidence": "medium",
+      "conditions": "Depends on T2 and T3 being read alongside this recommendation -- this is a partial answer to the brief's central question, not a complete one. No mockup was built or seen rendered this session; the grouping's actual legibility should be checked against a real vote before treating this as finished rather than proposed.",
+      "panel": "panel-01-design.md"
+    },
+    {
+      "id": "R9",
+      "title": "Collapse the Layer/Tier glossary into a native disclosure",
+      "change": "docs/index.html lines 991-994: wrap the existing glossary paragraph in `<details><summary>What do L0-L4 and A/B/C mean?</summary>...</details>` instead of a permanently rendered `<p class=\"glossary\">`.",
+      "cost": "Trivial -- a markup change only, no JS, no new CSS, native browser disclosure semantics (keyboard- and screen-reader-accessible by default). Saves several lines of vertical space above the fold on every load for returning visitors, who are the overwhelming majority of this page's fourteen possible readers across four weeks.",
+      "confidence": "high",
+      "conditions": "None.",
+      "panel": "panel-01-design.md"
+    },
+    {
+      "id": "R10",
+      "title": "Split the Tier C explanatory sentence into three short sentences",
+      "change": "docs/index.html lines 905-906: replace the single compound sentence ('Tier C counts twice: quorum over everyone who answered, the majority over preference and objection only, and not until the window has closed.') with three short sentences: 'Tier C counts twice. Quorum counts everyone who answered. The majority counts preference and objection only -- and neither is known until the window closes.'",
+      "cost": "Text-only change, same information, near-identical length. Zero code risk.",
+      "confidence": "high",
+      "conditions": "Bundle with R6/R9 as one small copy-and-markup commit -- none of the three touch overlapping lines or logic.",
+      "panel": "panel-01-design.md"
+    },
+    {
+      "id": "R-considered-rejected-1",
+      "title": "Mailto/deep-link each name in the 'not yet answered' list",
+      "change": "Not recommended.",
+      "cost": "Dies on AGENTS.md's explicit rule: no personal data (no contact details) in the Record. This is a constitutional/architectural wall, not a design trade-off the panel can cost around.",
+      "confidence": "n/a -- rejected",
+      "conditions": "Would require a change to what AGENTS.md and Constitution §1 permit, which is out of this panel's scope entirely.",
+      "panel": "panel-01-design.md"
+    },
+    {
+      "id": "R-considered-deferred-1",
+      "title": "A second gauge fill-pattern (hatched vs. solid) to distinguish quorum-progress from majority-progress bars",
+      "change": "Deferred, not rejected.",
+      "cost": "One CSS rule, cheap in code; the real cost is a second visual grammar for readers to learn on a page whose strength so far has been one consistent vocabulary.",
+      "confidence": "low -- deliberately deferred",
+      "conditions": "Revisit only after R8 ships and its effect on the gauge-ambiguity problem (if any) can be observed; may turn out unnecessary.",
+      "panel": "panel-01-design.md"
+    }
+  ]
+}

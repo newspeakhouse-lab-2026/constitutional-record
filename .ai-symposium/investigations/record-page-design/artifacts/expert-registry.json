@@ -1,0 +1,79 @@
+{
+  "investigation": "record-page-design",
+  "experts": [
+    {
+      "name": "Don Norman",
+      "seat": "Interaction / affordances",
+      "grounding": "The Design of Everyday Things, rev. ed. 2013 -- signifiers, errors as design failures not user failures",
+      "key_contributions": [
+        "Framed the whole brief around 'a clock affords nothing,' which the page's own CSS comment already uses correctly -- credited the author rather than re-deriving it.",
+        "Identified the .q7 colour-overload finding's significance as a broken signifier, not a style nit.",
+        "Co-developed R8's grouping proposal."
+      ]
+    },
+    {
+      "name": "Dieter Rams",
+      "seat": "Restraint / critic of addition",
+      "grounding": "Ten principles for good design (Vitsoe, 1976 talk) -- 'as little design as possible,' 'makes a product understandable'",
+      "key_contributions": [
+        "Proposed collapsing the glossary into a native <details> (R9) as subtraction rather than addition.",
+        "Set the ordering condition on R7 (since-last-visit banner must not outrank staleness/rate-limit warnings).",
+        "Deferred the second-gauge-grammar idea on the grounds that a new visual vocabulary is a cost even when the CSS itself is cheap."
+      ]
+    },
+    {
+      "name": "Edward Tufte",
+      "seat": "Information design",
+      "grounding": "The Visual Display of Quantitative Information, 1983 -- data-ink ratio, chartjunk, graphical integrity/lie factor",
+      "key_contributions": [
+        "Named the four-representations-of-one-fact (countdown, absolute date, gauge, tally) question at the top of the day, held rather than answered immediately.",
+        "Diagnosed the gauge's one-shape-two-referents problem (T2's miniature case) as a transfer risk, not a dishonesty risk.",
+        "Argued the flat equal-weight tally (line 901) misallocates ink relative to the Constitution's actual weighting -- basis for R8."
+      ]
+    },
+    {
+      "name": "B.J. Fogg",
+      "seat": "Behaviour design",
+      "grounding": "'A Behavior Model for Persuasive Design,' Persuasive 2009 (B=MAT); Tiny Habits, 2019 (B=MAP). Returning voice from ../record-votes-panel/panels/panel-01-critical.md.",
+      "key_contributions": [
+        "Set the hour-one frame: this page can work on ability and prompt, not motivation, which is fixed for this cohort this quarter.",
+        "Authored R7 (since-you-were-last-here banner) in full, including its zero-marginal-API-cost argument.",
+        "Proposed and then withdrew the mailto/deep-link idea on hitting AGENTS.md's no-personal-data wall -- modeled costing an idea that dies on inspection, per the brief's instruction."
+      ]
+    },
+    {
+      "name": "George Orwell",
+      "seat": "Prose / plain language",
+      "grounding": "'Politics and the English Language,' 1946 -- six rules, incl. active voice and short words over long ones",
+      "key_contributions": [
+        "Line-by-line read of the vote block's sentences; found the toleration sentence (lines 923-925) already the best-written on the page and left it unchanged.",
+        "Rewrote the Tier C two-denominators sentence into three short sentences (R10).",
+        "Surfaced the Tier-C dual-grouping problem (T2) by rereading voteOf()'s own code comment literally rather than only the style block."
+      ]
+    },
+    {
+      "name": "Jakob Nielsen",
+      "seat": "Usability / empirical critic",
+      "grounding": "'How Users Read on the Web,' Alertbox 1997; 'F-Shaped Pattern for Reading Web Content,' Alertbox 2006 (n=232)",
+      "key_contributions": [
+        "Computed the realistic worst-case line count before a reader reaches the critical sentence in a Tier C vote block (up to nine lines), grounding T1.",
+        "Scoped Orwell's editing effort to high-traffic sentences only, explicitly declining to polish rarely-seen error text.",
+        "Raised the empirical risk in T3 -- that grouping by effect also erases a social distinction (toleration vs. true silence) worth preserving somewhere."
+      ]
+    },
+    {
+      "name": "Christopher Alexander",
+      "seat": "Wholeness / pattern language",
+      "grounding": "The Timeless Way of Building, 1979 ('the quality without a name'); A Pattern Language, 1977",
+      "key_contributions": [
+        "Entered an explicit standing reservation at hour one about the mechanistic vocabulary, returned to it only once concretely rather than relitigating it all day.",
+        "Found the .q7 overload by grepping the whole script rather than trusting the style block alone -- the panel's single most load-bearing piece of due diligence.",
+        "Named T2 (the Tier-C dual-grouping problem) as the sharpest tension of the day, superseding T1 in the register's ordering."
+      ]
+    }
+  ],
+  "cross_panel_continuity": {
+    "returning": ["B.J. Fogg"],
+    "note": "Fogg is the only voice shared with ../record-votes-panel/. Justified in thinking/planning.md as continuity on a question he is already on record about, not padding; his contribution here (R7) is new material, not a restatement of the prior panel's findings."
+  }
+}

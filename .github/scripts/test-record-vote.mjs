@@ -95,7 +95,7 @@ async function run({
   putFails = [],            // statuses to throw before succeeding
   fileAfterConflict = null, // what another voter left behind
 } = {}) {
-  const comments = [], added = [], warnings = [], writes = [];
+  const comments = [], added = [], warnings = [], writes = [], labelled = [];
   let current = file, puts = 0;
   const context = {
     payload: {
@@ -107,7 +107,10 @@ async function run({
   const github = { rest: {
     issues: {
       createComment: async ({ body }) => comments.push(body),
-      addLabels: async ({ labels }) => added.push(...labels),
+      addLabels: async ({ issue_number, labels }) => {
+        added.push(...labels);
+        for (const l of labels) labelled.push(`${l}@${issue_number}`);
+      },
       update: async () => {},
     },
     pulls: { get: async () => { if (pullMissing) throw err(pullStatus); return { data: pull }; } },
@@ -131,7 +134,7 @@ async function run({
   } };
   const core = { notice: () => {}, setFailed: m => warnings.push(m) };
   await new Function('github', 'context', 'core', 'return (async()=>{' + SCRIPT + '})()')(github, context, core);
-  return { comments, added, failed: warnings, writes, puts };
+  return { comments, added, failed: warnings, writes, puts, labelled };
 }
 
 /* ---- the paths ----------------------------------------------------------- */
@@ -296,6 +299,18 @@ check('an unlabelled objection is recognised too', r.writes.length, 1);
 r = await run({ labels: [], title: 'Can we discuss the newsletter?' });
 check('an ordinary issue with no label and no prefix is still ignored',
   [r.comments.length, r.writes.length], [0, 0]);
+
+/* An objection has to be visible on the proposal, not only on the issue nobody
+   revisits. At Tier A or Tier B a single stated one blocks lazy consensus and
+   moves the proposal up a tier, so until this label reached the pull request a
+   blocked proposal looked exactly like one passing. The issue is #7, the
+   proposal is #14. */
+r = await run({ body: OBJ('it breaks X', 'narrow it') });
+check('an objection labels the issue', r.labelled.includes('objection@7'), true);
+check('and the proposal itself', r.labelled.includes('objection@14'), true);
+r = await run();
+check('a preference labels neither as an objection',
+  r.labelled.filter(x => x.startsWith('objection')), []);
 
 const passed = results.filter(Boolean).length;
 console.log(`\n${passed}/${results.length} passed`);
