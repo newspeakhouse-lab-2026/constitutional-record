@@ -186,7 +186,7 @@
      than as a ragged edge. */
   .rail .acts{display:flex;flex-direction:column;align-items:stretch;gap:.4rem;margin:0}
   .rail .act{justify-content:center;text-align:center}
-  .rail .actalt{text-align:center;font-size:var(--t0)}
+  .rail .actalt{justify-content:center;text-align:center;font-size:var(--t0)}
   /* The clock is deliberately NOT the biggest thing on a row. Knowing a vote
      closes in 19 hours affords nothing; the gap to the threshold does. */
   .rem{display:block;font:400 var(--t1)/1.3 var(--mono);font-variant-numeric:tabular-nums;color:var(--muted)}
@@ -1701,10 +1701,8 @@ function render(d){
          objection, so the form works here and the objection lands in the
          Record rather than in a comment git clone does not retrieve. */
       voteWhy=`<div class="vote">
-        <p class="yesonly"><strong>No vote is held at Tier ${win.tier.toUpperCase()}.</strong>
-        Preference, toleration, abstention and saying nothing are the same act here: absent a stated
-        objection, it passes. One objection — with a reason and a route forward, as §2 requires —
-        moves it to Tier ${win.tier==="a"?"B":"C"} rather than stopping it.</p></div>`;
+        <p class="yesonly"><strong>No vote at Tier ${win.tier.toUpperCase()}</strong> — it passes
+        unless someone objects, moving it to Tier ${win.tier==="a"?"B":"C"}.</p></div>`;
       voteAct=`<div class="acts"><a class="act" href="https://github.com/${REPO}/issues/new`
         +`?template=vote.yml&title=${encodeURIComponent("Vote: PR #"+pr.number)}&pr=${pr.number}">Object to this proposal</a>`
         +`<a class="actalt" href="${pr.html_url}">or say so on the proposal</a></div>`;
