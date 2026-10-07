@@ -1411,6 +1411,20 @@ function render(d){
        at Layer 3, Layer 4 and re-ratification, toleration and abstention and
        silence are the same number, and a member who picks toleration believing
        it helps has done nothing. */
+    /* A submission whose issue is still open never reached the file. Every handled
+       failure closes its issue and comments, so one still open means nobody was
+       told anything — which is why it belongs on the row and not only on the
+       issue. This used to be computed inside the voting branch alone, so at Tier
+       A and Tier B — where a single objection is decisive and the form is the
+       only route — a refused objection was surfaced to nobody at all, and the row
+       went on saying the proposal passes unless someone objects. It renders only
+       when there is one, so it costs a healthy row nothing. */
+    const failedSubs=(d.stuckVotes||[]).filter(i=>+((i.title.match(/#(\d+)/)||[])[1])===pr.number);
+    const stuckNote=failedSubs.length
+      ? `<p class="seam"><strong>${failedSubs.length} submission${failedSubs.length>1?"s":""} did not record.</strong> `
+        +failedSubs.map(i=>`<a href="${i.html_url}">#${i.number}</a>`).join(", ")
+        +` — so what is below may be missing a position nobody was told about.</p>`
+      : "";
     let voteWhy="", voteAct="";
     if(vote&&!vote.holdsVote){
       /* Tier A and Tier B hold no vote (§2): the proposal passes absent a stated
@@ -1418,6 +1432,7 @@ function render(d){
          somebody objected — which is the one act that is decisive at these tiers.
          Everything the voting block shows would be false here. */
       const L=[], A=[], os=vote.objections;
+      if(stuckNote) L.push(stuckNote);
       if(os.length){
         L.push(`<p class="yesonly"><strong>${os.length===1?"An objection has":os.length+" objections have"}
           been recorded, so this cannot pass on silence.</strong> §2 moves it up a tier
@@ -1651,9 +1666,7 @@ function render(d){
          handled failure closes its issue and comments, so one still open means
          nobody was told anything — which is why it belongs here rather than
          only on the issue. */
-      const failed=(d.stuckVotes||[]).filter(i=>+((i.title.match(/#(\d+)/)||[])[1])===pr.number);
-      if(failed.length) L.push(`<p class="seam"><strong>${failed.length} submission${failed.length>1?"s":""} did not record.</strong> `
-        +failed.map(i=>`<a href="${i.html_url}">#${i.number}</a>`).join(", ")+`</p>`);
+      if(stuckNote) L.push(stuckNote);
 
       /* ---- 2. what counts as a yes. It sat three clauses AFTER the button, so
          a member could act on the page before reading the one sentence on it
@@ -1727,7 +1740,7 @@ function render(d){
          already says lazy consensus has ended, so this was one event stated
          three times on one row. What is left is the only part a member does
          not already know — what happens next. */
-      voteWhy=`<div class="vote">
+      voteWhy=`<div class="vote">${stuckNote}
         <p class="yesonly"><strong>This does not stop the proposal.</strong> §2 moves it to
         Tier ${win.tier==="a"?"B":"C"}, to be deliberated again${win.tier==="a"?"":" with a vote"}.
         An objection carries a reason and a route forward:
@@ -1740,7 +1753,7 @@ function render(d){
          exists to prevent. The workflow now creates the file on the first
          objection, so the form works here and the objection lands in the
          Record rather than in a comment git clone does not retrieve. */
-      voteWhy=`<div class="vote">
+      voteWhy=`<div class="vote">${stuckNote}
         <p class="yesonly"><strong>No vote at Tier ${win.tier.toUpperCase()}</strong> — it passes
         unless someone objects, moving it to Tier ${win.tier==="a"?"B":"C"}.</p></div>`;
       voteAct=`<div class="acts"><a class="act" href="https://github.com/${REPO}/issues/new`
