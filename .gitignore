@@ -9,3 +9,8 @@ tools/preview/out/
 # the Record should not carry a reference to something that may not exist
 # tomorrow. Kept locally, out of the Record.
 tools/preview/
+
+# Working notes from AI review panels — my scratch, not the Laboratory's. Never
+# curated for the Record, referenced by nothing outside themselves, and 248K that
+# every clone would carry forever.
+.ai-symposium/
