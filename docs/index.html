@@ -1819,8 +1819,8 @@ function render(d){
     o.push(`<h2>Under discussion <em>${d.issues.length}</em></h2>`);
     o.push(`<p class="note">Raised but not yet drafted. An issue is where a question lives before anyone
       has written the text that would answer it — it adopts nothing by itself.
-      <a href="https://github.com/${REPO}/issues/new?template=proposal.yml">Raise one</a>,
-      or <a class="openpick" href="#">start a proposal</a> if you already have the text.</p>`);
+      <a href="https://github.com/${REPO}/issues/new">Raise one</a>,
+      or <a class="openpick" href="#">start a proposal</a> if you have the text.</p>`);
     o.push(d.issues.map(i=>{
       const age=Math.floor((Date.now()-+new Date(i.created_at))/DAY);
       const m=[`@${esc(i.user.login)}`,`filed ${age}d ago`];

@@ -14,7 +14,7 @@ Almost all Laboratory members have write access, which is what lets you push a b
 
 | Action | How |
 |---|---|
-| Propose a new rule | Create a branch with the file → **Propose changes**. An issue first is optional, for proposing before the text exists |
+| Propose a new rule | The dashboard's **Start a proposal** button, which opens GitHub's editor at the right path with the right template. An issue first is optional, for raising a problem before the text exists |
 | Amend an existing rule | Open file → pencil icon → **Commit changes** → new branch → **Propose changes** |
 | Discuss a proposal | Comment on the pull request |
 | Record a vote | Your row in `votes/pr-{number}.md` on the proposal's branch — step 10 |
@@ -109,7 +109,7 @@ Every amendment follows the same arc. The deliberation periods and thresholds di
 |---|---|---|---|
 | 1 | Set up, once — or not at all, if you use the website | You | Your machine |
 | 2 | Decide what you are proposing, and at which layer | You. An agent may advise; you decide | — |
-| 3 | *Optional:* open an issue, if you have no text yet | You or your agent | GitHub |
+| 3 | *Optional:* open an issue, if you have no text yet — a plain one, there is no form | You or your agent | GitHub |
 | 4 | Draft the instrument, and a `rationale.md` beside it | Your agent drafts; you own it | Your machine or GitHub |
 | 5 | Check it against what the Constitution requires | Your agent | — |
 | 6 | Branch, commit, open the pull request | You or your agent | GitHub |
@@ -215,7 +215,7 @@ The table above is the summary. This is the detail, for the steps that have any.
 
 **An issue cannot adopt anything.** It holds discussion, not text, and Constitution §1 requires that a rule's exact adopted text appear in the Record. Only a merged pull request does that.
 
-So the pull request is the proposal of record, and its template asks for everything the Constitution requires. **Open an issue first only when it helps** — when you want to propose a rule before drafting its wording, or deliberate on whether a rule should exist before arguing about its text. Go to **Issues → New issue** and use the Proposal form: it asks three things (the layer, what you are proposing, and why that layer) and then tells you what the pull request will need. If you already have the text, go straight to a pull request.
+So the pull request is the proposal of record, and its template asks for everything the Constitution requires. **Open an issue first only when it helps** — when you want to propose a rule before drafting its wording, or deliberate on whether a rule should exist before arguing about its text. Go to **Issues → New issue** and say what the problem is. There is no form for it: an issue is where a question lives before anyone has written the text that would answer it, and it adopts nothing by itself. The proposal is still the pull request, and you can go straight to one whenever you have the text.
 
 A proposal is classified by its **actual effect**, not by the label you choose. Where two layers are reasonably arguable, the more demanding process applies.
 
