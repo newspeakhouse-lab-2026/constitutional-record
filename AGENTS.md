@@ -212,10 +212,10 @@ It is a convention, not a duty. An instrument without the line is perfectly vali
 
 ## Filing
 
-**The pull request is the proposal of record.** An issue holds no text, and Constitution §1 requires a rule's exact adopted text to appear in the Record, so only a merged pull request adopts anything. Never tell a member an issue alone has adopted something. An issue first is optional, and worth it only when the text does not exist yet.
+**Proposing is a pull request. Issues are for discussion.** An issue holds no text, and §1 requires a rule's exact adopted text to appear in the Record, so only a merged pull request adopts anything — an issue is never the step that decides. Never tell a member an issue alone has adopted something. An issue is the right place to raise a problem before anyone knows what the rule should say; the moment there is text, it belongs in a pull request.
 
 ```bash
-gh issue create                      # optional — only when there is no text yet
+gh issue create                      # discussion only, when there is no text yet
 git checkout -b {short-name}
 # write the file at the path its layer requires
 git add . && git commit -m "Propose {layer}: {title}"
@@ -223,7 +223,7 @@ git push -u origin {short-name}
 gh pr create                         # the template asks for everything required
 ```
 
-Constitution §2 Tier A says a member proposes "by opening a GitHub issue", yet every rule filed so far (#4, #5, #8) went straight to a pull request. Both satisfy the substance — say so rather than telling anyone they filed incorrectly.
+A member who raises something as an issue has not done anything wrong, and has not yet proposed it either. Help them turn it into a pull request rather than telling them they filed incorrectly.
 
 **What starts the clock differs by layer, and the Constitution is explicit for only two.** Tier A: the 48 hours *is* the proposal's visibility in the governance channel. Layer 4: "two endorsing reviews start the 7-day deliberation clock", and those are reviews on the pull request — that clock runs on GitHub. Tiers B and C and Layer 3: the Constitution does not say; treat the channel post as the trigger and say so, so nobody can dispute it later.
 
