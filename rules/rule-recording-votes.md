@@ -42,7 +42,7 @@ A header, one table, a result, and the objections in full. The template is
   cannot be checked unless they are all visible. Section 2 also distinguishes an abstention —
   "does not take a position" — from never answering, and a list of only those who
   answered could not show the difference.
-- **Who may vote is frozen when the vote opens.** Section 2 counts "all members
+- **Who may vote is frozen when the vote opens.** Section 1 counts "all members
   entitled to vote when the vote opens", so the file cites the `members.md`
   commit it was taken from. The freeze is then a fact anyone can check rather
   than something someone remembers.
@@ -131,7 +131,9 @@ offers nothing to verify; a file holding only a result offers no evidence.
 counts over preferences and objections only. Two different denominators inside
 one procedure, and the commonest way to get a tally wrong. Write both out.
 
-Fractions round up.
+Fractions **of all members** round up — Section 1 says so of thresholds stated that
+way, which is what a quorum is. A majority is *more than half*, and does not: a
+majority of 14 is 8, so a 7–7 split fails.
 
 ## If the vote restarts
 

@@ -84,7 +84,7 @@ Kingdom is on British Summer Time from late March to late October, and a missing
 offset is how a deadline ends up an hour out. It has happened here before.
 A check warns when the words and the timestamp disagree.
 
-ENTITLED TO VOTE — Section 2 counts "all members entitled to vote when the vote opens", so
+ENTITLED TO VOTE — Section 1 counts "all members entitled to vote when the vote opens", so
 cite the members.md blob the list was taken from (`git rev-parse HEAD:members.md`). A member who joins mid-vote
 does not change the denominator.
 

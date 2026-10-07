@@ -3,7 +3,7 @@
   "repo": "newspeakhouse-lab-2026/constitutional-record",
   "rounding": {
     "_comment": "Two rules, and they differ on an even roll. A named fraction rounds up: two-thirds of 14 is 10. A majority is more than half: majority of 14 is 8, not 7, so a 7-7 split fails. Using ceil for a majority is the bug that passes a tie.",
-    "source": "§2",
+    "source": "§1",
     "quote": "For any threshold stated as a fraction of all members, fractions round up to the next whole member."
   },
   "procedures": {

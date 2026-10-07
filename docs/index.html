@@ -294,11 +294,7 @@
   /* Every name, never "and N more". This is the most actionable line on the
      row: silence is how this ends, and the people who need asking are exactly
      the people a truncation would hide. */
-  .await{color:var(--ink);font-size:var(--t1);line-height:1.6;margin-top:.7rem!important;
-    overflow-wrap:anywhere}
-  .await b{font-weight:400;color:var(--muted)}
   /* A contradiction inside the Record. Nothing else. */
-  .clash{color:var(--urgent)}
   .warnish{color:var(--accent)}
 
   /* ======================================================================
@@ -414,23 +410,9 @@
           can be cast at all. Which instant each one is, and which the workflow
           enforces, is the part that folds.
      ====================================================================== */
-  .fold{margin:.4rem 0 0}
-  .fold>summary{cursor:pointer;color:var(--faint);font:400 var(--t0)/1.5 var(--ui);
-    padding:.3rem 0;display:list-item;list-style-position:outside;
-    margin-left:1rem;width:fit-content;max-width:100%}
-  .fold>summary::marker{color:var(--rule)}
-  .fold>summary:hover{color:var(--ink)}
-  .fold>summary:hover::marker{color:var(--accent)}
-  .fold>summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
-  .fold[open]>summary{color:var(--muted)}
-  .fold[open]>summary::marker{color:var(--accent)}
-  .foldbody{padding:.15rem 0 .35rem;max-width:34rem}
   /* Side by side at desktop: two quiet affordances on one line rather than a
      stack of two. They fall back to a stack on a phone, where a fold is a tap
      target before it is a label. */
-  .folds{display:flex;flex-wrap:wrap;column-gap:1.8rem}
-  .folds>.fold{margin-top:.2rem}
-  .folds>.fold[open]{flex:1 1 100%}
 
   /* The key IS the tally: every count is preceded by the mark it draws, so
      reading the numbers teaches the drawing and vice versa. */
@@ -457,7 +439,6 @@
   .vnote{font:400 var(--t0)/1.6 var(--ui);color:var(--faint);margin-top:.4rem!important;max-width:34rem;
     overflow-wrap:anywhere}
   .vnote code{font-size:.95em}
-  .vnone{color:var(--faint)}
 
   /* ---- the action ----------------------------------------------------- */
   .acts{display:flex;flex-wrap:wrap;align-items:center;gap:.9rem;margin-top:.5rem}
@@ -493,7 +474,6 @@
   details.seam{padding-left:1.15rem;margin:.15rem 0 .4rem!important}
   details.seam>summary{margin-left:0;color:var(--muted);font:400 var(--t1)/1.5 var(--ui)}
   details.seam>summary::marker{color:var(--urgent)}
-  details.seam .foldbody{font:400 var(--t0)/1.6 var(--ui);color:var(--faint);padding-bottom:.2rem}
   /* The page failing to SEE the Record is not a defect IN the Record, so it
      does not get --urgent. It gets the same stitched edge in --accent: this
      view is mended, read it knowing that. */
@@ -609,14 +589,8 @@
        cannot be positioned, and the summary stays a block so a two-part
        summary — "Two closing times. The countdown and the file disagree." —
        sets as one run of prose rather than as two flex columns. */
-    .fold>summary{display:block;position:relative;list-style:none;margin-left:0;
-      width:auto;max-width:none;padding:.6rem 0 .6rem 1.1rem;min-height:2.75rem}
-    .fold>summary::marker,.fold>summary::-webkit-details-marker{display:none;content:""}
-    .fold>summary::before{content:"\25b8";position:absolute;left:0;top:.6rem;color:var(--rule)}
-    .fold[open]>summary::before{content:"\25be";color:var(--accent)}
     details.seam{padding-left:.7rem}
     details.seam>summary::before{color:var(--urgent)}
-    .folds{display:block}
     /* The second route keeps its 44px target; its warning is a sentence of its
        own beneath it rather than a clause orphaned off the end of a link. */
     /* Full width and 44px, so the thing the page exists to produce is the
@@ -1137,7 +1111,10 @@ async function collect(){
   const instruments=Object.keys(at).filter(p=>/^(rules|policies|disputes)\/.*\.md$/.test(p)&&!/\/rationale\.md$/.test(p)).sort();
 
   const cText = at["constitution.md"] ? await blob(at["constitution.md"]) : null;
-  const roles = at["roles.md"] ? await blob(at["roles.md"]) : null;
+  /* One GitHub request of the sixty an hour everyone here shares, for a section
+     SHOW_IN_FORCE currently switches off. Skipped rather than fetched and
+     discarded; it comes back with the section. */
+  const roles = (SHOW_IN_FORCE && at["roles.md"]) ? await blob(at["roles.md"]) : null;
 
   // How the Constitution came to say what it says. Keyed on constitution.md's own
   // blob SHA, so the whole history is fetched once and never again until the
@@ -1953,7 +1930,7 @@ function render(d){
   $("#stamp").title="This page read the Record from GitHub when you opened it. Reload to read it again.";
   $("#budget").textContent = budget===null ? ""
     : `${budget} of 60 GitHub requests left this hour, shared by everyone on this connection. `
-      + `A first visit costs about 15; coming back costs none.`;
+      + `A first visit costs 25 to 30; coming back costs none for ten minutes, then about five.`;
 }
 
 /* Filing a proposal does not depend on being able to read the Record, so the
