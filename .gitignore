@@ -4,3 +4,8 @@ __pycache__/
 
 # Built by tools/preview/build.py. A harness aimed at the sandbox, never committed.
 tools/preview/out/
+
+# The preview harness. It points at a throwaway sandbox repository by name, and
+# the Record should not carry a reference to something that may not exist
+# tomorrow. Kept locally, out of the Record.
+tools/preview/
