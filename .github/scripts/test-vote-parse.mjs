@@ -201,6 +201,23 @@ for (const c of (corpus.noVoteCases || [])) {
     [c.expect.holdsVote, c.expect.objections]);
 }
 
+/* Who answered and how. The counts alone cannot answer "who still needs
+   asking", and that is the question the row is most often opened for. */
+const whoVoted = voteOf([
+  '**Procedure:** Layer 3 Policy',
+  '**Carries if:** a majority of all members — **2 of 3**',
+  '| Member | Position | Date |', '|---|---|---|',
+  '| Ada | preference | 2026-10-07 |',
+  '| Blaise | objection | 2026-10-08 |',
+  '| Carl | — | |',
+].join('\n'));
+check('every member is listed, answered or not', whoVoted.members.length, 3);
+check('with the position each took',
+  whoVoted.members.map(m => m.position), ['preference', 'objection', null]);
+check('and the count of the unanswered still agrees', whoVoted.awaiting, ['Carl']);
+check('the date each answered is kept',
+  whoVoted.members[1].date, '2026-10-08');
+
 const passed = results.filter(Boolean).length;
 console.log(`\n${passed}/${results.length} passed`);
 process.exit(results.every(Boolean) ? 0 : 1);
