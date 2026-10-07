@@ -21,6 +21,7 @@ on:
       # record-vote.yml was absent, so a pull request touching only it ran none
       # of the tests written for it -- which is most of the suite.
       - '.github/workflows/record-vote.yml'
+      - '.github/workflows/objection-check.yml'
       - '.github/workflows/check-record.yml'
       - '.github/ISSUE_TEMPLATE/**'
       - '.github/instrument-templates/**'
@@ -58,6 +59,12 @@ jobs:
       # out once, and a failure HERE is a real failure.
       - name: Test the Record check's own date logic
         run: python3 .github/scripts/test-check-record.py
+
+      # The merge block. What matters most here is that it does NOT fire at Tier C,
+      # Layer 3 or Layer 4, where §2 makes an objection countable rather than
+      # decisive - a check that blocked those would invent a veto.
+      - name: Test the objection merge block
+        run: node .github/scripts/test-objection-check.mjs
 
       # The dashboard reads a vote file too. Its reader is extracted from
       # index.html rather than copied, so a change to the page that broke the
