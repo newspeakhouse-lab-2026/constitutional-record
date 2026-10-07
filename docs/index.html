@@ -176,7 +176,12 @@
   .why a.actalt{display:inline-flex;align-items:center;min-height:2.25rem;padding:0 .15rem;
     color:var(--muted);text-decoration:underline;text-underline-offset:2px;font-size:.75rem}
   .why a.actalt:hover{color:var(--ink)}
+  .vnone{color:var(--muted)}                  /* counts for nothing toward the threshold */
   .glossary{color:var(--muted);font-size:.72rem;line-height:1.6;padding:0 0 .7rem 1rem;max-width:46rem}
+  .glossary summary{cursor:pointer;color:var(--faint);font-size:.7rem;padding:.3rem 0;min-height:1.6rem}
+  .glossary summary:hover{color:var(--ink)}
+  .glossary summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+  .glossary p{margin:.2rem 0 .4rem}
   .glossary strong{color:var(--ink);font:600 .66rem/1 var(--ui);letter-spacing:.04em}
   .note{color:var(--muted);font-size:.76rem;line-height:1.55;padding:.1rem 0 .55rem 1rem;max-width:46rem}
   .note a{color:var(--accent)}
@@ -901,12 +906,31 @@ function render(d){
         const pct=Math.max(0,Math.min(100,Math.round(done/need*100)));
         L.push(`<span class="gauge" aria-hidden="true"><i style="width:${pct}%"></i></span>`);
       }
-      L.push(`<p class="vtally">${POS.map(k=>`${k} ${c[k]}`).join(" · ")}</p>`);
+      /* Grouped by arithmetic effect, but only where the arithmetic has a clean
+         binary. At Layer 3, Layer 4 and re-ratification the threshold is purely
+         affirmative — eight preferring and six objecting still carries — so the
+         split is preference against everything else.
+         The grouping is visual only, and the sentence below carries the meaning.
+         Labelling the muted group "none of these count" would be arithmetically
+         true and badly misleading: an objection is opposition, stated with a
+         reason and a route forward, and at Tier A or Tier B a single one blocks
+         lazy consensus outright. It does not count toward *this* threshold; that
+         is not the same as not counting.
+         Tier C gets the flat four, because there it genuinely is not a binary:
+         preference and objection are the majority's denominator while toleration
+         and abstention reach quorum without diluting it. The note below carries
+         that, and a grouping that implied otherwise would be worse than none. */
+      if(vote.quorumOnly)
+        L.push(`<p class="vtally">${POS.map(k=>`${k} ${c[k]}`).join(" · ")}</p>`);
+      else
+        L.push(`<p class="vtally"><strong>preference ${c.preference}</strong>`
+          +` <span class="vnone">· toleration ${c.toleration} · abstention ${c.abstention}`
+          +` · objection ${c.objection}</span></p>`);
       /* Tier C's two denominators, on their own line rather than as a sixth
          clause. Quorum counts everyone; the majority counts preference and
          objection only. It is the commonest way to get a tally wrong. */
-      if(vote.quorumOnly) L.push(`<p class="vnote">Tier C counts twice: quorum over everyone who answered,
-        the majority over preference and objection only, and not until the window has closed.</p>`);
+      if(vote.quorumOnly) L.push(`<p class="vnote">Tier C counts twice. Quorum is over everyone who
+        answered. The majority is over preference and objection only, and not until the window closes.</p>`);
       /* Every name, never "and N more". Silence is the failure mode, so the
          list of who has not answered is the most actionable thing on the row —
          and truncating it hides exactly the people who need chasing. Fourteen
@@ -991,10 +1015,13 @@ function render(d){
     <a href="https://github.com/${REPO}/pulls">All open proposals on GitHub</a>.</p>`);
   // The tags below are abbreviations. Spelling them out once, visibly, beats a
   // title= tooltip that does not exist on a phone or under a screen reader.
-  o.push(`<p class="glossary"><strong>L0</strong> Operational · <strong>L1</strong> Coordination ·
+  /* Correct on a first visit, furniture by the fifth. Folded, but still text on
+     the page rather than a tooltip — a tooltip does not exist on a phone. */
+  o.push(`<details class="glossary"><summary>What the tags mean</summary>
+    <p><strong>L0</strong> Operational · <strong>L1</strong> Coordination ·
     <strong>L2</strong> Ordinary · <strong>L3</strong> Policy · <strong>L4</strong> Constitutional —
     and within Layer 2, <strong>A</strong> 48 hours · <strong>B</strong> a stated period under 7 days ·
-    <strong>C</strong> 7 days or more, with a vote.</p>`);
+    <strong>C</strong> 7 days or more, with a vote.</p></details>`);
   for(const b of d.branches||[]){
     const age=b.at?Math.floor((Date.now()-+new Date(b.at))/DAY):null;
     noclock.push(row("Not proposed",
