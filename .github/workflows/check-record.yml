@@ -51,6 +51,14 @@ jobs:
       - name: Test the vote arithmetic
         run: python3 .github/scripts/test-tally.py
 
+      # The Record check above never fails a pull request, which is right - but
+      # it means a check that silently stopped checking would look exactly like a
+      # Record with nothing wrong. This exercises its date comparisons directly,
+      # including the summer-time trap that has already put a deadline an hour
+      # out once, and a failure HERE is a real failure.
+      - name: Test the Record check's own date logic
+        run: python3 .github/scripts/test-check-record.py
+
       # The dashboard reads a vote file too. Its reader is extracted from
       # index.html rather than copied, so a change to the page that broke the
       # reading would fail here rather than misreport a live vote.

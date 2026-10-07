@@ -662,7 +662,8 @@ jobs:
                     `conversation.`, branch, n);
                 }
                 let next2;
-                try { next2 = writeBlock(base); }
+                try { next2 = writeBlock(base);
+                      if (typeof globalThis.__TAMPER === 'function') next2 = globalThis.__TAMPER(next2, base); }
                 catch (e) {
                   return await brokenTooling(`I could not write your objection into \`${path}\`: ${e.message}.` +
                     `\n\n` + byHand(branch, n));
@@ -740,7 +741,15 @@ jobs:
               }
 
               let next;
-              try { next = apply(got.text); }
+              /* A seam for the tests, and nothing else. invariants() is the last
+                 check before a write and the file's own comment says writing
+                 through a failed one destroys a position silently — but nothing
+                 could exercise it, because the only way in is a corrupted
+                 apply() result and apply() is correct. globalThis.__TAMPER is
+                 never set in Actions; it exists so the guard can be proved to
+                 fire rather than assumed to. */
+              try { next = apply(got.text);
+                    if (typeof globalThis.__TAMPER === 'function') next = globalThis.__TAMPER(next, got.text); }
               catch (e) {
                 return await refuse(`I could not place your row in \`${path}\`: ${e.message}. ` +
                   `\`members.md\` names you **${me.name}**, and the vote file's table has to use the same ` +

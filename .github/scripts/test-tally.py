@@ -70,6 +70,69 @@ for v in corpus.get("noVoteCases", []):
     if bad:
         print(f"          why this case exists: {v['why']}")
 
+# parse() refuses seven kinds of broken file, and every one of those refusals was
+# untested. Each is the difference between a wrong tally and a visible complaint.
+HEAD = ("**Procedure:** Layer 3 Policy\n"
+        "**Carries if:** a majority of all members \u2014 **8 of 14**\n\n")
+TABLE = "| Member | Position | Date |\n|---|---|---|\n"
+
+PARSE_CASES = [
+    ("duplicate rows",
+     HEAD + TABLE + "| Ada | preference | |\n| Ada | objection | |\n",
+     "duplicated row",
+     "Two rows for one member make the denominator ambiguous and the tally silent about it."),
+    ("Entitled to vote disagrees with the table",
+     HEAD + "**Entitled to vote:** 14 members\n\n" + TABLE + "| Ada | preference | |\n",
+     "but the table has",
+     "The stated roll and the actual rows must agree, or the fraction is of nothing checkable."),
+    ("an unrecognised position",
+     HEAD + TABLE + "| Ada | yes please | |\n",
+     "unrecognised position",
+     "A cast vote that is silently dropped is worse than a refusal: nobody is told."),
+    ("a comment block carrying position words",
+     HEAD + TABLE + "| Ada | preference | |\n<!-- | Bo | preference | | -->\n",
+     None,
+     "Template guidance must not be counted. Expect a clean parse of ONE row, not a refusal."),
+    ("Tier A with a table",
+     "**Procedure:** Tier A\n\n" + TABLE + "| Ada | preference | |\n",
+     "holds no vote, but the file has a table",
+     "A vote whose Procedure line was never updated would report no-vote and suppress the verdict."),
+    ("no Procedure line",
+     TABLE + "| Ada | preference | |\n",
+     "no **Procedure:** line",
+     "Without it there is no arithmetic to apply, and guessing one would set a threshold."),
+    ("a procedure the Constitution does not name",
+     "**Procedure:** Vibes\n\n" + TABLE + "| Ada | preference | |\n",
+     "is not one the Constitution names",
+     "\u00a72 reserves thresholds; inventing one here would invent a procedure."),
+]
+
+for name, text, want, why in PARSE_CASES:
+    parsed, err = tally.parse(text)
+    bad = []
+    if want is None:
+        if err:
+            bad.append(f"expected a clean parse, got refusal: {err}")
+        elif parsed["roll"] != 1:
+            bad.append(f"expected 1 row, got {parsed['roll']} \u2014 the comment was counted")
+    elif not err:
+        bad.append("expected a refusal, got a clean parse")
+    elif want not in err:
+        bad.append(f"refused with {err!r}, which does not mention {want!r}")
+    results.append(("parse/" + name, bad, why))
+    print(f"  {'FAIL' if bad else 'ok  '}  parse/{name}")
+    for b in bad:
+        print(f"          {b}")
+    if bad:
+        print(f"          why this case exists: {why}")
+
+# The §4 respondent is excluded from their own electorate, not counted into it.
+_p, _e = tally.parse("**Procedure:** Layer 3 Policy\n**Carries if:** a majority of all members \u2014 **8 of 14**\n\n"
+                     + TABLE + "| Ada | preference | |\n| Bo | excluded | |\n")
+_bad = [] if (not _e and _p["excluded"] == 1 and _p["roll"] == 2) else [f"excluded row mishandled: {_e or _p}"]
+results.append(("parse/excluded-row", _bad, "\u00a74 removes the respondent from the denominator of their own removal."))
+print(f"  {'FAIL' if _bad else 'ok  '}  parse/excluded-row")
+
 # The two rounding rules, asserted directly rather than only through a procedure.
 extra = []
 if tally.required({"rule": "majority"}, 14) != 8:

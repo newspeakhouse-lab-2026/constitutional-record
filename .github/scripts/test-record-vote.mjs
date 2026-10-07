@@ -119,6 +119,7 @@ async function run({
   dataJson = DATA_JSON,     // holds the period §2 gives Tier A
   putFails = [],            // statuses to throw before succeeding
   fileAfterConflict = null, // what another voter left behind
+  tamper = null,            // corrupt apply()'s output, to prove invariants() fires
 } = {}) {
   const comments = [], added = [], warnings = [], writes = [], labelled = [];
   let current = file, puts = 0;
@@ -159,7 +160,10 @@ async function run({
     },
   } };
   const core = { notice: () => {}, setFailed: m => warnings.push(m) };
-  await new Function('github', 'context', 'core', 'return (async()=>{' + SCRIPT + '})()')(github, context, core);
+  if (tamper) globalThis.__TAMPER = tamper; else delete globalThis.__TAMPER;
+  try {
+    await new Function('github', 'context', 'core', 'return (async()=>{' + SCRIPT + '})()')(github, context, core);
+  } finally { delete globalThis.__TAMPER; }
   return { comments, added, failed: warnings, writes, puts, labelled };
 }
 
@@ -466,6 +470,47 @@ for (const [label, body] of [
 r = await run({ pull: TIER('c'), file: noVoteFile(),
   body: '### Pull request number\n\n14\n\n### Your position\n\npreference — I support this outcome. THE ONLY ANSWER THAT COUNTS AS A YES\n' });
 check('after escalation the refusal still names Tier A, from the file', has(r.comments[0], 'Tier A'), true);
+
+/* ---- invariants(): the last check before a write, previously untested -------
+   The file's own comment says the cost of writing through a failed check is "a
+   position silently destroyed, which nobody may ever notice". Nothing exercised
+   it, because the only way in is a corrupted apply() result and apply() is
+   correct. Each case corrupts the result and asserts the write is refused. */
+const TAMPERS = [
+  ['a second member\'s row changed',  s => s.replace('| Carl Gauss | — |', '| Carl Gauss | preference |')],
+  ['the header row rewritten',        s => s.replace('| Member | Position | Date |', '| Member | Vote | Date |')],
+  ['the separator row rewritten',     s => s.replace('|---|---|---|', '|---|---|')],
+  ['a member renamed',                s => s.replace('Blaise Pascal', 'Blaise Pascale')],
+  ['a row removed',                   s => s.replace('| Carl Gauss | — | |\n', '')],
+  ['the Carries if line altered',     s => s.replace('**2 of 3**', '**1 of 3**')],
+  ['the Entitled to vote line altered', s => s.replace('3 members, frozen', '4 members, frozen')],
+  ['a control character introduced',  s => s.replace('## Result', '## Res\u0007ult')],
+  ['an impossible position written',  s => s.replace('| Ada Lovelace | preference |', '| Ada Lovelace | yes please |')],
+];
+for (const [name, fn] of TAMPERS) {
+  r = await run({ tamper: fn });
+  check(`invariants refuses: ${name}`, r.writes.length, 0);
+  check(`  and fails loudly rather than silently`, r.failed.length > 0, true);
+  check(`  and says the file is unchanged`, has(r.comments[0], 'nothing in the file has changed'), true);
+}
+/* The control it is measured against: an untampered run still writes. */
+r = await run();
+check('invariants passes a correct write', r.writes.length, 1);
+
+/* The no-table path has its own guard, and its own blind spot: it compares
+   every OTHER member's block byte for byte. */
+const NV_TAMPERS = [
+  ["another member's block edited", s => s.replace('Reason: theirs.', 'Reason: THEIRS, EDITED.')],
+  ["another member's block deleted", s => s.replace(/<!-- objection: 222 -->[\s\S]*?(?=\n<!-- |\n## |$)/, '')],
+  ['a third block appearing',        s => s + '\n<!-- objection: 999 -->\n**Nobody** — 2026-06-01\n\n> Reason: forged.\n'],
+  ['the Procedure line changed',     s => s.replace('**Procedure:** Tier A', '**Procedure:** Tier C')],
+  ['a table appearing',              s => s + '\n| Member | Position | Date |\n|---|---|---|\n| Ada Lovelace | preference | |\n'],
+];
+for (const [name, fn] of NV_TAMPERS) {
+  r = await run({ pull: TIER('a'), file: noVoteFile(OTHERS), body: OBJ('mine', 'my route'), tamper: fn });
+  check(`invariantsNoTable refuses: ${name}`, r.writes.length, 0);
+  check(`  and fails loudly`, r.failed.length > 0, true);
+}
 
 const passed = results.filter(Boolean).length;
 console.log(`\n${passed}/${results.length} passed`);
