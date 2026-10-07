@@ -96,7 +96,7 @@
      can read "running" here and be refused by the workflow, or the reverse.
      That is a real problem with the Record, not a clock running out. */
   .clash{color:var(--urgent);font-weight:600}
-  .tag.objected{border-color:var(--urgent);color:var(--urgent);font-weight:600}
+  .tag.objected{border-color:var(--accent);color:var(--accent);font-weight:600}
   /* Reference material is genuinely static; live signals a tier below the clocks
      — quiet counters, comment counts, endorsement progress — are not, and were
      styled as though they were. */
@@ -833,6 +833,12 @@ function render(d){
                    the tally already counts. Same label, two weights. */
                 (win.other||[]).includes("objection")
                   ? (win.tier==="a"||win.tier==="b"
+                      /* Not --urgent. §2 asks for an objection stated with a
+                         reason and a route forward "so that raising a concern
+                         moves the cohort closer to a decision rather than simply
+                         halting it". Drawing it in the colour reserved for a
+                         contradiction in the Record would tell a member that
+                         using the mechanism correctly is a fault. */
                       ? `<span class="tag objected">OBJECTED</span>`
                       : `<span class="tag st">OBJECTION</span>`)
                   : "",
@@ -845,8 +851,8 @@ function render(d){
     /* Why it matters, not just that it happened — the tag alone does not say
        that lazy consensus has stopped. */
     if((win.other||[]).includes("objection")&&(win.tier==="a"||win.tier==="b"))
-      bits.push(`<span class="clash">lazy consensus is blocked — §2 moves this to Tier `
-        +`${win.tier==="a"?"B":"C"}</span>`);
+      bits.push(`<span class="warnish">lazy consensus has ended — §2 moves this to Tier `
+        +`${win.tier==="a"?"B":"C"}, where it is deliberated again</span>`);
     if(quiet>=7) bits.push(`<span class="q7">quiet ${quiet}d</span>`);
     // A Tier A with no comments is passing normally, not stalling.
     bits.push(notes?`${notes} note${notes>1?"s":""}`:`<span class="quiet">no comment</span>`);
