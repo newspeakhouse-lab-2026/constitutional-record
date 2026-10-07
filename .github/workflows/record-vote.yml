@@ -130,7 +130,7 @@ jobs:
             // in silence.
             const ACTED = new Date(issue.created_at);
             if (isNaN(+ACTED)) {
-              return brokenTooling(`This issue reports its creation time as \`${String(issue.created_at).slice(0, 60)}\`, ` +
+              return await brokenTooling(`This issue reports its creation time as \`${String(issue.created_at).slice(0, 60)}\`, ` +
                 `which is not a time this workflow can read — so it cannot tell whether you submitted before the ` +
                 `window closed, and will not guess. Nothing has been written. A maintainer needs to look at this run.`);
             }
@@ -171,7 +171,7 @@ jobs:
                  is not an error on their part and must not read like one. */
               const cameFromForm = labels.includes('vote') || labels.includes('objection');
               if (!cameFromForm) {
-                return refuse(
+                return await refuse(
                   `This issue looks like a vote, but it was not filed through the form, so the fields ` +
                   `needed to record a position are not here.\n\n` +
                   `Use **Record a position on a vote** from ` +
@@ -180,7 +180,7 @@ jobs:
                   `things Section 2 requires. This workflow then writes your row. Nothing is wrong with ` +
                   `what you did; there is just nothing here to record yet.`);
               }
-              return brokenTooling(
+              return await brokenTooling(
                 `This workflow could not find the **${LABELS[missingHeading]}** field it expects from ` +
                 `the issue form. The form and the workflow have drifted, which is a defect in the ` +
                 `tooling and not in your submission — a maintainer needs to look at this run. ` +
@@ -197,7 +197,7 @@ jobs:
                 owner, repo, path: 'members.md', ref: DEFAULT_BRANCH });
               membersText = Buffer.from(r.data.content, 'base64').toString('utf8');
             } catch (e) {
-              return brokenTooling('Could not read `members.md`, so no position can be attributed. ' + e.message);
+              return await brokenTooling('Could not read `members.md`, so no position can be attributed. ' + e.message);
             }
             const section = (membersText.split(/^##\s+/m).find(s => /^Current members/i.test(s)) || '');
             const roster = section.split('\n')
@@ -212,7 +212,7 @@ jobs:
             const byLogin = roster.find(m => m.login.toLowerCase() === actorLogin.toLowerCase());
 
             if (!byId && byLogin && !byLogin.id) {
-              return refuse([
+              return await refuse([
                 `You are on the list — \`members.md\` has **${byLogin.name}** — but the \`ID\` column on`,
                 `your row is empty, so this workflow cannot prove the account that opened this issue is`,
                 `yours.`,
@@ -233,7 +233,7 @@ jobs:
               ].join('\n'));
             }
             if (!byId && byLogin && byLogin.id !== actorId) {
-              return brokenTooling([
+              return await brokenTooling([
                 `\`members.md\` records account id \`${byLogin.id}\` for **${byLogin.name}**, but the account`,
                 `that opened this issue is @${actorLogin}, id \`${actorId}\`. A numeric account id never`,
                 `changes, so either the recorded id is wrong or an account has been renamed to a`,
@@ -241,7 +241,7 @@ jobs:
               ].join('\n'));
             }
             if (!byId) {
-              return refuse([
+              return await refuse([
                 `I cannot find @${actorLogin} (account id \`${actorId}\`) in \`members.md\`, so nothing has`,
                 `been written. Only members listed there have a position recorded.`,
                 '',
@@ -266,7 +266,7 @@ jobs:
             // --- which proposal ---------------------------------------------
             const m = String(f[LABELS.pr] || '').trim().match(/^#?(\d{1,6})$/);
             if (!m) {
-              return refuse(`I could not read a pull request number from **${LABELS.pr}**. ` +
+              return await refuse(`I could not read a pull request number from **${LABELS.pr}**. ` +
                 `Write just the digits, for example \`14\`.`);
             }
             const n = Number(m[1]);
@@ -280,40 +280,40 @@ jobs:
                  as "there is no pull request #14" tells them something false
                  about the Record on the strength of a transient fault. */
               if (e.status !== 404) {
-                return brokenTooling(`I could not read pull request #${n} — GitHub answered ` +
+                return await brokenTooling(`I could not read pull request #${n} — GitHub answered ` +
                   `\`${e.status || 'with an error'}\`. **This is not a statement that #${n} does not exist**; ` +
                   `it is a statement that this workflow could not find out. Nothing has been written. ` +
                   `Submit the form again in a few minutes, or edit the vote file directly.`);
               }
-              return refuse(`There is no pull request #${n} in this repository. A vote belongs to the ` +
+              return await refuse(`There is no pull request #${n} in this repository. A vote belongs to the ` +
                 `pull request carrying the text — an issue adopts nothing (Section 1).`);
             }
             if (pull.state !== 'open') {
-              return refuse(`Pull request #${n} is ${pull.merged ? 'merged' : 'closed'}. A position cannot ` +
+              return await refuse(`Pull request #${n} is ${pull.merged ? 'merged' : 'closed'}. A position cannot ` +
                 `be recorded against a closed proposal. If it was closed in error, reopen it and submit again.`);
             }
             if (pull.draft) {
-              return refuse(`Pull request #${n} is still a draft, so its deliberation period has not opened.`);
+              return await refuse(`Pull request #${n} is still a draft, so its deliberation period has not opened.`);
             }
             if (!pull.head.repo || pull.head.repo.full_name !== `${owner}/${repo}`) {
-              return refuse(`Pull request #${n} is proposed from a fork (\`${pull.head.repo ? pull.head.repo.full_name : 'unknown'}\`). ` +
+              return await refuse(`Pull request #${n} is proposed from a fork (\`${pull.head.repo ? pull.head.repo.full_name : 'unknown'}\`). ` +
                 `This workflow's token cannot write to a branch in a fork, so it cannot record your ` +
                 `position there. Ask for push access to this repository, or record it by hand.`);
             }
             const branch = pull.head.ref;
             if (branch === DEFAULT_BRANCH) {
-              return refuse(`Pull request #${n}'s branch is \`${branch}\`, this repository's default branch. ` +
+              return await refuse(`Pull request #${n}'s branch is \`${branch}\`, this repository's default branch. ` +
                 `A vote is written on the proposal's own branch, so nothing has been written.`);
             }
             const path = `votes/pr-${n}.md`;
             if (!/^votes\/pr-[1-9]\d{0,5}\.md$/.test(path)) {
-              return brokenTooling(`This workflow built the path \`${path}\`, which it will not write to.`);
+              return await brokenTooling(`This workflow built the path \`${path}\`, which it will not write to.`);
             }
 
             // --- position ---------------------------------------------------
             const picked = String(f[LABELS.position] || '').trim().split(/\s+[—-]\s+/)[0].toLowerCase();
             if (!POS.includes(picked)) {
-              return brokenTooling(`The form offered a position this workflow does not recognise ` +
+              return await brokenTooling(`The form offered a position this workflow does not recognise ` +
                 `(\`${picked.slice(0, 40)}\`). The dropdown and the workflow have drifted.`);
             }
             const position = picked;
@@ -325,7 +325,7 @@ jobs:
               // issue created through the API can arrive with a blank required
               // field, so this has to be checked here.
               if (!reason || !route) {
-                return refuse([
+                return await refuse([
                   `Your objection is not recorded yet, because Section 2 requires an objection to carry`,
                   `**two** things and one is missing: ${!reason ? 'the reason' : 'a suggested route forward'}.`,
                   '',
@@ -448,12 +448,12 @@ jobs:
                    GitHub, and a member told the first on the evidence of the
                    second may stop trying to vote at all. */
                 if (e.status !== 404) {
-                  return brokenTooling(`I could not read \`${path}\` on branch \`${branch}\` — GitHub answered ` +
+                  return await brokenTooling(`I could not read \`${path}\` on branch \`${branch}\` — GitHub answered ` +
                     `\`${e.status || 'with an error'}\`. **This is not a statement that no vote is open**; it is ` +
                     `a statement that this workflow could not find out. Nothing has been written. Submit the ` +
                     `form again in a few minutes, or edit the file by hand.\n\n` + byHand(branch, n));
                 }
-                return refuse(`There is no \`${path}\` on branch \`${branch}\`, so no vote is open to record a ` +
+                return await refuse(`There is no \`${path}\` on branch \`${branch}\`, so no vote is open to record a ` +
                   `position in. This workflow will not create one: opening a vote means naming the procedure, ` +
                   `freezing who may vote and writing out the threshold, which are a member's decisions. ` +
                   `Whoever is running the vote can open it from the dashboard, or from ` +
@@ -465,12 +465,12 @@ jobs:
               const clean = got.text.replace(/<!--[\s\S]*?-->/g, '');
               const iso = (clean.match(/^\*\*Closes:\*\*[^\n]*?`([^`]+)`/m) || [])[1];
               if (!iso || isNaN(new Date(iso))) {
-                return refuse(`\`${path}\` has no readable **Closes:** line, so I cannot tell whether the ` +
+                return await refuse(`\`${path}\` has no readable **Closes:** line, so I cannot tell whether the ` +
                   `window is open. It needs the instant in backticks, for example: ` +
                   '`**Closes:** Monday 13 October 2026, 12:00 UK (`2026-10-13T12:00:00+01:00`)`', branch, n);
               }
               if (ACTED > new Date(iso)) {
-                return refuse(`The window on this vote closed at **${iso}**, and you submitted at ` +
+                return await refuse(`The window on this vote closed at **${iso}**, and you submitted at ` +
                   `${issue.created_at}. Nothing has been written. If the window was extended or the ` +
                   `deliberation period restarted, the file's **Closes:** line needs to say so first — ` +
                   `this workflow reads the file, not the conversation.`, branch, n);
@@ -479,7 +479,7 @@ jobs:
               let next;
               try { next = apply(got.text); }
               catch (e) {
-                return refuse(`I could not place your row in \`${path}\`: ${e.message}. ` +
+                return await refuse(`I could not place your row in \`${path}\`: ${e.message}. ` +
                   `\`members.md\` names you **${me.name}**, and the vote file's table has to use the same ` +
                   `spelling — matching on anything looser is how one member ends up voting as another.`,
                   branch, n);
@@ -491,12 +491,12 @@ jobs:
               if (next === got.text) {
                 await say(`**${position}** is already recorded for **${me.name}** on #${n}, with today's `
                   + `date — nothing to change. Your position stands as it is.`);
-                return close('vote-recorded');
+                return await close('vote-recorded');
               }
 
               const bad = invariants(got.text, next);
               if (bad) {
-                return brokenTooling(`I built a new version of \`${path}\` and then refused to write it, ` +
+                return await brokenTooling(`I built a new version of \`${path}\` and then refused to write it, ` +
                   `because it failed an internal check: **${bad}**.\n\n` +
                   `**Your position has not been recorded, and nothing in the file has changed.** That is ` +
                   `intended: writing anyway could overwrite a position another member already recorded, ` +
@@ -545,7 +545,7 @@ jobs:
                     owner, repo, issue_number: n, labels: ['objection'],
                   }).catch(() => {});
                 }
-                return close('vote-recorded');
+                return await close('vote-recorded');
               } catch (e) {
                 const stale = e.status === 409 || (e.status === 422 && /sha|does not match|expected/i.test(e.message || ''));
                 if (!stale) throw e;
