@@ -52,7 +52,7 @@ When the Laboratory has this surplus, any member can propose new spending by pos
 - How we will know it worked.
 - Any conflict of interest.
 
-The proposal is then put to a majority vote. Within two weeks of finishing, the proposer reports back on Discord and returns any unspent money.
+The proposal is then decided under Section 2 of the Constitution, through the procedure its layer requires. Where that is an Ordinary rule, it enters at Tier C: a simple majority of those who vote, with a quorum of half of all members. Within two weeks of finishing, the proposer reports back on Discord and returns any unspent money.
 
 ### Ration Club
 
@@ -64,7 +64,7 @@ Donations made to Ration Club through digital payment channels go directly to Op
 
 ### Website hosting
 
-The Laboratory's tech infrastructure currently costs £11 a month and covers all Laboratory sites, including the newsletter. Any change or addition to this setup that affects the monthly budget will only be considered, and put to a majority vote, once the Laboratory's Open Collective account holds at least one and a half months of recurring costs.
+The Laboratory's tech infrastructure currently costs £11 a month and covers all Laboratory sites, including the newsletter. Any change or addition to this setup that affects the monthly budget will only be considered, and decided under Section 2 of the Constitution in the same way as new spending, once the Laboratory's Open Collective account holds at least one and a half months of recurring costs.
 
 ### General
 
@@ -76,7 +76,7 @@ The Laboratory raises funds on a not-for-profit basis. Any money raised is used 
 
 Within the remit set by the College, the Laboratory can raise money through Ration Club donations, newsletter subscriptions, bookings of the guest room and other communal spaces, and ticketed events at Newspeak House.
 
-Laboratory members regard Newspeak House as shared communal infrastructure. Regular spaces at the venue can be booked free of charge, on a first-come, first-served basis, under the House's current Booking Policy. However, any member can propose an ordinary rule (§2.3) to set a fee for people outside the Laboratory using the communal spaces. The proposer must notify residents directly while the proposal is open, so they can raise any potential conflict before the vote closes.
+Laboratory members regard Newspeak House as shared communal infrastructure. Regular spaces at the venue can be booked free of charge, on a first-come, first-served basis, under the House's current Booking Policy. However, any member can propose an Ordinary rule (Constitution §2, Ordinary rules) to set a fee for people outside the Laboratory using the communal spaces. The proposer must notify residents directly while the proposal is open, so they can raise any potential conflict before its deliberation period closes.
 
 The guest room, however, is charged and maintained as per the Guest Room Policy.
 
@@ -92,7 +92,7 @@ Beyond Ration Club, fellowship candidates are encouraged to run events at the ve
 | Weekly Ration Club Lead | Running that week's Ration Club within its £70 budget |
 | Infrastructure Lead | Managing the website hosting budget |
 
-The Treasurer, Deputy Treasurer, signatories and Infrastructure Lead are appointed by a majority of all members (§2.11). On the first working day of each month, the Treasurer posts the monthly financial statement on Discord, showing the balance, income, spending, what is left in each budget, and Ration Club's spending and donations via a Google document.
+The Treasurer and Deputy Treasurer are constitutional offices, filled under Constitution §3.2 by anonymous ranked-choice ballot for a two-month term. The signatories and Infrastructure Lead are appointed by a majority of all members. On the first working day of each month, the Treasurer posts the monthly financial statement on Discord, showing the balance, income, spending, what is left in each budget, and Ration Club's spending and donations via a Google document.
 
 ## 5. Review
 
