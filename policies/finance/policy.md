@@ -97,3 +97,5 @@ The Treasurer, Deputy Treasurer, signatories and Infrastructure Lead are appoint
 ## 5. Review
 
 This policy should be reviewed whenever the Constitution is re-ratified or replaced.
+
+**Observed by:** expenses, approval comments and deposits are visible to members on Open Collective; the Treasurer's monthly statement is posted on Discord.
