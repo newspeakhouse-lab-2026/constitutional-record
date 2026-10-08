@@ -1,4 +1,4 @@
-# Proposal: Laboratory Financial Policy
+# Laboratory Financial Policy
 
 The Laboratory adopts this financial policy as a rule under §2.16 (Treasury) of the Interim Constitution. The Constitution takes priority over this policy.
 
