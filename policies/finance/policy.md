@@ -1,6 +1,17 @@
 # Laboratory Financial Policy
 
-The Laboratory adopts this financial policy as a rule under §2.16 (Treasury) of the Interim Constitution. The Constitution takes priority over this policy.
+**Layer:** 3
+**Status:** live
+
+The Laboratory adopts this policy under the Laboratory's Constitution. The Constitution takes priority over this policy.
+
+## Source of authority
+
+Constitution §1 (Layers): "Budgets, custody arrangements, reimbursement procedures and routine expense handling may be governed by Policy or Ordinary Rules where consistent with those constitutional controls."
+
+Constitution §3 (Other roles): "The Laboratory shall adopt Ordinary Rules governing custody of funds, withdrawals and payments, delegation of money for authorised spending, spending limits, receipts, return of unused money, reimbursement and reconciliation of accounts."
+
+This policy was drafted by the Interim Treasurer.
 
 ## 1. Fiscal host and financial management
 
