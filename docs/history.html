@@ -166,8 +166,8 @@ function render(d){
      GitHub for the rest, which is the one thing GitHub cannot show — the vote
      each one carried. */
   if(events.length > shown)
-    o.push(`<div class="acts"><button type="button" class="act" id="more">Show
-      ${Math.min(PAGE, events.length - shown)} more</button></div>`);
+    o.push(`<div class="acts"><button type="button" class="act" id="more">`
+      + `Show ${Math.min(PAGE, events.length - shown)} more</button></div>`);
   else if(events.length > PAGE)
     o.push(`<p class="note">All ${events.length} shown.</p>`);
 

@@ -443,11 +443,11 @@
 
   /* ---- the action ----------------------------------------------------- */
   .acts{display:flex;flex-wrap:wrap;align-items:center;gap:.9rem;margin-top:.5rem}
-  a.act{display:inline-flex;align-items:center;justify-content:center;min-height:2.5rem;
+  a.act,button.act{display:inline-flex;font-family:inherit;cursor:pointer;align-items:center;justify-content:center;min-height:2.5rem;
     padding:0 1.3rem;border:1px solid var(--accent);border-radius:999px;background:transparent;
     color:var(--accent);text-decoration:none;font:600 var(--t1)/1 var(--ui);letter-spacing:.01em}
-  a.act:hover{background:var(--accent);color:var(--bg)}
-  a.act:focus-visible{background:var(--accent);color:var(--bg);
+  a.act:hover,button.act:hover{background:var(--accent);color:var(--bg)}
+  a.act:focus-visible,button.act:focus-visible{background:var(--accent);color:var(--bg);
     outline:2px solid var(--accent);outline-offset:3px}
   a.actalt{display:inline-flex;align-items:center;min-height:2.5rem;padding:0 .15rem;
     color:var(--faint);text-decoration:underline;text-underline-offset:3px;font-size:var(--t0)}
@@ -601,7 +601,7 @@
        easiest thing on it to hit. */
     .acts{display:block}
     .acts>*{margin-top:.45rem}
-    a.act{display:flex;width:100%;min-height:2.75rem;font-size:var(--t2)}
+    a.act,button.act{display:flex;width:100%;min-height:2.75rem;font-size:var(--t2)}
     a.actalt{display:flex;width:100%;min-height:2.75rem;justify-content:center}
   }
   @media (prefers-reduced-motion:no-preference){
