@@ -103,11 +103,11 @@ async function collect(){
   const at={}; for(const e of tree.tree||[]) if(e.type==="blob") at[e.path]=e.sha;
   const instruments=Object.keys(at).filter(p=>/^(rules|policies|disputes)\/.*\.md$/.test(p)&&!/\/rationale\.md$/.test(p)).sort();
 
-  const cText = at["constitution.md"] ? await blob(at["constitution.md"]) : null;
+  const cText = at["constitution.md"] ? await file("constitution.md","main",at["constitution.md"]) : null;
   /* One GitHub request of the sixty an hour everyone here shares, for a section
      SHOW_IN_FORCE currently switches off. Skipped rather than fetched and
      discarded; it comes back with the section. */
-  const roles = (SHOW_IN_FORCE && at["roles.md"]) ? await blob(at["roles.md"]) : null;
+  const roles = (SHOW_IN_FORCE && at["roles.md"]) ? await file("roles.md","main",at["roles.md"]) : null;
 
   // How the Constitution came to say what it says. Keyed on constitution.md's own
   // blob SHA, so the whole history is fetched once and never again until the
@@ -142,7 +142,7 @@ async function collect(){
   // Blobs are cached by SHA, so this costs nothing after the first load.
   const ends=[];
   for(const path of instruments){
-    let txt; try{ txt=await blob(at[path]); }catch{ continue }
+    let txt; try{ txt=await file(path,"main",at[path]); }catch{ continue }
     // Written for a person first, with the machine-readable instant in backticks:
     //   **Ends:** 23:59 UK time, Monday 30 November 2026 (`2026-11-30T23:59:00+00:00`) — reason
     // The older bare-timestamp form still parses.
@@ -216,8 +216,9 @@ async function collect(){
     if(t===null){
       let keep=true;
       try{
-        const r=await api(`/contents/votes/pr-${p.number}.md?ref=${encodeURIComponent(p.head.ref)}`);
-        t=b64(r.content);
+        // On the proposal's branch, which moves as people vote, so there is no
+        // blob sha to key on — the cache key above already carries updated_at.
+        t=await file(`votes/pr-${p.number}.md`,p.head.ref,null);
       }catch(e){
         /* ONLY a 404 is evidence that no vote has been opened, and only that may
            be remembered. The empty string used to be cached for any failure at
@@ -245,7 +246,7 @@ async function collect(){
   if(at["members.md"] && prs.some(p=>wantsVote(p)&&!votes[p.number])){
     try{
       rollSha=at["members.md"];
-      const sec=((await blob(rollSha))||"").split(/^##\s+/m).find(s=>/^Current members/i.test(s))||"";
+      const sec=((await file("members.md","main",rollSha))||"").split(/^##\s+/m).find(s=>/^Current members/i.test(s))||"";
       roll=sec.split("\n").filter(l=>/^\|/.test(l)&&!/^\|\s*:?-/.test(l)).slice(1)
              .map(l=>l.replace(/^\||\|$/g,"").split("|")[0].trim()).filter(Boolean);
     }catch{}
@@ -259,7 +260,7 @@ async function collect(){
   await Promise.all((merged||[]).slice(0,10).map(async p=>{
     const sha=at[`votes/pr-${p.number}.md`];
     if(!sha) return;
-    try{ const v=voteOf(await blob(sha)); if(v) mergedVotes[p.number]=v; }catch{}
+    try{ const v=voteOf(await file(`votes/pr-${p.number}.md`,"main",sha)); if(v) mergedVotes[p.number]=v; }catch{}
   }));
 
   return {
@@ -967,7 +968,7 @@ document.addEventListener("click",async e=>{
   // anything never pays for the templates.
   await Promise.all(KINDS.map(async (k,i)=>{
     const sha=SHAS[k.file]; if(!sha) return;
-    try{ TPL[i]=await blob(sha); refresh(i); }catch{}
+    try{ TPL[i]=await file(k.file,"main",sha); refresh(i); }catch{}
   }));
 });
 

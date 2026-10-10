@@ -104,6 +104,42 @@ async function apiOrLast(p){
 
 /* A blob SHA is content-addressed, so a blob never changes. Cache it for good:
    after the first load nothing here is fetched again until something merges. */
+/* FILE CONTENT DOES NOT COME FROM THE API.
+   raw.githubusercontent.com sends `access-control-allow-origin: *` and carries
+   no rate-limit headers at all — verified by request — so reading a file there
+   costs nothing against the sixty an hour the API allows and everyone on this
+   connection shares. The API is kept for QUERIES, which raw cannot answer:
+   which proposals are open, which branches exist, what changed.
+
+   The cache key is still the blob sha from the tree where there is one, so a
+   file is read once and never again until its content changes. Where there is
+   not one — a vote file on a proposal's branch, which moves as people vote —
+   the caller supplies its own key and raw is asked each time, which is free.
+
+   The old /git/blobs route stays as the fallback: raw serves a public
+   repository, and if this one is ever made private it stops working while the
+   API, which the reader may be authenticated to, does not. */
+const RAW="https://raw.githubusercontent.com/"+REPO;
+
+async function file(path,ref,sha){
+  const k=sha?"blob:"+sha:null;
+  if(k){ try{ const hit=localStorage.getItem(k); if(hit!==null) return hit; }catch{} }
+  const url=`${RAW}/${encodeURIComponent(ref)}/${path.split("/").map(encodeURIComponent).join("/")}`;
+  let r;
+  try{ r=await fetch(url,{cache:"no-store"}); }
+  catch(e){ throw new Unreadable(`the network request for ${path} failed`); }
+  if(r.status===404) throw new Unreadable(`${path} is not on ${ref}`,null,404);
+  if(!r.ok){
+    // raw is unavailable, not the Record. Fall back to the metered route rather
+    // than report a file as absent on the strength of a CDN hiccup.
+    if(sha) return blob(sha);
+    throw new Unreadable(`could not read ${path} (${r.status})`,null,r.status);
+  }
+  const txt=await r.text();
+  if(k){ try{ localStorage.setItem(k,txt); }catch{} }
+  return txt;
+}
+
 async function blob(sha){
   const k="blob:"+sha;
   try{ const hit=localStorage.getItem(k); if(hit!==null) return hit; }catch{}
