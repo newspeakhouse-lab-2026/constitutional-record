@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%237a5a2a'/%3E%3Crect x='4' y='4' width='8' height='1.4' fill='%23fbfaf8'/%3E%3Crect x='4' y='7.3' width='8' height='1.4' fill='%23fbfaf8'/%3E%3Crect x='4' y='10.6' width='5' height='1.4' fill='%23fbfaf8'/%3E%3C/svg%3E">
+<title>How the Record got here — Newspeak House Governance Laboratory 2026</title>
+<link rel="stylesheet" href="record.css">
+</head>
+<body><div class="wrap">
+  <header>
+    <div><h1>How the Record got here</h1>
+      <p class="what">Every change that has entered <code>main</code>, and what each one decided.</p>
+      </div>
+    <nav>
+      <a href="index.html">State of the Record</a>
+      <span class="stamp" id="stamp" aria-live="polite">reading the Record…</span>
+    </nav>
+  </header>
+
+  <main id="out" aria-busy="true"></main>
+
+  <footer id="foot">
+    <p>Read live from <a id="repolink" href="#">the Constitutional Record</a> on each load. A merged
+    proposal shows the vote that carried it where one was recorded; the arithmetic itself is in the
+    vote file, which is one click away and is what a Record Keeper verifies against (&sect;3).</p>
+    <p>Whether the deliberation each change records actually happened is not visible here. Most of it
+    runs in the governance channel, which this page cannot read. It reports what entered the Record
+    and stops.</p>
+    <span class="budget" id="budget"></span>
+  </footer>
+</div>
+
+<script src="record.js"></script>
+<script>
+/* The history, on its own page.
+ *
+ * It used to sit below the fold of index.html and cost its requests on every
+ * visit, including the many that never scrolled to it. It answers a different
+ * question from that page — "how did we decide this" rather than "what needs
+ * attention now" — and GitHub's own merged-pull-request list cannot answer it,
+ * because the vote outcome lives in a file rather than in the pull request.
+ */
+async function collect(){
+  const [closedF, treeF] = await Promise.all([
+    apiOrLast("/pulls?state=closed&sort=updated&direction=desc&per_page=100"),
+    apiOrLast("/git/trees/main?recursive=1")]);
+  const closed = closedF.v, tree = treeF.v;
+  const served = [closedF.at, treeF.at].filter(Boolean);
+  const snapshot = served.length ? {at: Math.min(...served)} : null;
+
+  const at = {};
+  for(const e of (tree && tree.tree) || []) if(e.type === "blob") at[e.path] = e.sha;
+
+  const merged = (closed || []).filter(p => p.merged_at)
+    .sort((a,b) => new Date(b.merged_at) - new Date(a.merged_at));
+
+  /* Keyed on constitution.md's own blob SHA, so the whole amendment history is
+     read once and never again until the Constitution actually changes — at
+     which point the key changes with it. The per-commit lookup that finds which
+     pull request each amendment arrived through is the only cost here that
+     grows with the Record; it is paid once per amendment rather than per visit,
+     and it is what lets a constitutional change annotate the proposal that
+     carried it instead of appearing as a second entry for the same event. */
+  let amendments = [];
+  if(at["constitution.md"]){
+    const hk = "hist:" + at["constitution.md"];
+    let hit = null; try{ hit = localStorage.getItem(hk) }catch{}
+    if(hit !== null){ try{ amendments = JSON.parse(hit) }catch{} }
+    else try{
+      const cs = (await api("/commits?path=constitution.md&per_page=20"))
+        .filter(c => (c.parents || []).length < 2).slice(0, 20);
+      amendments = await Promise.all(cs.map(async c => {
+        let prs = [];
+        try{ prs = (await api(`/commits/${c.sha}/pulls`)).map(x => x.number) }catch{}
+        return {sha: c.sha.slice(0,7), url: c.html_url, at: c.commit.committer.date,
+                msg: (c.commit.message || "").split("\n")[0],
+                who: (c.author && c.author.login) || c.commit.author.name, prs};
+      }));
+      try{ localStorage.setItem(hk, JSON.stringify(amendments)) }catch{}
+    }catch{}
+  }
+
+  /* The vote a merged proposal carried, read from raw rather than the API so it
+     costs nothing against the budget. Bounded: the ten newest, because a vote
+     file older than that is history of history. */
+  const mergedVotes = {};
+  await Promise.all(merged.slice(0,10).map(async p => {
+    const path = `votes/pr-${p.number}.md`;
+    if(!at[path]) return;
+    try{ const v = voteOf(await file(path, "main", at[path])); if(v) mergedVotes[p.number] = v; }catch{}
+  }));
+
+  return {merged, amendments, mergedVotes, shas: at, snapshot};
+}
+
+/* How many entries are shown before "show more". Each is free to render — the
+   data is already in hand — but a list of forty is not a thing anyone reads. */
+const PAGE = 10;
+let shown = PAGE, DATA = null;
+
+function render(d){
+  DATA = d;
+  const o = [];
+
+  if(d.snapshot)
+    o.push(`<div class="snap">${warnIcon("Showing the Record as of " + fmt(new Date(d.snapshot.at)),
+      `<p>GitHub could not be reached just now, so this is the last copy this browser saw —
+        <strong>${fmt(new Date(d.snapshot.at))}</strong>.</p>
+       <p>Anything merged since is not listed below.</p>`)}
+      <strong>Showing the Record as of ${fmt(new Date(d.snapshot.at))}.</strong></div>`);
+
+  // One history. A change to the Constitution that arrived through a pull request
+  // is an annotation on that pull request, not a second entry for the same event.
+  const am = d.amendments || [], byPR = {};
+  for(const a of am) for(const n of (a.prs || [])) (byPR[n] = byPR[n] || []).push(a);
+  const founding = am.length ? am[am.length - 1] : null;
+  const events = [
+    ...(d.merged || []).map(m => ({at: new Date(m.merged_at), m, amends: byPR[m.number] || []})),
+    ...am.filter(a => !a.prs || !a.prs.length).map(a => ({at: new Date(a.at), a}))
+  ].sort((x,y) => y.at - x.at);
+
+  o.push(`<h2>Changes to the Record <em>${events.length}</em></h2>`);
+  o.push(`<p class="note">Newest first; changes to the Constitution are marked. Whether the
+    deliberation each one records actually happened is for a Record Keeper to verify — most of it
+    runs in the governance channel, which this page cannot see.</p>`);
+
+  o.push(events.length ? events.slice(0, shown).map(e => {
+    if(e.m){
+      const parts = [`@${esc(e.m.user ? e.m.user.login : "unknown")}`];
+      if(e.amends.length) parts.push(`<span class="warnish">amended the Constitution</span> `
+        + e.amends.map(a => `<a href="${a.url}">${a.sha}</a>`).join(", "));
+      /* Whether a vote was recorded alongside what merged. The tree of main is
+         already in hand, so knowing the file exists is a lookup rather than a
+         request — and the file itself is one click away, which is where the
+         arithmetic should be read rather than restated here. */
+      const vpath = `votes/pr-${e.m.number}.md`;
+      const mv = (d.mergedVotes || {})[e.m.number];
+      let voteLine = "";
+      if((d.shas || {})[vpath]){
+        const bits = [];
+        if(mv && mv.result){
+          bits.push(`<strong>vote ${mv.result.carried ? "carried" : "did not carry"}</strong>`
+            + (mv.result.affirmative != null
+              ? ` — ${mv.result.affirmative} of ${mv.result.of} affirmative, needed ${mv.result.needed}`
+              : ``));
+          /* A proposal that failed once and passed after amendment is a different
+             thing from one that passed first time, and §1's amendment record asks
+             how a decision was made. The detail is in the file. */
+          if(mv.rounds > 1) bits.push(`after ${mv.rounds} rounds`);
+        } else bits.push(`<strong>vote recorded</strong>, with no result written into it`);
+        bits.push(`<a href="https://github.com/${REPO}/blob/main/${vpath}">the vote</a>`);
+        voteLine = bits.join(" · ");
+      }
+      return row("", `<span class="num">#${e.m.number}</span><a href="${e.m.html_url}">${esc(e.m.title)}</a>`,
+        parts.join(" &middot; "), "", fmt(e.at), "idle", voteLine);
+    }
+    const a = e.a;
+    return row("", esc(a.msg),
+      `@${esc(a.who)} &middot; <a href="${a.url}">${a.sha}</a> &middot; `
+      + (a === founding ? `the commit that founded the Record` : `<span class="warnish">no pull request</span>`),
+      "", fmt(e.at), "idle");
+  }).join("") : `<p class="note">Nothing has entered the Record yet.</p>`);
+
+  /* Show more, rather than a silent cap. The page used to list ten and point at
+     GitHub for the rest, which is the one thing GitHub cannot show — the vote
+     each one carried. */
+  if(events.length > shown)
+    o.push(`<div class="acts"><button type="button" class="act" id="more">Show
+      ${Math.min(PAGE, events.length - shown)} more</button></div>`);
+  else if(events.length > PAGE)
+    o.push(`<p class="note">All ${events.length} shown.</p>`);
+
+  $("#out").innerHTML = o.join("") + MODALS.join("");
+  $("#out").setAttribute("aria-busy", "false");
+  $("#repolink").href = `https://github.com/${REPO}`;
+  $("#stamp").textContent = "up to date as of "
+    + new Date().toLocaleTimeString("en-GB", {hour: "2-digit", minute: "2-digit"});
+  $("#stamp").title = "This page read the Record from GitHub when you opened it. Reload to read it again.";
+  if(budget !== null)
+    $("#budget").textContent = `${budget} of 60 GitHub requests left this hour, shared by everyone on `
+      + `this connection. This page costs about 2; file contents are read from a route that is not metered.`;
+}
+
+if(!window.__sheets){
+  window.__sheets = true;
+  document.addEventListener("click", e => {
+    const b = e.target.closest("[data-sheet]");
+    if(b){
+      const d = document.getElementById(b.getAttribute("data-sheet"));
+      if(d && typeof d.showModal === "function"){ d.showModal(); const h = d.querySelector("h3[tabindex]"); if(h) h.focus(); }
+      return;
+    }
+    // Everything is already in hand, so this costs no request at all.
+    if(e.target.closest("#more")){ shown += PAGE; MODALS.length = 0; MODAL_N = 0; render(DATA); }
+  });
+}
+
+collect().then(render).catch(e => {
+  $("#out").innerHTML = `<div class="blind"><strong>This page cannot see the Record just now.</strong>
+    <p>${esc(e && e.message ? e.message : "the request failed")}${
+      e && e.reset ? ` It resets at ${fmt(e.reset)}.` : ""}</p>
+    <p>That is not a statement that nothing has happened — it is a statement that this page could not
+    find out. <a href="https://github.com/${REPO}/pulls?q=is%3Apr+is%3Amerged">The merged proposals are
+    on GitHub</a>, without the vote each one carried.</p></div>`;
+  $("#out").setAttribute("aria-busy", "false");
+  $("#stamp").textContent = "could not read the Record";
+});
+</script>
+</body>
+</html>

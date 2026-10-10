@@ -49,6 +49,13 @@
 
 <script src="record.js"></script>
 <script>
+/* How many unproposed branches are compared on load. Each costs one request,
+   and the comparison is cached on the branch's own sha afterwards, so this is
+   the only part of the page whose cost grows with the Record. "Show more"
+   fetches the next few; a reader who does not ask never pays for them. */
+const BRANCHES_AT_ONCE=5;
+let BRANCH_LIMIT=BRANCHES_AT_ONCE;
+
 async function collect(){
   const cfg=await fetch("data.json",{cache:"no-store"}).then(r=>r.json())
     .catch(()=>{throw new Unreadable("docs/data.json could not be read")});
@@ -70,15 +77,22 @@ async function collect(){
      to. A branch adopts nothing — it is shown as started, never proposed.
      Branches that had a pull request, merged or not, are already visible, and
      drop out for free because merging closes one. */
-  let branches=[];
+  let branches=[], branchesMore=0;
   try{
     const heads=new Set([...(prs||[]),...(closed||[])].map(x=>x.head&&x.head.ref).filter(Boolean));
     const all=await api("/branches?per_page=100");
     const mainSha=(all.find(b=>b.name==="main")||{}).commit?.sha;
-    const orphans=all.filter(b=>b.name!=="main"&&!heads.has(b.name)).slice(0,8);
-    branches=(await Promise.all(orphans.map(async b=>{
-      // Keyed by both ends, so it is read once and never again until one moves.
-      const k="cmp:"+mainSha+":"+b.commit.sha;
+    /* ALL of them. This used to take the first eight and say nothing about the
+       rest — a list claiming to show work nobody proposed, silently dropping
+       over half of it. The cost that justified the cap is gone: see the cache
+       key below, and only the first few are compared on load. */
+    const orphans=all.filter(b=>b.name!=="main"&&!heads.has(b.name));
+    branches=(await Promise.all(orphans.slice(0,BRANCH_LIMIT).map(async b=>{
+      /* Keyed on the BRANCH alone, not on main as well. Keyed on both, every
+         merge to main invalidated every comparison at once — which is exactly
+         when people come to look. What is displayed is which files the branch
+         carries, and that changes when the branch moves, not when main does. */
+      const k="cmp:"+b.commit.sha;
       let c=null;
       try{ c=JSON.parse(localStorage.getItem(k)||"null") }catch{}
       if(!c){
@@ -91,6 +105,9 @@ async function collect(){
       // Behind main, or changing nothing, is not unseen work.
       return c.files.length?{name:b.name, files:c.files, at:c.at}:null;
     }))).filter(Boolean);
+    // So the page can say how many it has not looked at yet, rather than imply
+    // the list is complete.
+    branchesMore=Math.max(0,orphans.length-BRANCH_LIMIT);
   }catch{}
 
   // Oldest of whatever had to fall back, so the banner names the staleness a
@@ -108,34 +125,6 @@ async function collect(){
      SHOW_IN_FORCE currently switches off. Skipped rather than fetched and
      discarded; it comes back with the section. */
   const roles = (SHOW_IN_FORCE && at["roles.md"]) ? await file("roles.md","main",at["roles.md"]) : null;
-
-  // How the Constitution came to say what it says. Keyed on constitution.md's own
-  // blob SHA, so the whole history is fetched once and never again until the
-  // Constitution actually changes — at which point the key changes with it.
-  let amendments=[];
-  if(at["constitution.md"]){
-    const hk="hist:"+at["constitution.md"];
-    let hit=null; try{ hit=localStorage.getItem(hk) }catch{}
-    if(hit!==null){ try{ amendments=JSON.parse(hit) }catch{} }
-    else try{
-      // Each commit costs one further call to find the pull request it came
-      // through, which is the only cost here that grows with the Record. It is
-      // cached against the Constitution's blob SHA, so it is paid once per
-      // amendment rather than per visit, and bounded well above any real
-      // history. Merge commits are dropped: a branch catching up with main is
-      // not an amendment, and it would otherwise cost a call and render as one.
-      const cs=(await api("/commits?path=constitution.md&per_page=20"))
-        .filter(c=>(c.parents||[]).length<2).slice(0,20);
-      amendments=await Promise.all(cs.map(async c=>{
-        let prs=[];
-        try{ prs=(await api(`/commits/${c.sha}/pulls`)).map(x=>x.number) }catch{}
-        return {sha:c.sha.slice(0,7), url:c.html_url, at:c.commit.committer.date,
-                msg:(c.commit.message||"").split("\n")[0],
-                who:(c.author&&c.author.login)||c.commit.author.name, prs};
-      }));
-      try{ localStorage.setItem(hk,JSON.stringify(amendments)) }catch{}
-    }catch{}
-  }
 
   // An instrument that expires declares it in one parseable line, so its expiry
   // is discovered where it was written rather than transcribed somewhere else.
@@ -252,20 +241,9 @@ async function collect(){
     }catch{}
   }
 
-  /* Votes on adopted work. The path is in main's tree already, so this is a blob
-     read keyed on content — once ever per vote, then free. Bounded by the number
-     of votes that have ever closed, which is small: Tier A and Tier B, the common
-     case, hold none. */
-  const mergedVotes={};
-  await Promise.all((merged||[]).slice(0,10).map(async p=>{
-    const sha=at[`votes/pr-${p.number}.md`];
-    if(!sha) return;
-    try{ const v=voteOf(await file(`votes/pr-${p.number}.md`,"main",sha)); if(v) mergedVotes[p.number]=v; }catch{}
-  }));
-
   return {
-    cfg, stale, snapshot, voteUnread, checked:!!cText, instruments, roles, ends, amendments, merged, branches, shas:at,
-    roll, rollSha, mergedVotes,
+    cfg, stale, snapshot, voteUnread, checked:!!cText, instruments, roles, ends, merged, branches, branchesMore, shas:at,
+    roll, rollSha,
     props: prs.map(pr=>({pr,win:wins.get(pr.number),
                          vote:votes[pr.number]||null,
                          notes:notes[pr.number]||0, resolves:linkFor[pr.number]||[]})),
@@ -791,6 +769,12 @@ function render(d){
       "","","idle",
       `drafted but never proposed — nothing here can be adopted until someone opens a <a href="https://github.com/${REPO}/blob/main/CONTRIBUTING.md#deciding-whether-you-need-an-issue">pull request</a>`));
   }
+  /* Said, rather than silently dropped. Each one costs a request to look at, so
+     the rest are fetched when somebody asks for them. */
+  if(d.branchesMore)
+    noclock.push(`<p class="note"><button type="button" class="notebtn" id="morebranches">Look at
+      ${d.branchesMore} more ${d.branchesMore===1?"branch":"branches"}</button> — not yet checked,
+      because each costs one of the hour's requests.</p>`);
 
   if(!live.length&&!noclock.length) o.push(`<p class="note">Nothing open and nothing pending.</p>`);
   o.push(live.map(x=>x.html).join(""));
@@ -841,61 +825,14 @@ function render(d){
   o.push(inforce.length?inforce.join(""):`<p class="note">Nothing adopted yet.</p>`);
   }
 
-  // One history. A change to the Constitution that arrived through a pull request
-  // is an annotation on that pull request, not a second entry for the same event.
-  const am=d.amendments||[], byPR={};
-  for(const a of am) for(const n of (a.prs||[])) (byPR[n]=byPR[n]||[]).push(a);
-  const founding=am.length?am[am.length-1]:null;
-  const events=[
-    ...(d.merged||[]).map(m=>({at:new Date(m.merged_at),m,amends:byPR[m.number]||[]})),
-    ...am.filter(a=>!a.prs||!a.prs.length).map(a=>({at:new Date(a.at),a}))
-  ].sort((x,y)=>y.at-x.at);
-
-  const SHOW=10;
+  /* The history moved to its own page. It answers a different question from
+     this one — how a decision was made, rather than what needs attention now —
+     and it cost its requests on every visit, including the many that never
+     scrolled to it. */
   o.push(`<h2>How the Record got here</h2>`);
-  o.push(`<p class="note">Every change that has entered <code>main</code>, newest first; changes to the
-    Constitution are marked. Whether the deliberation each one records actually happened is for a
-    Record Keeper to verify — most of it runs in the governance channel, which this page cannot see.</p>`);
-  o.push(events.length?events.slice(0,SHOW).map(e=>{
-    if(e.m){
-      const parts=[`@${esc(e.m.user?e.m.user.login:"unknown")}`];
-      if(e.amends.length) parts.push(`<span class="warnish">amended the Constitution</span> `
-        + e.amends.map(a=>`<a href="${a.url}">${a.sha}</a>`).join(", "));
-      /* Whether a vote was recorded alongside what merged. Free: the tree of
-         main is already in hand, so this is a lookup rather than a request —
-         and the file itself is one click away, which is where the arithmetic
-         should be read rather than restated here. */
-      const vpath=`votes/pr-${e.m.number}.md`;
-      const mv=(d.mergedVotes||{})[e.m.number];
-      let voteLine="";
-      if((d.shas||{})[vpath]){
-        const bits=[];
-        if(mv&&mv.result){
-          bits.push(`<strong>vote ${mv.result.carried?"carried":"did not carry"}</strong>`
-            +(mv.result.affirmative!=null
-              ? ` — ${mv.result.affirmative} of ${mv.result.of} affirmative, needed ${mv.result.needed}`
-              : ``));
-          /* A proposal that failed once and passed after amendment is a different
-             thing from one that passed first time, and §1's amendment record asks
-             how a decision was made. The detail is in the file. */
-          if(mv.rounds>1) bits.push(`after ${mv.rounds} rounds`);
-        } else bits.push(`<strong>vote recorded</strong>, with no result written into it`);
-        bits.push(`<a href="https://github.com/${REPO}/blob/main/${vpath}">the vote</a>`);
-        voteLine=bits.join(" · ");
-      }
-      const meta=parts.join(" &middot; ");
-      return row("",`<span class="num">#${e.m.number}</span><a href="${e.m.html_url}">${esc(e.m.title)}</a>`,
-        meta,"",fmt(e.at),"idle",voteLine);
-    }
-    const a=e.a;
-    return row("",esc(a.msg),
-      `@${esc(a.who)} &middot; <a href="${a.url}">${a.sha}</a> &middot; `
-      + (a===founding?`the commit that founded the Record`:`<span class="warnish">no pull request</span>`),
-      "",fmt(e.at),"idle");
-  }).join(""):`<p class="note">Nothing has entered the Record yet.</p>`);
-  if(events.length>SHOW)
-    o.push(`<p class="note">${events.length-SHOW} older ${events.length-SHOW===1?"change is":"changes are"}
-      not shown — <a href="https://github.com/${REPO}/pulls?q=is%3Apr+is%3Amerged">see them on GitHub</a>.</p>`);
+  o.push(`<p class="note">Every change that has entered <code>main</code>, and the vote each one
+    carried where there was one. <a href="history.html">Open the history</a> — it is a separate page
+    so that reading it is a choice rather than a cost on every visit.</p>`);
 
   SHAS=d.shas;
   /* The dialogs go in after the rows that trigger them, once, rather than being
@@ -906,6 +843,16 @@ function render(d){
   // Announced on its own now, so it says what it is rather than a bare time.
   /* Delegated, so it survives every redraw without being re-attached — and
      attached to the document rather than to #out, whose contents are replaced. */
+  /* Fetch the next few comparisons and redraw. The ones already read come from
+     the cache, so this costs only what has not been looked at. */
+  const mb=$("#morebranches");
+  if(mb) mb.addEventListener("click",()=>{
+    mb.textContent="Reading…"; mb.disabled=true;
+    BRANCH_LIMIT+=BRANCHES_AT_ONCE;
+    MODALS.length=0; MODAL_N=0;
+    collect().then(render).catch(()=>{ mb.textContent="Could not read them"; });
+  });
+
   if(!window.__sheets){
     window.__sheets=true;
     document.addEventListener("click",e=>{
@@ -929,7 +876,8 @@ function render(d){
   $("#stamp").title="This page read the Record from GitHub when you opened it. Reload to read it again.";
   $("#budget").textContent = budget===null ? ""
     : `${budget} of 60 GitHub requests left this hour, shared by everyone on this connection. `
-      + `A first visit costs 25 to 30; coming back costs none for ten minutes, then about five.`;
+      + `This page costs about 7, plus one for each unproposed branch it looks at. File contents `
+      + `are read from a route that is not metered, so they cost none of it.`;
 }
 
 /* Filing a proposal does not depend on being able to read the Record, so the
