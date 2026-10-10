@@ -6,19 +6,20 @@
  * the page reads that number and counts rows. This test therefore checks
  * counting and reading, not thresholds — those are tested in test-tally.py.
  *
- * voteOf is read out of docs/index.html rather than copied, so the two cannot
- * drift. A failure here means the page would misreport a live vote.
+ * voteOf is read out of docs/record.js rather than copied, so the page and the
+ * counter cannot drift. A failure here means the page would misreport a live
+ * vote.
  */
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const html = readFileSync(join(HERE, '..', '..', 'docs', 'index.html'), 'utf8');
+const html = readFileSync(join(HERE, '..', '..', 'docs', 'record.js'), 'utf8');
 
 const m = html.match(/\/\* ---8<---[\s\S]*?--->8--- end[^\n]*\n/);
 if (!m) {
-  console.error('could not find the ---8<--- region in docs/index.html. If it was renamed, rename it here too.');
+  console.error('could not find the ---8<--- region in docs/record.js. If it moved, point this at its new home.');
   process.exit(1);
 }
 const { POS, requiredFor, voteOf } = new Function(m[0] + '\nreturn {POS, requiredFor, voteOf};')();

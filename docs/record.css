@@ -1,0 +1,609 @@
+  /* ======================================================================
+     THE RECORD — a visual language, stated.
+
+     Three rules hold the whole thing together.
+
+     1. COLOUR IS EVIDENCE, NOT JUDGEMENT.
+        --accent  something a member did, and the Record now holds.
+        --soon    a clock running out. Only ever on time.
+        --urgent  the Record contradicts itself. Only ever on a defect
+                  INSIDE the Record — never on this page failing to read it.
+        --muted / --faint  information, and reference.
+        There is deliberately NO colour meaning "passed" and none meaning
+        "failed". §3 gives the outcome to a Record Keeper, so a palette that
+        could say it would be a palette that lies.
+
+     2. TYPE SAYS WHAT KIND OF FACT THIS IS.
+        serif  — what the Laboratory decided, and the figure it is weighing.
+        mono   — instants and identifiers a machine enforces: times, paths,
+                 branches, SHAs.
+        sans   — everything the page itself says about those two.
+
+     3. A VOTE IS DRAWN AS FOURTEEN SLOTS, ONE PER MEMBER.
+        See "the lanes" below. This is the one idea on the page.
+     ====================================================================== */
+  :root {
+    /* ground */
+    --bg:#faf8f4;          /* warm paper, not white */
+    --sunk:#f3efe7;        /* a slip pasted onto the page: the vote block */
+    /* ink */
+    --ink:#1b1a17; --muted:#56534c; --faint:#6b675e;
+    /* hairlines. Deliberately under 3:1 — they group, they never inform. */
+    --line:#e2ddd3; --rule:#c6c0b3;
+    /* a mark that carries meaning must clear 3:1, so it is its own token */
+    --mark:#8f887c;
+    /* signal */
+    --accent:#7a5a2a; --urgent:#a3301f; --soon:#8a5c08;
+    /* type */
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+    --ui: system-ui, -apple-system, "Segoe UI", sans-serif;
+    --serif: ui-serif, Georgia, "Iowan Old Style", "Times New Roman", serif;
+    /* scale, five steps, ~1.22. Nothing on this page is smaller than --t0
+       (12px): it is read on a phone, at night, by someone who is tired. */
+    --t0:.75rem; --t1:.875rem; --t2:1rem; --t3:1.25rem; --t4:1.75rem;
+    /* measure */
+    --prose:42rem;
+  }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+    --bg:#15140f; --sunk:#1d1b15;
+    --ink:#ece9e1; --muted:#a39d91; --faint:#8b8578;
+    --line:#2b2924; --rule:#403d35; --mark:#6e6960;
+    --accent:#c9a876; --urgent:#e8806f; --soon:#d4a344;
+  }}
+  *{box-sizing:border-box}
+
+  /* The ground. A laid-paper weave at about 1.5% contrast — it is not a
+     pattern anyone will notice, it is the difference between a surface and a
+     screen. Pure CSS gradients, so no request and nothing to block. */
+  body{
+    margin:0; color:var(--ink);
+    background-color:var(--bg);
+    background-image:
+      repeating-linear-gradient(90deg, rgba(122,90,42,.018) 0 1px, transparent 1px 3px),
+      repeating-linear-gradient(0deg,  rgba(122,90,42,.013) 0 1px, transparent 1px 4px);
+    font:400 var(--t2)/1.55 var(--ui);
+    -webkit-font-smoothing:antialiased;
+  }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) body{
+    background-image:
+      repeating-linear-gradient(90deg, rgba(201,168,118,.022) 0 1px, transparent 1px 3px),
+      repeating-linear-gradient(0deg,  rgba(201,168,118,.015) 0 1px, transparent 1px 4px);
+  }}
+  /* Light falls from somewhere. A page that feels like a surface in a room
+     has a direction to it; a page lit evenly is a screen. 2%, once, at the
+     top, and it is the difference between the two. */
+  body::before{content:"";position:fixed;inset:0 0 auto;height:32rem;pointer-events:none;
+    background:radial-gradient(90% 100% at 50% -20%, rgba(122,90,42,.055), transparent 70%)}
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) body::before{
+    background:radial-gradient(90% 100% at 50% -20%, rgba(201,168,118,.055), transparent 70%)}}
+  /* 60rem, not 56. The measure that matters is --prose, which caps the
+     paragraphs; the column only has to be wide enough that a row's attribute
+     line fits on one line. At 56rem it did not, and a second line on half the
+     rows on the page is a page half as long again for nothing. */
+  .wrap{position:relative;max-width:62rem;margin:0 auto;padding:1.4rem 1.1rem 1.8rem}
+
+  /* ---- masthead ------------------------------------------------------- */
+  h1{font:400 var(--t4)/1.15 var(--serif);margin:0;letter-spacing:-.012em}
+  .what{margin:.4rem 0 0;font-size:var(--t1);color:var(--muted);max-width:30rem;line-height:1.5}
+  /* CUT. The first prototype put the year's organising fact under the
+     masthead — "This Constitution expires in 54 days…". Two lines of italic
+     serif saying exactly what the row ten rows down already says, above the
+     fold, on a page whose complaint was too much to read before anything
+     useful. The row keeps it. */
+  header{display:flex;justify-content:space-between;align-items:flex-end;gap:1.5rem;flex-wrap:wrap;
+    padding-bottom:.9rem;border-bottom:1px solid var(--rule);margin-bottom:0}
+  header nav{display:flex;align-items:center;gap:1rem;font-size:var(--t0);flex-wrap:wrap}
+  header nav a{color:var(--muted);text-decoration:none}
+  header nav a:hover{color:var(--accent);text-decoration:underline}
+  header nav a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
+  .stamp{font:400 var(--t0)/1 var(--mono);color:var(--faint)}
+  a.btn{border:1px solid var(--rule);border-radius:999px;padding:.45rem .9rem;color:var(--ink);
+    background:transparent;white-space:nowrap;text-decoration:none;font-size:var(--t0)}
+  a.btn:hover{border-color:var(--accent);color:var(--accent)}
+  a.btn:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+
+  /* ---- section heads. A register's divisions: a word, then a rule to the
+     margin. Serif, because these name what the Laboratory is doing. ------ */
+  /* A rule drawn rather than specified: the pen presses down for the first
+     inch and a half of the stroke, then lifts to a hairline. */
+  h2{position:relative;font:400 var(--t3)/1.2 var(--serif);color:var(--ink);letter-spacing:-.008em;
+    margin:1.8rem 0 0;padding:0 0 .25rem;border-bottom:1px solid var(--rule);
+    display:flex;align-items:baseline;gap:.6rem}
+  h2::after{content:"";position:absolute;left:0;bottom:-1px;width:2.2rem;height:2px;
+    background:var(--accent);opacity:.75}
+  h2:first-of-type{margin-top:1.2rem}
+  h2 em{font:400 var(--t0)/1 var(--ui);font-style:normal;color:var(--faint);
+    letter-spacing:.09em;text-transform:uppercase}
+  /* Calm technology talks rather than labels. "NO COUNTDOWN" is a column
+     header; a sentence is a page telling you where you are. */
+  .div{display:flex;align-items:center;gap:.9rem;margin:1.25rem 0 .2rem;
+    font:400 var(--t1)/1.4 var(--serif);font-style:italic;color:var(--faint)}
+  .div::after{content:"";flex:1;height:1px;background:var(--line)}
+  .note{color:var(--muted);font-size:var(--t1);line-height:1.55;margin:.45rem 0 .6rem;max-width:46rem}
+  .note a{color:var(--accent)}
+
+  /* ---- the row. A ledger entry: its number hangs in the left margin, the
+     time sits in the right, and everything the page has to say about it runs
+     between them at a readable measure. ---------------------------------- */
+  .r{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;
+     column-gap:1.5rem;align-items:baseline;
+     padding:.4rem .25rem .45rem 3.1rem;border-bottom:1px solid var(--line)}
+  .r:last-child{border-bottom:0}
+  /* CUT. The first prototype warmed the ground of a row as its clock ran
+     down. It read as a box drawn round the row — the single loudest reason the
+     page looked "weirdly boxed in" — and it encoded nothing the countdown
+     beside it does not already say. The row grammar is a hairline and nothing
+     else, which is what the live page does and what carries this much without
+     feeling crowded. */
+  .num{position:absolute;left:0;top:.6rem;width:2.7rem;text-align:right;
+    font:400 var(--t0)/1.4 var(--mono);color:var(--faint)}
+  /* Serif, and bigger than everything around it: the Record is a document,
+     and its contents should read as prose rather than as issue-tracker rows.
+     Stepped down from --t3 (20px) to 18.4px — the reversal against the live
+     page's 14px sans is intact, and 1.6px a row over twenty rows is most of a
+     phone screen. */
+  .lbl{min-width:0;font:400 1.1rem/1.3 var(--serif);letter-spacing:-.006em}
+  .lbl a{color:inherit;text-decoration:none;text-decoration-color:var(--rule)}
+  .lbl a:hover{text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
+  .lbl a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
+  .meta{grid-column:1;font-size:var(--t0);color:var(--faint);margin-top:.2rem;
+    line-height:1.5;overflow-wrap:anywhere}
+  /* A BUG INHERITED FROM THE LIVE PAGE, worth taking back into index.html on
+     its own. There is no rule for a link inside .meta, so the commit SHAs under
+     "How the Record got here" and the "endorsing reviews" link render in the
+     browser's default blue — #0000EE, which is about 1.3:1 on the dark ground
+     and fails every contrast requirement there is. --accent is 5.96:1 light
+     and 8.21:1 dark. */
+  .meta a{color:var(--accent);text-decoration:underline;text-underline-offset:2px}
+  .meta a:hover{color:var(--ink)}
+  .meta a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+  .why{grid-column:1;font-size:var(--t1);color:var(--muted);margin-top:.35rem;max-width:var(--prose)}
+  .why p{margin:.3rem 0 0}
+  .why a{color:inherit;text-decoration:underline;text-underline-offset:2px}
+  .why a:hover{color:var(--ink)}
+  .why a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+  /* The rail spans the whole row so the action can sit under the deadline it
+     belongs to. A minimum width rather than auto: the countdown, the instant and
+     the button must line up down the page, and an auto column reflows with every
+     row's longest string. 11.5rem leaves the main column on --prose at the
+     page's 62rem measure, which is the width the prose was set for. */
+  .rt{grid-column:2;grid-row:1;text-align:right;white-space:nowrap;
+    min-width:11.5rem;align-self:start}
+  /* A sibling of .rt rather than a child, so the two stack in the rail on a wide
+     screen and can be re-ordered independently on a narrow one, where the action
+     belongs at the END of the row and the countdown near the top. */
+  .rail{grid-column:2;grid-row:2/span 2;align-self:start;text-align:right;
+    margin-top:.75rem}
+  /* Full width of the rail, so a column of buttons reads as a column rather
+     than as a ragged edge. */
+  .rail .acts{display:flex;flex-direction:column;align-items:stretch;gap:.4rem;margin:0}
+  .rail .act{justify-content:center;text-align:center}
+  .rail .actalt{justify-content:center;text-align:center;font-size:var(--t0)}
+  /* The clock is deliberately NOT the biggest thing on a row. Knowing a vote
+     closes in 19 hours affords nothing; the gap to the threshold does. */
+  .rem{display:block;font:400 var(--t1)/1.3 var(--mono);font-variant-numeric:tabular-nums;color:var(--muted)}
+  /* The absolute date is never hidden, at any width. A countdown with nothing
+     to check it against has been wrong here before. */
+  /* A warning is a control, not decoration: it has a hit area, a focus ring and
+     a label a screen reader can read. The triangle is drawn in CSS rather than
+     set as an emoji, because the emoji renders in full colour on some platforms
+     and as a dingbat on others, and neither matches the page. */
+  /* In the gutter, not in the line. Inline they pushed the title right, so a
+     warned row's title no longer lined up with its neighbours' — and the thing
+     a reader scans down a list of proposals is the left edge of the titles. */
+  .warns{position:absolute;left:0;top:1.9rem;width:2.7rem;
+    display:flex;justify-content:flex-end;gap:.1rem}
+  /* The TARGET is 24x24 (WCAG 2.2 SC 2.5.8); the triangle drawn inside it stays
+     the size it was. It was 18x17 — the smallest control on the page, on the
+     warning that decides whether a position will be accepted at all. */
+  .warnbtn{display:inline-flex;align-items:center;justify-content:center;
+    width:1.5rem;height:1.5rem;margin:-.22rem;vertical-align:-.35em;
+    border:0;background:none;cursor:pointer;padding:0;position:relative;
+    font:700 .62rem/1 var(--ui);color:var(--bg)}
+  .warnbtn::before{content:"";position:absolute;left:50%;top:50%;
+    width:1.15rem;height:1.05rem;transform:translate(-50%,-50%);
+    background:var(--urgent);clip-path:polygon(50% 0,100% 100%,0 100%)}
+  .warnbtn span,.warnbtn{z-index:0}
+  .warnbtn::after{content:"!";position:relative;top:.14em}
+  .warnbtn:hover::before{filter:brightness(1.15)}
+  .warnbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+
+  /* A note is a question answered, not a warning raised, so it reads as a link
+     in the sentence it belongs to rather than shouting beside it. */
+  /* They were two buttons with no whitespace between them, so they read as one
+     run-on string: "What the marks meanSee who has voted". */
+  .vlinks{display:flex;flex-wrap:wrap;gap:.35rem 1.25rem;margin-top:.5rem}
+  .notebtn{border:0;background:none;padding:.3rem 0;min-height:1.5rem;cursor:pointer;text-align:left;
+    font:400 var(--t0)/1.5 var(--ui);color:var(--accent);
+    text-decoration:underline;text-underline-offset:2px;
+    text-decoration-color:color-mix(in srgb,var(--accent) 45%,transparent)}
+  .notebtn:hover{text-decoration-color:var(--accent)}
+  .notebtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+
+  /* Native <dialog>: Escape, focus trapping and the backdrop are the browser's
+     and are correct. Width is capped in ch so the prose stays readable, and the
+     whole sheet scrolls rather than the page behind it. */
+  .sheet{border:1px solid var(--rule);border-radius:3px;background:var(--bg);
+    color:var(--ink);padding:0;max-width:58ch;width:calc(100vw - 2.5rem);
+    box-shadow:0 8px 40px rgba(0,0,0,.28)}
+  .sheet::backdrop{background:rgba(0,0,0,.42)}
+  /* dialog form{text-align:right} exists for the proposal dialog's button row
+     and was reaching these, so every sentence in every explanation was
+     right-aligned. Reset here rather than narrowing that rule, which the other
+     dialog still wants. */
+  .sheet form{padding:1.15rem 1.3rem 1rem;max-height:80vh;overflow-y:auto;
+    text-align:left;position:static;background:none;margin-top:0}
+  .sheet h3{font:600 var(--t2)/1.3 var(--ui);margin:0 0 .6rem}
+  .sheet h3:focus{outline:none}
+  .sheet h3:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
+  .sheetbody{font:400 var(--t1)/1.6 var(--ui);color:var(--muted)}
+  .sheetbody p{margin:0 0 .65rem}
+  .sheetbody p:last-child{margin-bottom:0}
+  .sheetbody strong{color:var(--ink);font-weight:600}
+  .sheetbody em{font-style:italic}
+  .sheetbody code{font:400 .88em/1 var(--mono)}
+  /* Each position is a group, and they ran together: the label sat on the line
+     above its names with nothing separating one group from the next. */
+  .sheetbody .names{font:400 var(--t0)/1.65 var(--ui);margin:0 0 .85rem}
+  .sheetbody .names strong{display:block;margin-bottom:.1rem;
+    font:600 var(--t0)/1.5 var(--ui);color:var(--ink)}
+  .sheetbody .when{color:var(--faint);font:400 .9em/1 var(--mono)}
+  .sheetx{margin-top:1rem;border:1px solid var(--rule);border-radius:2px;
+    background:none;color:var(--muted);cursor:pointer;
+    font:500 var(--t0)/1 var(--ui);padding:.5rem .85rem}
+  .sheetx:hover{color:var(--ink);border-color:var(--muted)}
+
+  /* One column, in reading order: what it is, where it stands, the drawing of
+     where it stands, and the two ways to ask about it. The action is not here —
+     it is in the rail, under the deadline. */
+  .abs{display:block;font:400 var(--t0)/1.5 var(--mono);color:var(--faint);font-variant-numeric:tabular-nums}
+  .urgent .rem{color:var(--urgent)}
+  .soon .rem{color:var(--soon)}
+  .idle .rem{color:var(--faint)}
+
+  /* ---- tags. One boxed tag per row, and it is always the one that means
+     "something is being asked of you". Everything else is unboxed micro-caps,
+     because a box around a word is tracker furniture, not information. --- */
+  .tag{font:400 var(--t0)/1.5 var(--ui);letter-spacing:.06em;text-transform:uppercase;
+    color:var(--faint);margin-right:.5rem;white-space:nowrap}
+  .tag.ty{color:var(--muted)}
+  .tag.st{color:var(--muted)}
+  .tag.open{color:var(--accent);border:1px solid var(--accent);border-radius:2px;
+    padding:.1rem .4rem;margin-right:.6rem;letter-spacing:.08em}
+  /* An objection is NOT damage, and this is where I part company with the live
+     page, which gives it --urgent. §2: "An objection is never left as a bare
+     'no' — it is stated with its reason and offered alongside a suggested route
+     forward, so that raising a concern moves the cohort closer to a decision
+     rather than simply halting it." The Constitution is explicit that an
+     objection ADVANCES the decision. Drawing it in the same red as "two closing
+     times disagree and one of them is wrong" tells a member that using the
+     mechanism correctly is a fault.
+     So it is --accent: a member acted, and the Record holds it. Boxed, like
+     `vote open`, because it is the other tag that means something changed and
+     you should look. The two never co-occur: a Tier A or Tier B row holds no
+     vote, and above those tiers the live page already demotes it to a plain
+     tag, which .tag.st handles. */
+  .tag.objected{color:var(--accent);border:1px solid var(--accent);border-radius:2px;
+    padding:.1rem .4rem;margin-right:.6rem;letter-spacing:.08em;font-weight:600}
+  .tag[title]{cursor:help;text-decoration:underline dotted;text-underline-offset:3px;
+    text-decoration-color:var(--rule)}
+  .q7{color:var(--soon)}
+  .quiet{color:var(--faint)}
+  /* Every name, never "and N more". This is the most actionable line on the
+     row: silence is how this ends, and the people who need asking are exactly
+     the people a truncation would hide. */
+  /* A contradiction inside the Record. Nothing else. */
+  .warnish{color:var(--accent)}
+
+  /* ======================================================================
+     THE LANES — fourteen slots, one per member of the frozen roll.
+
+     Four marks, and the whole constitutional vocabulary is in them:
+
+       ■  filled    a preference. The only mark that fills anything.
+       ▨  hatched   an objection: stated, with a reason, and a route forward.
+                    Present on the page; not filling the strip.
+       □  outlined  toleration or abstention: answered, no fill.
+       ▁  floor     never answered. A blank left in the register.
+
+     And TWO lane shapes, which is the whole difference between the procedures:
+
+       A FIXED STRIP OF FOURTEEN, with the threshold notched into it, means
+       "of ALL members". Silence is a slot that never fills, so silence
+       counts against. Layer 3, Layer 4, re-ratification.
+
+       A LANE IN WHICH SOME SLOTS ARE STRUCK OUT means "of THOSE WHO VOTE":
+       the struck slots are not in the denominator at all. Tier C's majority.
+
+     Tier C draws BOTH, one above the other, with every member in the same
+     column in both. A member who tolerated is a filled mark in the quorum
+     lane and a struck slot in the majority lane — directly above each other.
+     That vertical pair is the sentence the page used to have to write out.
+
+     The drawing is aria-hidden. Every number in it is stated in words
+     immediately above, so a screen reader hears it once.
+     ====================================================================== */
+  .lanes{display:grid;gap:.55rem;margin:.5rem 0 0;max-width:25rem}
+  .lane{display:grid;gap:.22rem}
+  .lanek{font:400 var(--t0)/1.25 var(--ui);color:var(--faint);letter-spacing:.03em}
+  .slots{position:relative;display:grid;grid-template-columns:repeat(var(--n),1fr);gap:2px;height:1rem}
+  /* Every mark is set a fraction off true — a rotation and an offset derived
+     from the proposal number and the slot, so it is stable across reloads and
+     different for every vote. Fourteen marks made by a hand on a wall, which
+     is what a tally is and has always been. The deviation is under a degree:
+     you do not see it, you feel that the row was not printed. */
+  .c{display:block;height:100%;border-radius:1px;
+     transform:rotate(var(--r,0deg)) translateY(var(--d,0px))}
+  /* a preference — the only mark that fills anything */
+  .c.y{background:var(--accent)}
+  /* an objection: hatched by hand. Stated, with a reason and a route forward;
+     present on the page; not filling the strip. */
+  .c.o{border:1px solid var(--urgent);
+       background:repeating-linear-gradient(135deg,var(--urgent) 0 1px,transparent 1px 4px)}
+  /* toleration or abstention: they came, they made no mark */
+  .c.t{border:1px solid var(--mark)}
+  /* never answered: the slot is drawn and left open. An empty chair, not a
+     zero. This is the mark the page is quietly about. */
+  /* Measured at 2.33:1 against the ground, under the 3:1 WCAG 1.4.11 asks of a
+     non-text mark — on the mark this page is quietly about. The dotted border
+     keeps it distinct from a tolerated slot without relying on weight alone. */
+  .c.s{border:1px dotted var(--mark);opacity:1}
+  /* struck out of THIS lane's denominator. The slot is still drawn, in the
+     same column as the member it belongs to, and then crossed through: not
+     "there is nobody here" but "this answer is not counted here". */
+  .c.x{position:relative;border-bottom:1px solid var(--line)}
+  .c.x::after{content:"";position:absolute;left:0;right:0;top:50%;height:1px;
+    background:var(--mark);transform:translateY(-.5px)}
+  /* the stated threshold, notched between two slots. Exact: with n tracks and
+     a 2px gap, the right edge of slot k is k*(W+2px)/n - 2px. */
+  /* The stated number, notched between two slots — so the drawing shows a
+     GAP rather than a percentage. The 1px ring in --bg keeps it legible where
+     it crosses filled marks, which is exactly where it matters most. It stays
+     drawn after the marks pass it: a line that has been crossed, never a
+     finish line that has been won. */
+  .notch{position:absolute;top:-.28rem;bottom:-.28rem;width:2px;background:var(--ink);
+    box-shadow:0 0 0 1px var(--bg);
+    left:calc(var(--at) * (100% + 2px) / var(--n) - 2px)}
+
+  /* ---- the vote block. CUT: the first prototype gave it a recessed
+     ground, a rounded corner, a left rule and a ring of padding. Three ways of
+     saying "this is a separate thing" on top of a row that is already a
+     separate thing — a card inside a card, and read as exactly that. It is now
+     part of its row: a margin, a measure, and nothing drawn at all. The lanes
+     are the object here; they do not need a tray to sit on. ------------- */
+  .vote{margin-top:.4rem;max-width:46rem}
+  .vote p{margin:0}
+  /* THE figure. The only question a member is actually weighing: does my
+     position change this. Serif numerals, because this is a quantity a person
+     decides about, not an instant a machine enforces. */
+  .vask{font:400 var(--t1)/1.55 var(--ui);color:var(--muted);margin:0!important;
+    max-width:44rem}
+  /* Old-style figures. Georgia sets them by default and they are the reason
+     to use it here: 6 and 10 drawn with ascenders and descenders read as a
+     quantity in a document, not as a readout on a device. */
+  /* Old-style figures. Georgia sets them by default and they are the reason
+     to use it here: 6 and 10 drawn with ascenders and descenders read as a
+     quantity in a document, not as a readout on a device.
+     Stepped down from 28px and brought back onto the same line as its own
+     sentence. At 28px, stacked over a caption, it was a headline on every vote
+     row — four headlines down one page is not a hierarchy. */
+  .vask b{font:400 1.45rem/1 var(--serif);color:var(--ink);font-variant-numeric:oldstyle-nums;
+    vertical-align:-.08em}
+  .vask i{font-style:normal;font-size:var(--t1);color:var(--faint);padding:0 .12rem}
+  /* ======================================================================
+     PROGRESSIVE DISCLOSURE. Three things fold, and only these three.
+
+     The page already folds its layer-and-tier glossary in a <details>, so
+     these follow that idiom rather than inventing a second one. Everything
+     folded answers "why" or "who exactly"; nothing folded is needed to read
+     the row. At rest a row is: what it is, how long is left, where the vote
+     stands. Closed by default, every time — the page has no server and cannot
+     know who is reading, so it cannot remember that you have opened one.
+
+       1. WHO HAS NOT ANSWERED.  A count at rest, the names on demand. They
+          matter enormously when somebody is chasing people and are noise the
+          rest of the time.
+       2. WHAT THE MARKS MEAN AND WHEN THEY COUNT.  A first-visit need and
+          furniture by the fifth. The counts live here, beside the marks they
+          draw, which is the only place they teach anything.
+       3. THE TWO CLOSING TIMES.  The FACT that they disagree stays on the
+          summary, in --urgent, always visible: it changes whether a position
+          can be cast at all. Which instant each one is, and which the workflow
+          enforces, is the part that folds.
+     ====================================================================== */
+  /* Side by side at desktop: two quiet affordances on one line rather than a
+     stack of two. They fall back to a stack on a phone, where a fold is a tap
+     target before it is a label. */
+
+  /* The key IS the tally: every count is preceded by the mark it draws, so
+     reading the numbers teaches the drawing and vice versa. */
+  .vkey{display:flex;flex-wrap:wrap;gap:.3rem .95rem;font:400 var(--t0)/1.4 var(--ui);
+    color:var(--muted);margin:0 0 .45rem!important}
+  .vkey span{display:inline-flex;align-items:center;gap:.4rem;white-space:nowrap}
+  .vkey .c{width:.85rem;height:.85rem;flex:none}
+  .vkey b{font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
+  /* "Nobody objected" is a fact worth stating and not a thing to notice — but
+     it is still text, so it steps down to --faint (4.91:1 light, 4.69:1 dark on
+     --sunk) rather than being dimmed with opacity, which would have taken it
+     under 4.5:1. Only the glyph, which is decorative, is faded. */
+  .vkey .z{color:var(--faint)}
+  .vkey .z b{color:var(--faint);font-weight:400}
+  .vkey .z .c{opacity:.45}
+  /* The one line on this page that changes outcomes. It is now a caption on a
+     drawing rather than an abstract claim, which is why it is shorter. */
+  .yesonly{font:400 var(--t1)/1.55 var(--ui);color:var(--muted);margin:0!important;
+    max-width:46rem}
+  .yesonly strong{font-weight:600;color:var(--ink)}
+  .yesonly a{color:var(--accent)}
+  .names{font:400 var(--t1)/1.6 var(--ui);color:var(--ink);margin:0!important;
+    overflow-wrap:anywhere}
+  .vnote{font:400 var(--t0)/1.6 var(--ui);color:var(--faint);margin-top:.4rem!important;max-width:34rem;
+    overflow-wrap:anywhere}
+  .vnote code{font-size:.95em}
+
+  /* ---- the action ----------------------------------------------------- */
+  .acts{display:flex;flex-wrap:wrap;align-items:center;gap:.9rem;margin-top:.5rem}
+  a.act{display:inline-flex;align-items:center;justify-content:center;min-height:2.5rem;
+    padding:0 1.3rem;border:1px solid var(--accent);border-radius:999px;background:transparent;
+    color:var(--accent);text-decoration:none;font:600 var(--t1)/1 var(--ui);letter-spacing:.01em}
+  a.act:hover{background:var(--accent);color:var(--bg)}
+  a.act:focus-visible{background:var(--accent);color:var(--bg);
+    outline:2px solid var(--accent);outline-offset:3px}
+  a.actalt{display:inline-flex;align-items:center;min-height:2.5rem;padding:0 .15rem;
+    color:var(--faint);text-decoration:underline;text-underline-offset:3px;font-size:var(--t0)}
+  a.actalt:hover{color:var(--ink)}
+  /* The hand-edit warning rides on the action line rather than sitting under
+     it as its own paragraph. It was the same three lines on every vote row —
+     the most repeated block on the page — and it only concerns somebody who
+     has already decided to edit the file. */
+  /* The warning that used to be a three-line paragraph under every vote row.
+     It rides on the action line beside the two routes rather than beneath
+     them, and stacks under them on a phone. */
+
+  /* ---- the seam. Kintsugi: where the Record contradicts itself, the break
+     is shown rather than smoothed over, and the row stays in service. A
+     stitched edge, not an alarm bar — the difference between "this is
+     damaged and still load-bearing" and "stop". ------------------------- */
+  .seam{border-left:3px solid transparent;
+    border-image:repeating-linear-gradient(0deg,var(--urgent) 0 4px,transparent 4px 7px) 3;
+    padding-left:.7rem;margin:0 0 .5rem!important;font-size:var(--t1);line-height:1.55;color:var(--muted)}
+  .seam strong{color:var(--urgent);font-weight:600}
+  /* A seam that folds. The contradiction itself stays on the summary and stays
+     in --urgent — it changes whether a position can be cast at all, so it is
+     never the thing that is hidden. What folds is which instant each clock
+     names and which one the workflow enforces: the explanation, not the fact. */
+  details.seam{padding-left:1.15rem;margin:.15rem 0 .4rem!important}
+  details.seam>summary{margin-left:0;color:var(--muted);font:400 var(--t1)/1.5 var(--ui)}
+  details.seam>summary::marker{color:var(--urgent)}
+  /* The page failing to SEE the Record is not a defect IN the Record, so it
+     does not get --urgent. It gets the same stitched edge in --accent: this
+     view is mended, read it knowing that. */
+  .snap{border-left:3px solid transparent;
+    border-image:repeating-linear-gradient(0deg,var(--accent) 0 4px,transparent 4px 7px) 3;
+    padding:.1rem 0 .1rem .8rem;margin:0 0 1.4rem;font-size:var(--t1);line-height:1.6;
+    color:var(--muted);max-width:var(--prose)}
+  .snap strong{color:var(--ink);font-weight:600}
+  .warn{border-left:3px solid transparent;
+    border-image:repeating-linear-gradient(0deg,var(--urgent) 0 4px,transparent 4px 7px) 3;
+    padding:.1rem 0 .1rem .8rem;margin:1rem 0 1.2rem;font-size:var(--t1);line-height:1.6;
+    color:var(--muted);max-width:var(--prose)}
+  .warn strong{color:var(--urgent);font-weight:600}
+  .warn .q{display:block;font:400 var(--t0)/1.6 var(--mono);color:var(--faint);margin-top:.4rem}
+  /* "This page cannot see" is never "nothing is happening", so it is never
+     drawn as an error. */
+  .blind{border-left:3px solid transparent;
+    border-image:repeating-linear-gradient(0deg,var(--accent) 0 4px,transparent 4px 7px) 3;
+    padding:.1rem 0 .1rem .8rem;margin:1.6rem 0;font-size:var(--t2);line-height:1.6;
+    color:var(--muted);max-width:var(--prose)}
+  .blind strong{color:var(--ink);font-weight:600;font-family:var(--serif);font-size:var(--t3);
+    display:block;margin-bottom:.3rem}
+  .blind .q{display:block;font-size:var(--t1);color:var(--faint);margin-top:.5rem}
+
+  /* ---- the glossary, the picker, the footer --------------------------- */
+  .glossary{color:var(--muted);font-size:var(--t1);line-height:1.65;padding:0 0 .6rem;max-width:var(--prose)}
+  .glossary summary{cursor:pointer;color:var(--faint);font-size:var(--t0);padding:.3rem 0;min-height:1.9rem}
+  .glossary summary:hover{color:var(--ink)}
+  .glossary summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+  .glossary p{margin:.2rem 0 .5rem}
+  .glossary strong{color:var(--ink);font-weight:600}
+
+  dialog{border:1px solid var(--rule);border-radius:4px;background:var(--bg);color:var(--ink);
+    padding:1.6rem 1.6rem 1.3rem;max-width:34rem;width:calc(100% - 2rem)}
+  dialog::backdrop{background:rgba(20,18,14,.55)}
+  dialog h3{font:400 var(--t3)/1.2 var(--serif);margin:0 0 .6rem}
+  .pick{display:block;border:1px solid var(--line);border-radius:3px;padding:.75rem .85rem;
+    margin:.6rem 0;text-decoration:none;color:var(--ink);background:var(--sunk)}
+  .pick:hover{border-color:var(--accent)}
+  /* These two were the only controls on the page that suppressed the outline, and
+     a 1px border change is under the 2px perimeter SC 2.4.11 asks for. */
+  .pick:focus-visible{border-color:var(--accent);outline:2px solid var(--accent);outline-offset:2px}
+  .pick b{font:400 var(--t2)/1.3 var(--serif)}
+  .pick i{font-style:normal;color:var(--faint);font-size:var(--t0);letter-spacing:.08em;
+    text-transform:uppercase;margin-left:.5rem}
+  .pick span{display:block;font-size:var(--t1);line-height:1.55;color:var(--muted);margin-top:.25rem}
+  .pickwrap{margin:.6rem 0}
+  .pickwrap .pick{margin:0}
+  .areain{display:block;width:100%;margin:.45rem 0 0;padding:.5rem .6rem;font:inherit;
+    font-size:var(--t1);border:1px solid var(--rule);border-radius:3px;background:var(--bg);color:var(--ink)}
+  .areain:focus{border-color:var(--accent);outline:2px solid var(--accent);outline-offset:1px}
+  .areapath{display:block;font:400 var(--t0)/1.5 var(--mono);color:var(--faint);margin-top:.35rem}
+  dialog form{margin-top:1rem;text-align:right;position:sticky;bottom:-1.3rem;
+    background:linear-gradient(to top,var(--bg) 60%,transparent);padding-bottom:1.3rem}
+  dialog button{font:inherit;font-size:var(--t0);padding:.45rem .9rem;border:1px solid var(--rule);
+    border-radius:999px;background:transparent;color:var(--muted);cursor:pointer;min-height:2.25rem}
+
+  /* The honesty clause. It is the last thing on the page and the most
+     important thing the page says about itself, so it is set like a colophon
+     rather than like small print. */
+  /* The honesty clause, set as a colophon rather than as small print: serif,
+     at the page's floor size and not below it, with the clause that matters
+     most — this page cannot see the deliberation — in italic. */
+  footer{margin-top:1.4rem;padding-top:.7rem;border-top:1px solid var(--rule);
+    color:var(--muted);font:400 var(--t0)/1.65 var(--serif);max-width:44rem}
+  footer p{margin:0 0 .5rem}
+  footer p:last-of-type{margin-bottom:0}
+  footer a{color:var(--accent)}
+  footer strong{font-weight:400;font-style:italic;color:var(--ink)}
+  .budget{display:block;margin-top:.6rem;font:400 var(--t0)/1.5 var(--ui);color:var(--faint)}
+
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  code{font-family:var(--mono);font-size:.92em}
+
+  /* ---- the phone, which is where this page is actually opened --------- */
+  @media (max-width:46rem){
+    .wrap{padding:1rem .9rem 1.6rem}
+    h1{font-size:1.4rem}
+    .note{line-height:1.5}
+    footer{line-height:1.6}
+    /* The number gutter is 54px of a 375px screen. It goes, and the number
+       returns to the head of the line where it reads as part of the title. */
+    .r{grid-template-columns:minmax(0,1fr);padding:.45rem .1rem .5rem}
+    .num{position:static;display:inline;width:auto;text-align:left;margin-right:.45rem}
+    /* The gutter does not exist at this width, so they go back in the line —
+     before the number, which is where the eye starts on a phone anyway. */
+    .warns{position:static;width:auto;display:inline-flex;margin-right:.4rem;
+      vertical-align:-.1em}
+    /* The rail is not a rail at this width: it stacks into the flow, and the
+       action goes full width at the end of the row, where a thumb is. */
+    .rail{margin-top:.6rem}
+    .rail .acts{align-items:stretch}
+    .what{font-size:var(--t0)}
+    h2{font-size:1.15rem}
+    a.btn{padding:.35rem .75rem}
+    .div{margin:1rem 0 .2rem}
+    .tag{margin-right:.4rem;letter-spacing:.04em}
+    .lbl{font-size:.95rem;line-height:1.3}
+    /* The time drops under the title and reads as a sentence rather than as a
+       sidebar — but the absolute date stays, always. */
+    /* One column, and explicit order: the action goes last, after everything
+       that tells you whether to take it, where a thumb is. */
+    .lbl{order:1}
+    .rt{order:2;grid-column:1;grid-row:auto;text-align:left;margin-top:.2rem;min-width:0}
+    .meta{order:3}
+    .why{order:4}
+    .rail{order:5;grid-column:1;grid-row:auto;text-align:left;margin-top:.7rem}
+    .rem,.abs{display:inline}
+    .abs::before{content:" · "}
+    .meta{line-height:1.55}
+    .lanes{max-width:none}
+    .vask b{font-size:1.35rem}
+    /* A fold is a tap target before it is a label: 44px tall and the full
+       width of the column, so a tired thumb at 11pm does not have to find a
+       12px word. The marker is drawn rather than left to ::marker, which
+       cannot be positioned, and the summary stays a block so a two-part
+       summary — "Two closing times. The countdown and the file disagree." —
+       sets as one run of prose rather than as two flex columns. */
+    details.seam{padding-left:.7rem}
+    details.seam>summary::before{color:var(--urgent)}
+    /* The second route keeps its 44px target; its warning is a sentence of its
+       own beneath it rather than a clause orphaned off the end of a link. */
+    /* Full width and 44px, so the thing the page exists to produce is the
+       easiest thing on it to hit. */
+    .acts{display:block}
+    .acts>*{margin-top:.45rem}
+    a.act{display:flex;width:100%;min-height:2.75rem;font-size:var(--t2)}
+    a.actalt{display:flex;width:100%;min-height:2.75rem;justify-content:center}
+  }
+  @media (prefers-reduced-motion:no-preference){
+    a,summary{transition:color .12s ease,background-color .12s ease,border-color .12s ease}
+  }
