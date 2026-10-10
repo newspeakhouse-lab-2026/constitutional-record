@@ -19,7 +19,7 @@ convenience. Where two layers are arguable, the more demanding process applies. 
 
 <!-- A — 48h, passes absent a stated objection
      B — a stated period under 7 days, passes absent a stated objection
-     C — 7 days or more, simple majority of those voting, quorum 7
+     C — 7 days or more, simple majority of those voting, quorum of half of all members
 A proposal may enter at any tier. One stated objection moves it up a tier; it
 never moves down. -->
 
@@ -114,9 +114,19 @@ box is ticked; delete them otherwise. -->
 
 ## Amendment record — complete before merge
 
-<!-- Constitution §1 requires six things to be recorded for an amendment to the
+<!-- Constitution §1 requires six things recorded for an amendment to the
 Constitution or to a rule. The date and time is the commit timestamp, so five are
-left for you. Write what actually happened, not what was proposed. -->
+left for you. Write what actually happened, not what was proposed.
+
+WRITE THEM INTO votes/pr-{number}.md, NOT HERE. This description does not reach
+the repository: this repository merges with merge commits, and a merge commit
+carries the pull request's title and not its body. Anything typed below is
+discarded at the moment of adoption, which is the moment §1 is asking about.
+
+The fields are kept here because filling them in is how you find out you cannot
+answer one of them yet. Copy them across before you merge, or write them there
+directly and leave this blank. `.github/instrument-templates/vote.md` has the
+section ready. -->
 
 - **How it was made:**
   <!-- §1 wants a "brief narrative description of how the amendment was made

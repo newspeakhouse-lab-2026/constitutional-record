@@ -1,0 +1,849 @@
+# Writes a member's position into votes/pr-{n}.md when they submit the vote form.
+#
+# The issue proves it was you, at the time — GitHub generated the author id and
+# the submitter cannot forge it. Git carries the claim forever. Nothing
+# load-bearing may exist only in the issue, because issues are not in the
+# repository: git clone retrieves none of them and an admin can delete one
+# unrecoverably. So everything that matters is written into the file and into
+# the commit message.
+#
+# Two rules this file exists to honour:
+#
+#   No ${{ }} inside the script. Every untrusted value is read at JS runtime from
+#   context.payload. An expression is interpolated before JS parses it, so an
+#   issue body containing a backtick would become code.
+#
+#   No concurrency: group. A pending run in a group is cancelled when the next
+#   arrives, regardless of cancel-in-progress — so with three simultaneous
+#   voters one would silently vanish. The mutex is the Contents API sha, and the
+#   retry below re-reads on every attempt.
+
+name: Record a vote
+
+on:
+  issues:
+    types: [opened]
+
+# Deliberately not [opened, edited]. An edited body would let a member rewrite a
+# recorded objection after the fact. A changed position is a new submission.
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: read
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v8
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const { owner, repo } = context.repo;
+            /* Either signal will do, and both come from the form. A label alone
+               is not enough: GitHub only applies a template's labels if they
+               already exist in the repository, so on a fresh repository — or
+               ours, before anyone creates them — every submission would be
+               ignored in silence. The title prefix is set by the template and
+               needs nothing to exist first. */
+            const labels = (issue.labels || []).map(l => l.name);
+            const title = issue.title || '';
+            const isVote = labels.includes('vote') || /^Vote:\s*PR\s*#/i.test(title);
+            if (!isVote) return;                          // not ours; say nothing
+
+            const POS = ['preference', 'toleration', 'abstention', 'objection'];
+            const DEFAULT_BRANCH = context.payload.repository.default_branch;
+
+            const hand = (branch, n) =>
+              `https://github.com/${owner}/${repo}/edit/${branch}/votes/pr-${n}.md`;
+            /* Editing the file by hand always works — but GitHub's commit dialog
+               offers two radios and the wrong one looks exactly like the right
+               one. "Create a new branch for this commit and start a pull
+               request" is correct for a proposal and wrong for a vote: it puts
+               the position on a branch of its own, shows a green success page,
+               and leaves the Record untouched. The member believes they voted.
+               Nothing tells them otherwise, and nothing ever will.
+               So the radio is named every time a hand edit is offered, instead
+               of being left to be discovered by whoever loses a vote to it. */
+            const byHand = (branch, n) => [
+              `**Editing the file by hand always works:** ${hand(branch, n)}`,
+              '',
+              `When you press **Commit changes**, choose **"Commit directly to the \`${branch}\` branch"**.`,
+              `Do **not** choose **"Create a new branch for this commit and start a pull request"** — that puts`,
+              `your position on a branch nothing reads, and shows you a success page while the Record stays`,
+              `exactly as it was.`,
+            ].join('\n');
+
+            async function say(text) {
+              await github.rest.issues.createComment({
+                owner, repo, issue_number: issue.number,
+                body: '<!-- record-vote -->\n' + text,
+              }).catch(() => {});
+            }
+            async function close(label) {
+              await github.rest.issues.addLabels({
+                owner, repo, issue_number: issue.number, labels: [label],
+              }).catch(() => {});
+              await github.rest.issues.update({
+                owner, repo, issue_number: issue.number, state: 'closed',
+              }).catch(() => {});
+            }
+            // A refusal is not a red run. Red means a maintainer must look; an
+            // outsider's issue turning the badge red teaches everyone to ignore it.
+            async function refuse(text, branch, n) {
+              await say(text + [
+                '',
+                '**Your position has not been recorded.** Nothing is blocked by this —',
+                '`rules/rule-recording-votes.md` creates no duty, and a position stated in the',
+                'governance channel is a position whether or not a file says so.',
+                '',
+                branch && n ? byHand(branch, n) : '',
+              ].join('\n'));
+              await close('vote-refused');
+              core.notice('refused: ' + text.split('\n')[0]);
+            }
+            async function brokenTooling(text) {
+              await say(text);
+              await close('vote-failed');
+              core.setFailed(text.split('\n')[0]);
+            }
+
+            /* Everything below is inside one try. An unhandled throw anywhere
+               used to end the run with no comment, the issue open and unlabelled,
+               and the member told nothing at all — the one outcome worse than a
+               refusal, because a refusal at least says the position was not
+               recorded. The wrapper starts here rather than at the top of the
+               script so that say, close, refuse and hand are in scope for the
+               catch to use.
+
+               The body is NOT re-indented into the block. The indentation would
+               be the whole diff and would bury the one line that changed; JS does
+               not care, and `catch` below marks the other end. */
+            try {
+
+            // Every time comes from when the member acted, never from when the
+            // runner picked the job up. So 11:59:59 is not refused because the
+            // queue was slow, and a re-run produces identical bytes.
+            // Inside the try, and checked: an unparseable created_at makes
+            // toISOString throw RangeError, which used to take the whole run down
+            // in silence.
+            const ACTED = new Date(issue.created_at);
+            if (isNaN(+ACTED)) {
+              return await brokenTooling(`This issue reports its creation time as \`${String(issue.created_at).slice(0, 60)}\`, ` +
+                `which is not a time this workflow can read — so it cannot tell whether you submitted before the ` +
+                `window closed, and will not guess. Nothing has been written. A maintainer needs to look at this run.`);
+            }
+            const DATE = ACTED.toISOString().slice(0, 10);
+
+            /* The instant twice, as every dated line in the Record is written: the
+               words a person reads, then the instant a machine reads. The offset is
+               computed rather than assumed — the UK is on BST from late March to
+               late October, and a missing offset is how a deadline ends up an hour
+               out. That has happened in this repository before. */
+            function stamp(d) {
+              const f = o => new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/London', ...o }).format(d);
+              const tz = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/London', timeZoneName: 'longOffset' })
+                .formatToParts(d).find(p => p.type === 'timeZoneName').value;
+              const off = (tz.match(/GMT([+-]\d{2}:\d{2})/) || [, '+00:00'])[1];
+              const iso = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString();
+              const local = new Date(d.getTime() + (off === '+01:00' ? 3600000 : 0));
+              return `${f({ weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}, ` +
+                `${f({ hour: '2-digit', minute: '2-digit', hour12: false })} UK ` +
+                '(`' + local.toISOString().slice(0, 19) + off + '`)';
+            }
+
+            /* An issue form renders as "### Label\n\nvalue\n\n". Label strings
+               live here and are asserted against the YAML by
+               test-record-vote.mjs, so the form and this cannot drift. */
+            const LABELS = {
+              pr: 'Pull request number',
+              position: 'Your position',
+              note: 'Anything that would move your position',
+              reason: 'Your reason — required if you are objecting',
+              route: 'A suggested route forward — required if you are objecting',
+              discussion: 'Link to the discussion',
+            };
+            function fields(body) {
+              const out = {};
+              for (const chunk of (body || '').split(/^### /m).slice(1)) {
+                const nl = chunk.indexOf('\n');
+                if (nl < 0) continue;
+                const v = chunk.slice(nl).trim();
+                out[chunk.slice(0, nl).trim()] = (v === '_No response_') ? '' : v;
+              }
+              return out;
+            }
+            const f = fields(issue.body);
+            // One form now, so one shape. Reason and route are asked for from
+            // everyone and required only from an objection — a form cannot make
+            // a field conditionally required, but this can, and has to anyway:
+            // an issue created through the API arrives with whatever it likes.
+            const need = ['pr', 'position'];
+            const missingHeading = need.find(k => !(LABELS[k] in f));
+            if (missingHeading) {
+              /* A label is applied by the form, so its presence means the form
+                 was used and the two have drifted — a defect to fix. Matching
+                 only on the title means somebody wrote the issue by hand, which
+                 is not an error on their part and must not read like one. */
+              const cameFromForm = labels.includes('vote') || labels.includes('objection');
+              if (!cameFromForm) {
+                return await refuse(
+                  `This issue looks like a vote, but it was not filed through the form, so the fields ` +
+                  `needed to record a position are not here.\n\n` +
+                  `Use **Record a position on a vote** from ` +
+                  `[New issue](https://github.com/${owner}/${repo}/issues/new/choose) — ` +
+                  `it asks for the pull request number and your position, and for an objection the two ` +
+                  `things Section 2 requires. This workflow then writes your row. Nothing is wrong with ` +
+                  `what you did; there is just nothing here to record yet.`);
+              }
+              return await brokenTooling(
+                `This workflow could not find the **${LABELS[missingHeading]}** field it expects from ` +
+                `the issue form. The form and the workflow have drifted, which is a defect in the ` +
+                `tooling and not in your submission — a maintainer needs to look at this run. ` +
+                `Your position has not been recorded; editing the vote file directly will record it correctly.`);
+            }
+
+            // --- who --------------------------------------------------------
+            // members.md is read from the default branch, never from the
+            // proposal's. Reading it from the proposal's branch would let a
+            // pull request add its own voter.
+            let membersText;
+            try {
+              const r = await github.rest.repos.getContent({
+                owner, repo, path: 'members.md', ref: DEFAULT_BRANCH });
+              membersText = Buffer.from(r.data.content, 'base64').toString('utf8');
+            } catch (e) {
+              return await brokenTooling('Could not read `members.md`, so no position can be attributed. ' + e.message);
+            }
+            const section = (membersText.split(/^##\s+/m).find(s => /^Current members/i.test(s)) || '');
+            const roster = section.split('\n')
+              .filter(l => /^\|/.test(l) && !/^\|\s*:?-/.test(l)).slice(1)
+              .map(l => l.replace(/^\||\|$/g, '').split('|').map(c => c.trim()))
+              .filter(c => c[0])
+              .map(c => ({ name: c[0], login: c[1] || '', id: c[2] || '' }));
+
+            const actorId = String(issue.user.id);
+            const actorLogin = issue.user.login;
+            const byId = roster.find(m => m.id === actorId);
+            const byLogin = roster.find(m => m.login.toLowerCase() === actorLogin.toLowerCase());
+
+            if (!byId && byLogin && !byLogin.id) {
+              return await refuse([
+                `You are on the list — \`members.md\` has **${byLogin.name}** — but the \`ID\` column on`,
+                `your row is empty, so this workflow cannot prove the account that opened this issue is`,
+                `yours.`,
+                '',
+                `**Only you can fill it in.** Nobody else should: a row someone else guessed proves`,
+                `nothing, and a wrong number beside a name would let one member vote as another.`,
+                '',
+                `Your account id is **${actorId}** — GitHub generated it in the event for this issue, so`,
+                `it is already confirmed. Set your row to:`,
+                '',
+                '```',
+                `| ${byLogin.name} | ${actorLogin} | ${actorId} | |`,
+                '```',
+                '',
+                `https://github.com/${owner}/${repo}/edit/${DEFAULT_BRANCH}/members.md`,
+                '',
+                'Then submit your position again.',
+              ].join('\n'));
+            }
+            if (!byId && byLogin && byLogin.id !== actorId) {
+              return await brokenTooling([
+                `\`members.md\` records account id \`${byLogin.id}\` for **${byLogin.name}**, but the account`,
+                `that opened this issue is @${actorLogin}, id \`${actorId}\`. A numeric account id never`,
+                `changes, so either the recorded id is wrong or an account has been renamed to a`,
+                `member's login. Either needs a person. Nothing has been written.`,
+              ].join('\n'));
+            }
+            if (!byId) {
+              return await refuse([
+                `I cannot find @${actorLogin} (account id \`${actorId}\`) in \`members.md\`, so nothing has`,
+                `been written. Only members listed there have a position recorded.`,
+                '',
+                `**If you are a member**, the file is missing your row. Add it in the alphabetical`,
+                `position the list already uses:`,
+                '',
+                '```',
+                `| Your Name | ${actorLogin} | ${actorId} | |`,
+                '```',
+                '',
+                `https://github.com/${owner}/${repo}/edit/${DEFAULT_BRANCH}/members.md`,
+                '',
+                `If you cannot edit that file, post those two values in the governance channel and ask`,
+                `a Record Keeper to commit them — your id has to come from you, not be invented.`,
+                '',
+                `**If you are not a member**, nothing is wrong: this repository is public, and only the`,
+                `people listed in \`members.md\` vote.`,
+              ].join('\n'));
+            }
+            const me = byId;
+
+            // --- which proposal ---------------------------------------------
+            const m = String(f[LABELS.pr] || '').trim().match(/^#?(\d{1,6})$/);
+            if (!m) {
+              return await refuse(`I could not read a pull request number from **${LABELS.pr}**. ` +
+                `Write just the digits, for example \`14\`.`);
+            }
+            const n = Number(m[1]);
+
+            let pull;
+            try {
+              pull = (await github.rest.pulls.get({ owner, repo, pull_number: n })).data;
+            } catch (e) {
+              /* Only a 404 means what the refusal says it means. A 403, 429 or
+                 500 is GitHub being unavailable, and reporting that to a member
+                 as "there is no pull request #14" tells them something false
+                 about the Record on the strength of a transient fault. */
+              if (e.status !== 404) {
+                return await brokenTooling(`I could not read pull request #${n} — GitHub answered ` +
+                  `\`${e.status || 'with an error'}\`. **This is not a statement that #${n} does not exist**; ` +
+                  `it is a statement that this workflow could not find out. Nothing has been written. ` +
+                  `Submit the form again in a few minutes, or edit the vote file directly.`);
+              }
+              return await refuse(`There is no pull request #${n} in this repository. A vote belongs to the ` +
+                `pull request carrying the text — an issue adopts nothing (Section 1).`);
+            }
+            if (pull.state !== 'open') {
+              return await refuse(`Pull request #${n} is ${pull.merged ? 'merged' : 'closed'}. A position cannot ` +
+                `be recorded against a closed proposal. If it was closed in error, reopen it and submit again.`);
+            }
+            if (pull.draft) {
+              return await refuse(`Pull request #${n} is still a draft, so its deliberation period has not opened.`);
+            }
+            if (!pull.head.repo || pull.head.repo.full_name !== `${owner}/${repo}`) {
+              return await refuse(`Pull request #${n} is proposed from a fork (\`${pull.head.repo ? pull.head.repo.full_name : 'unknown'}\`). ` +
+                `This workflow's token cannot write to a branch in a fork, so it cannot record your ` +
+                `position there. Ask for push access to this repository, or record it by hand.`);
+            }
+            /* label-proposals.yml writes tier-a / tier-b / tier-c from the pull
+               request body. Only the first two hold no vote. */
+            const prLabels = (pull.labels || []).map(l => String((l && l.name) || ''));
+            const noVoteTier = prLabels.includes('tier-a') ? 'Tier A'
+                             : prLabels.includes('tier-b') ? 'Tier B' : null;
+
+            /* The window at these tiers is computable and therefore enforced, the
+               same as a vote's. It is not a second clock: it is the one the
+               dashboard already counts down — the opened: label, written by
+               label-proposals.yml and never by hand, plus the period §2 states for
+               the tier. docs/data.json carries that period with the sentence it
+               was read from, so no number the Constitution states is repeated
+               here.
+
+               §2 defines Tier A's 48 hours against the proposal being visible in
+               the governance channel. The opened: label records when it was
+               submitted for deliberation, which is the Record's answer to the same
+               question. Where those differ, the label is what this repository
+               knows and a Record Keeper is who reconciles them. */
+            async function noVoteWindow() {
+              const openedLabel = prLabels.find(l => l.startsWith('opened:'));
+              if (!openedLabel) return { err: 'no `opened:` label on the proposal, so nothing records when its deliberation period began' };
+              const opened = new Date(openedLabel.slice(openedLabel.indexOf(':') + 1));
+              if (isNaN(opened)) return { err: `the \`opened:\` label reads \`${openedLabel}\`, which is not a date` };
+              let days;
+              if (noVoteTier === 'Tier B') {
+                const d = prLabels.find(l => /^days-\d+$/.test(l));
+                if (!d) return { err: '#' + n + ' is Tier B, which §2 requires to run for *a stated period of less than seven days*, and no `days-` label states one. A period never stated cannot have elapsed' };
+                days = Number(d.split('-')[1]);
+              } else {
+                try {
+                  const r = await github.rest.repos.getContent({
+                    owner, repo, path: 'docs/data.json', ref: DEFAULT_BRANCH });
+                  const cfg = JSON.parse(Buffer.from(r.data.content, 'base64').toString('utf8'));
+                  days = ((cfg.procedures || {})['tier-a'] || {}).days;
+                } catch (e) {
+                  return { err: 'could not read `docs/data.json`, which holds the period §2 states for Tier A: ' + e.message };
+                }
+                if (!days) return { err: '`docs/data.json` records no period for Tier A' };
+              }
+              return { opened, closes: new Date(opened.getTime() + days * 86400000), days };
+            }
+            const branch = pull.head.ref;
+            if (branch === DEFAULT_BRANCH) {
+              return await refuse(`Pull request #${n}'s branch is \`${branch}\`, this repository's default branch. ` +
+                `A vote is written on the proposal's own branch, so nothing has been written.`);
+            }
+            const path = `votes/pr-${n}.md`;
+            if (!/^votes\/pr-[1-9]\d{0,5}\.md$/.test(path)) {
+              return await brokenTooling(`This workflow built the path \`${path}\`, which it will not write to.`);
+            }
+
+            // --- position ---------------------------------------------------
+            const picked = String(f[LABELS.position] || '').trim().split(/\s+[—-]\s+/)[0].toLowerCase();
+            if (!POS.includes(picked)) {
+              return await brokenTooling(`The form offered a position this workflow does not recognise ` +
+                `(\`${picked.slice(0, 40)}\`). The dropdown and the workflow have drifted.`);
+            }
+            const position = picked;
+            const isObjection = position === 'objection';
+            if (isObjection) {
+              const reason = String(f[LABELS.reason] || '').trim();
+              const route = String(f[LABELS.route] || '').trim();
+              // Requiredness in an issue form is a web-UI constraint only: an
+              // issue created through the API can arrive with a blank required
+              // field, so this has to be checked here.
+              if (!reason || !route) {
+                return await refuse([
+                  `Your objection is not recorded yet, because Section 2 requires an objection to carry`,
+                  `**two** things and one is missing: ${!reason ? 'the reason' : 'a suggested route forward'}.`,
+                  '',
+                  `**Your objection is not discounted and it has not been weakened.** It stands as`,
+                  `deliberation from the moment you raised it. I am asking for the missing part, not`,
+                  `judging the objection.`,
+                  '',
+                  `Section 2: an objection is *"stated with its reason and offered alongside a suggested`,
+                  `route forward, so that raising a concern moves the cohort closer to a decision rather`,
+                  `than simply halting it."*`,
+                ].join('\n'), branch, n);
+              }
+            }
+
+            // --- the file ---------------------------------------------------
+            function parseTable(text) {
+              const lines = text.split('\n');
+              let start = -1;
+              for (let i = 0; i + 2 < lines.length; i++) {
+                if (/^\s*\|/.test(lines[i]) && /^\s*\|[\s:|\-]+\|\s*$/.test(lines[i + 1])) { start = i; break; }
+              }
+              if (start < 0) return null;
+              let end = start + 2;
+              while (end < lines.length && /^\s*\|/.test(lines[end])) end++;
+              const cells = l => l.trim().replace(/^\||\|$/g, '').split('|').map(c => c.trim());
+              return { start, end, lines, header: cells(lines[start]), rows: lines.slice(start + 2, end).map(cells) };
+            }
+            const cellsOf = l => l.trim().replace(/^\||\|$/g, '').split('|').map(c => c.trim());
+            const renderRow = c => '| ' + c.join(' | ') + ' |';
+            const quote = s => s.replace(/\r/g, '').split('\n').map(l => '> ' + l).join('\n');
+
+            /* The member's own block, replaced wholly rather than appended to.
+               Split out of apply() because a proposal at Tier A or Tier B has no
+               table to put a row in — Section 2 holds no vote there — and the
+               objection is the whole of what gets written. */
+            function writeBlock(s) {
+              const anchor = `<!-- ${isObjection ? 'objection' : 'note'}: ${me.id} -->`;
+              const heading = isObjection ? '## Objections' : '## Notes';
+              const parts = isObjection
+                ? [`Reason: ${String(f[LABELS.reason]).trim()}`, '', `Route forward: ${String(f[LABELS.route]).trim()}`]
+                : [String(f[LABELS.note] || '').trim()];
+              if (parts.join('').trim()) {
+                const block = [anchor, `**${me.name}** — ${DATE}`, '', quote(parts.join('\n')),
+                  isObjection && String(f[LABELS.discussion] || '').trim()
+                    ? `\nDiscussion: ${String(f[LABELS.discussion]).trim().replace(/[\r\n|]/g, ' ')}` : null,
+                  ''].filter(x => x !== null).join('\n');
+                const esc = anchor.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const existing = new RegExp(esc + '[\\s\\S]*?(?=\\n<!-- (?:objection|note): |\\n## |$)');
+                /* Function replacements, never string ones. A replacement STRING
+                   expands $&, $`, $' and $1 — and `block` contains the member's own
+                   words. An objection reading "the space costs $`40 a month" wrote
+                   the whole file prefix, header and table included, unquoted into
+                   the middle of the objection: the write succeeded, nobody was
+                   warned, and tally.py then refused the vote for the whole cohort
+                   because the duplicated table gave it two rows per member.
+                   A function's return value is used literally, so there is nothing
+                   to expand and no escaping to get right. */
+                if (existing.test(s)) s = s.replace(existing, () => block);
+                else if (s.includes(heading)) s = s.replace(heading, () => heading + '\n\n' + block);
+                else s = s.replace(/\s*$/, () => '\n\n' + heading + '\n\n' + block + '\n');
+              }
+              return s.replace(/\s*$/, '\n');
+            }
+
+            function apply(text) {
+              const t = parseTable(text);
+              if (!t) throw new Error('no table found in the vote file');
+              const posCol = t.header.findIndex(h => /^position$/i.test(h));
+              const dateCol = t.header.findIndex(h => /^date$/i.test(h));
+              if (posCol < 0 || dateCol < 0) throw new Error('the table has no Position or Date column');
+              const hits = t.rows.map((r, i) => [r, i]).filter(([r]) => r[0].replace(/\**|`/g, '') === me.name);
+              if (hits.length === 0) throw new Error(`no row for ${me.name}`);
+              if (hits.length > 1) throw new Error(`${hits.length} rows name ${me.name}`);
+              const [, idx] = hits[0];
+              const row = [...t.rows[idx]];
+              row[posCol] = position;
+              row[dateCol] = DATE;
+              const out = [...t.lines];
+              out[t.start + 2 + idx] = renderRow(row);
+
+              return writeBlock(out.join('\n'));
+            }
+
+            /* Tier A and Tier B hold no vote: Section 2 passes the proposal absent a
+               stated objection. So the file has no table, no roll to freeze and no
+               threshold — the reasons this workflow refuses to open a vote do not
+               arise, and writing the objection down decides nothing.
+
+               It states its window, computed once from the proposal's opened: label
+               and the period §2 gives the tier. That is the clock the dashboard
+               already counts down, not a new one — and writing it here puts it in
+               the Record, where a GitHub label is not: `git clone` retrieves the
+               file and none of the labels. From then on this file is what the
+               window is read from, exactly as for a vote. */
+            function objectionFile(tier, number, title, win) {
+              return [
+                `# Objections — PR #${number}: ${String(title).replace(/[\r\n]/g, ' ').slice(0, 200)}`, '',
+                `**Procedure:** ${tier}`,
+                `**Carries if:** no member objects before it closes`,
+                `**Opened:** ${stamp(win.opened)}`,
+                `**Closes:** ${stamp(win.closes)}`, '',
+                `Section 2 passes a ${tier} proposal absent a stated objection, so no vote is`,
+                'held and this file has no table. It records the objections, which Section 2',
+                'requires to carry a reason and a route forward, and which nothing else in this',
+                'repository holds — a reason living only in a pull request comment is not in the',
+                'Record, because `git clone` retrieves none of it.', '',
+                '**A single stated objection is enough.** Section 2 moves the proposal up a tier;',
+                'it never moves down. Nothing here decides that — it is written down so a Record',
+                'Keeper can verify it.', '',
+                '## Objections', '',
+              ].join('\n');
+            }
+
+            /* The table invariants cannot run on a file that has no table, and
+               "exactly one row differs" is meaningless here. What has to hold is
+               narrower and stronger: nothing outside the submitter's own block may
+               move. Every other member's objection is compared byte for byte. */
+            function blocksOf(s) {
+              const out = new Map();
+              const re = /<!-- (objection|note): (\d+) -->([\s\S]*?)(?=\n<!-- (?:objection|note): |\n## |$)/g;
+              let m;
+              while ((m = re.exec(s))) out.set(`${m[1]}:${m[2]}`, m[3]);
+              return out;
+            }
+            function invariantsNoTable(before, after) {
+              if (parseTable(before)) return 'the file this was built from has a table after all';
+              if (parseTable(after)) return 'the result grew a table';
+              const mine = `${isObjection ? 'objection' : 'note'}:${me.id}`;
+              const b = blocksOf(before), a = blocksOf(after);
+              for (const [k, v] of b) {
+                if (k === mine) continue;
+                if (!a.has(k)) return `someone else's block (${k}) disappeared`;
+                if (a.get(k) !== v) return `someone else's block (${k}) changed`;
+              }
+              const added = [...a.keys()].filter(k => !b.has(k));
+              if (added.length > 1 || (added.length === 1 && added[0] !== mine)) {
+                return `${added.length} block(s) appeared, expected at most this member's own`;
+              }
+              const head = s => s.split('\n').filter(l => l.startsWith('**Procedure:**'))[0] || null;
+              if (head(before) !== head(after)) return 'the **Procedure:** line changed';
+              if (/[\x00-\x09\x0B-\x1F\x7F]/.test(after)) return 'the result contains a control character';
+              if (after.length - before.length > 65536) return 'the result grew by more than 64KB';
+              return null;
+            }
+
+            /* Asserted before any write. Failing closed is right: the cost of
+               refusing is that one person edits a file the rule already says is
+               hand-editable. The cost of writing through a failed check is a
+               position silently destroyed, which nobody may ever notice. */
+            function invariants(before, after) {
+              const b = parseTable(before), a = parseTable(after);
+              // Both ends are guarded. Only `a` used to be, and `b.rows.length`
+              // two lines down threw on a vote file that has no table at all —
+              // which apply() would have rejected first in every ordinary case,
+              // but an invariant check that can itself throw is not a check.
+              if (!b) return 'the file this was built from has no table';
+              if (!a) return 'the result has no table';
+              if (a.rows.length !== b.rows.length) return `row count changed, ${b.rows.length} to ${a.rows.length}`;
+              if (a.lines[a.start] !== b.lines[b.start]) return 'the header row changed';
+              if (a.lines[a.start + 1] !== b.lines[b.start + 1]) return 'the separator row changed';
+              const keys = t => t.rows.map(r => r[0]);
+              if (keys(a).join(' ') !== keys(b).join(' ')) return 'the members, or their order, changed';
+              const differing = b.rows.map((r, i) => i).filter(i =>
+                renderRow(b.rows[i]) !== renderRow(a.rows[i]));
+              if (differing.length !== 1) return `${differing.length} rows differ, expected exactly 1`;
+              const ar = a.rows[differing[0]], br = b.rows[differing[0]];
+              if (ar.length !== br.length) return 'that row gained or lost a column';
+              const changed = ar.map((_, i) => i).filter(i => ar[i] !== br[i]);
+              const posCol = a.header.findIndex(h => /^position$/i.test(h));
+              const dateCol = a.header.findIndex(h => /^date$/i.test(h));
+              if (changed.some(i => i !== posCol && i !== dateCol)) return 'a cell other than Position or Date changed';
+              if (!POS.includes(ar[posCol])) return `Position reads "${ar[posCol]}"`;
+              if (!/^\d{4}-\d{2}-\d{2}$/.test(ar[dateCol])) return `Date reads "${ar[dateCol]}"`;
+              if (/[\x00-\x09\x0B-\x1F\x7F]/.test(after)) return 'the result contains a control character';
+              for (const line of ['**Procedure:**', '**Carries if:**', '**Opened:**', '**Closes:**', '**Entitled to vote:**']) {
+                const one = s => (s.split('\n').filter(l => l.startsWith(line))[0] || null);
+                if (one(before) !== one(after)) return `the ${line} line changed`;
+              }
+              if (after.length - before.length > 65536) return 'the result grew by more than 64KB';
+              return null;
+            }
+
+            // --- write ------------------------------------------------------
+            // The read is the FIRST statement of the loop and the only continue
+            // is in the catch, so no computed value survives an attempt. The
+            // intuitive version — refetch the sha and resend the content —
+            // erases whoever wrote in between.
+            const sleep = ms => new Promise(r => setTimeout(r, ms));
+            for (let attempt = 1; attempt <= 5; attempt++) {
+              let got;
+              try {
+                const r = await github.rest.repos.getContent({ owner, repo, path, ref: branch });
+                got = { text: Buffer.from(r.data.content, 'base64').toString('utf8'), sha: r.data.sha };
+              } catch (e) {
+                /* Same distinction as the pull request lookup. "No vote is open"
+                   is a fact about the Record; a 403, 429 or 500 is a fact about
+                   GitHub, and a member told the first on the evidence of the
+                   second may stop trying to vote at all. */
+                if (e.status !== 404) {
+                  return await brokenTooling(`I could not read \`${path}\` on branch \`${branch}\` — GitHub answered ` +
+                    `\`${e.status || 'with an error'}\`. **This is not a statement that no vote is open**; it is ` +
+                    `a statement that this workflow could not find out. Nothing has been written. Submit the ` +
+                    `form again in a few minutes, or edit the file by hand.\n\n` + byHand(branch, n));
+                }
+                if (!noVoteTier) {
+                  return await refuse(`There is no \`${path}\` on branch \`${branch}\`, so no vote is open to record a ` +
+                    `position in. This workflow will not create one: opening a vote means naming the procedure, ` +
+                    `freezing who may vote and writing out the threshold, which are a member's decisions. ` +
+                    `Whoever is running the vote can open it from the dashboard, or from ` +
+                    `\`.github/instrument-templates/vote.md\`.`, branch, n);
+                }
+                /* Creating it. Nothing is being decided: the procedure comes from
+                   the proposal's own label, there is no roll and no threshold, and
+                   the objection is the member's own words. */
+                got = { text: null, sha: undefined };
+              }
+
+              /* A Tier A or Tier B file states no window, by design — see
+                 objectionFile. Everything from here to the write is about a vote,
+                 so the no-table path takes its own route. */
+              const creating = got.text === null;
+              let win = null;
+              if (creating) {
+                win = await noVoteWindow();
+                if (win.err) {
+                  return await refuse(`I cannot tell when the deliberation period on #${n} closes: ${win.err}. ` +
+                    `Nothing has been written. An objection is not lost by this — say it on the proposal and ` +
+                    `in the governance channel, and ask for the proposal's labels to be put right.`, branch, n);
+                }
+              }
+              const base = creating ? objectionFile(noVoteTier, n, pull.title, win) : got.text;
+              const noTable = !parseTable(base);
+
+              if (noTable) {
+                /* Keyed on noTable, not on the 404. This guard used to live inside
+                   the branch that CREATES the file, so it only ever ran on the
+                   first submission. Once the file existed, a preference, toleration
+                   or abstention fell straight through: it was written into the
+                   objections section, committed as "Record objection from <member>",
+                   announced to them as their objection, and labelled `objection` on
+                   the proposal — which §2 makes decisive. A member expressing
+                   support blocked the proposal they supported, in their own name,
+                   and label-proposals.yml never removes that label.
+
+                   The tier is read from the file here rather than from the labels,
+                   because the labels move up a tier the moment the first objection
+                   lands and the file is the Record. */
+                const fileTier = ((base.match(/^\*\*Procedure:\*\*[^\S\n]*(.+)$/m) || [])[1] || noVoteTier || 'Tier A')
+                  .replace(/\*/g, '').trim();
+                if (!isObjection) {
+                  return await refuse(`#${n} is a **${fileTier}** proposal, and Section 2 holds no vote at that ` +
+                    `tier — it passes absent a stated objection. So there is nothing for a **${position}** to be ` +
+                    `recorded in, and recording one would suggest a vote was running when none was.\n\n` +
+                    `An **objection** does have an effect here: a single stated one is enough to move the ` +
+                    `proposal up a tier. If that is what you mean, submit the form again choosing objection, ` +
+                    `with its reason and a route forward.\n\n` +
+                    `Support for a ${fileTier} proposal is expressed by saying so in the governance channel ` +
+                    `or on the proposal itself, where the deliberation happens.`, branch, n);
+                }
+                /* Read from the file once it exists, exactly as a vote's window is,
+                   so there is one answer rather than one per caller. */
+                const cleanNV = base.replace(/<!--[\s\S]*?-->/g, '');
+                const isoNV = (cleanNV.match(/^\*\*Closes:\*\*[^\n]*?`([^`]+)`/m) || [])[1];
+                if (!isoNV || isNaN(new Date(isoNV))) {
+                  return await brokenTooling(`\`${path}\` has no readable **Closes:** line, so I cannot tell ` +
+                    `whether the window is open. Nothing has been written.\n\n` + byHand(branch, n));
+                }
+                if (ACTED > new Date(isoNV)) {
+                  return await refuse(`The deliberation period on #${n} closed at **${isoNV}**, and you submitted ` +
+                    `at ${issue.created_at}. Nothing has been written.\n\n` +
+                    `**This is not a ruling that your objection is out of time.** Section 2 is explicit that an ` +
+                    `objection is never discounted for being incomplete, and §3 gives a Record Keeper the ` +
+                    `verification. If the period was extended or restarted — a material change restarts it (§2) — ` +
+                    `the file's **Closes:** line needs to say so first: this workflow reads the file, not the ` +
+                    `conversation.`, branch, n);
+                }
+                let next2;
+                try { next2 = writeBlock(base);
+                      if (typeof globalThis.__TAMPER === 'function') next2 = globalThis.__TAMPER(next2, base); }
+                catch (e) {
+                  return await brokenTooling(`I could not write your objection into \`${path}\`: ${e.message}.` +
+                    `\n\n` + byHand(branch, n));
+                }
+                if (next2 === base && !creating) {
+                  await say(`Your objection is already recorded on #${n}, word for word — nothing to change. ` +
+                    `It stands as it is.`);
+                  return await close('vote-recorded');
+                }
+                const bad2 = invariantsNoTable(base, next2);
+                if (bad2) {
+                  return await brokenTooling(`I built a new version of \`${path}\` and then refused to write it, ` +
+                    `because it failed an internal check: **${bad2}**.\n\n` +
+                    `**Your objection has not been recorded, and nothing in the file has changed.**\n\n` +
+                    byHand(branch, n));
+                }
+                try {
+                  const res2 = await github.rest.repos.createOrUpdateFileContents({
+                    owner, repo, path, branch, sha: got.sha,
+                    content: Buffer.from(next2, 'utf8').toString('base64'),
+                    message: `Record objection from ${me.name} on PR #${n} (${noVoteTier})\n\n` +
+                      `Submitted through issue #${issue.number} by @${actorLogin} (account id ${actorId}) ` +
+                      `at ${issue.created_at}.\nTranscribed by .github/workflows/record-vote.yml. ` +
+                      `The objection is the member's; this commit only writes it down.`,
+                    author: { name: me.name, email: `${me.id}+${me.login}@users.noreply.github.com` },
+                  });
+                  await say([
+                    `Recorded your **objection** for **${me.name}** on [#${n}](${pull.html_url}).`,
+                    '',
+                    `${res2.data.commit.html_url} — \`${path}\` on \`${branch}\``,
+                    '',
+                    `**#${n} is a ${noVoteTier} proposal, so there is no vote.** Section 2 passes one absent a`,
+                    'stated objection, and a single stated objection is enough to move it up a tier.',
+                    '',
+                    `Your objection was recorded inside the deliberation period, which closes ${isoNV}.`,
+                    '',
+                    '**That is not a ruling that the proposal has moved.** Section 3 gives the outcome to a',
+                    'Record Keeper, who verifies it. This workflow writes down what you said and when.',
+                    '',
+                    'Changed your mind, or want to add to it? Submit the form again — your block is',
+                    'replaced, not duplicated, and the earlier wording stays in the file\'s history.',
+                  ].join('\n'));
+                  await github.rest.issues.addLabels({
+                    owner, repo, issue_number: issue.number, labels: ['objection'],
+                  }).catch(() => {});
+                  await github.rest.issues.addLabels({
+                    owner, repo, issue_number: n, labels: ['objection'],
+                  }).catch(() => {});
+                  return await close('vote-recorded');
+                } catch (e) {
+                  /* 422 also covers "it already exists" on a create, which is the
+                     race this loop exists for: go back and read what landed. */
+                  const stale2 = e.status === 409 || e.status === 422;
+                  if (!stale2) throw e;
+                  core.notice(`attempt ${attempt}: \`${path}\` changed under us (${e.status}); re-reading`);
+                  await sleep(400 * 2 ** (attempt - 1) + Math.floor(Math.random() * 400));
+                  continue;
+                }
+              }
+
+              // Checked against these bytes on every attempt, not once before the
+              // loop: between attempts the window may have closed or the vote restarted.
+              const clean = got.text.replace(/<!--[\s\S]*?-->/g, '');
+              const iso = (clean.match(/^\*\*Closes:\*\*[^\n]*?`([^`]+)`/m) || [])[1];
+              if (!iso || isNaN(new Date(iso))) {
+                return await refuse(`\`${path}\` has no readable **Closes:** line, so I cannot tell whether the ` +
+                  `window is open. It needs the instant in backticks, for example: ` +
+                  '`**Closes:** Monday 13 October 2026, 12:00 UK (`2026-10-13T12:00:00+01:00`)`', branch, n);
+              }
+              if (ACTED > new Date(iso)) {
+                return await refuse(`The window on this vote closed at **${iso}**, and you submitted at ` +
+                  `${issue.created_at}. Nothing has been written. If the window was extended or the ` +
+                  `deliberation period restarted, the file's **Closes:** line needs to say so first — ` +
+                  `this workflow reads the file, not the conversation.`, branch, n);
+              }
+
+              let next;
+              /* A seam for the tests, and nothing else. invariants() is the last
+                 check before a write and the file's own comment says writing
+                 through a failed one destroys a position silently — but nothing
+                 could exercise it, because the only way in is a corrupted
+                 apply() result and apply() is correct. globalThis.__TAMPER is
+                 never set in Actions; it exists so the guard can be proved to
+                 fire rather than assumed to. */
+              try { next = apply(got.text);
+                    if (typeof globalThis.__TAMPER === 'function') next = globalThis.__TAMPER(next, got.text); }
+              catch (e) {
+                return await refuse(`I could not place your row in \`${path}\`: ${e.message}. ` +
+                  `\`members.md\` names you **${me.name}**, and the vote file's table has to use the same ` +
+                  `spelling — matching on anything looser is how one member ends up voting as another.`,
+                  branch, n);
+              }
+
+              /* Nothing to verify when nothing changed, and the invariants
+                 would reject it: "exactly one row differs" is false of an
+                 identical file. This must come first. */
+              if (next === got.text) {
+                await say(`**${position}** is already recorded for **${me.name}** on #${n}, with today's `
+                  + `date — nothing to change. Your position stands as it is.`);
+                return await close('vote-recorded');
+              }
+
+              const bad = invariants(got.text, next);
+              if (bad) {
+                return await brokenTooling(`I built a new version of \`${path}\` and then refused to write it, ` +
+                  `because it failed an internal check: **${bad}**.\n\n` +
+                  `**Your position has not been recorded, and nothing in the file has changed.** That is ` +
+                  `intended: writing anyway could overwrite a position another member already recorded, ` +
+                  `and a position quietly destroyed may never be noticed.\n\n` + byHand(branch, n));
+              }
+
+              try {
+                const res = await github.rest.repos.createOrUpdateFileContents({
+                  owner, repo, path, branch, sha: got.sha,
+                  content: Buffer.from(next, 'utf8').toString('base64'),
+                  message: `Record ${position} from ${me.name} on PR #${n}\n\n` +
+                    `Submitted through issue #${issue.number} by @${actorLogin} (account id ${actorId}) ` +
+                    `at ${issue.created_at}.\nTranscribed by .github/workflows/record-vote.yml. ` +
+                    `The position is the member's; this commit only writes it down.`,
+                  author: { name: me.name, email: `${me.id}+${me.login}@users.noreply.github.com` },
+                });
+                await say([
+                  `Recorded **${position}** for **${me.name}** on [#${n}](${pull.html_url}).`,
+                  '',
+                  `${res.data.commit.html_url} — \`${path}\` on \`${branch}\``,
+                  '',
+                  '**Only `preference` counts as affirmative support.** Where a procedure needs affirmative',
+                  'support from a fraction of all members — Layer 3, Layer 4 and re-ratification all do —',
+                  'toleration, abstention and never answering are the same number. None of them is a yes.',
+                  '',
+                  `Changed your mind? Submit the form again while the window is open; your row is updated,`,
+                  `not duplicated. This window closes ${iso}.`,
+                  '',
+                  '**Nothing has carried.** What carries is decided by the Constitution and verified by a',
+                  'Record Keeper (Section 3). This is a transcription and nothing more.',
+                ].join('\n'));
+                /* One form means everything arrives labelled `vote`. An
+                   objection moves an Ordinary proposal up a tier (§2), so it has
+                   to stay findable. */
+                if (isObjection) {
+                  await github.rest.issues.addLabels({
+                    owner, repo, issue_number: issue.number, labels: ['objection'],
+                  }).catch(() => {});
+                  /* And on the proposal itself, which is what anyone looking at
+                     the Record sees. An objection is decisive at Tier A and Tier
+                     B — a single one blocks lazy consensus and moves the proposal
+                     up a tier — and until this label existed a blocked proposal
+                     looked exactly like one sailing through. The labels API takes
+                     a pull request by its number like any issue. */
+                  await github.rest.issues.addLabels({
+                    owner, repo, issue_number: n, labels: ['objection'],
+                  }).catch(() => {});
+                }
+                return await close('vote-recorded');
+              } catch (e) {
+                const stale = e.status === 409 || (e.status === 422 && /sha|does not match|expected/i.test(e.message || ''));
+                if (!stale) throw e;
+                core.notice(`attempt ${attempt}: the file changed under us (${e.status}); re-reading`);
+                await sleep(400 * 2 ** (attempt - 1) + Math.floor(Math.random() * 400));
+                continue;   // --> back to the read. The only continue in this script.
+              }
+            }
+            await brokenTooling(`Five attempts to write \`${path}\` were each overtaken by someone else ` +
+              `writing to it first. Nothing has been recorded. Among fourteen people that should not ` +
+              `happen, so this is worth a look.\n\n` + byHand(branch, n));
+
+            /* The other end of the try opened after brokenTooling. Anything that
+               reaches here is a fault nobody anticipated, so it says only what it
+               can honestly say: nothing was written, here is the error, here is
+               the route that always works. */
+            } catch (e) {
+              await brokenTooling([
+                `This workflow failed before it could record your position, in a way it does not`,
+                `recognise. **Nothing has been written**, and nothing is blocked by this — a position`,
+                `stated in the governance channel is a position whether or not a file says so.`,
+                '',
+                `The error was: \`${String((e && e.message) || e).slice(0, 300)}\``,
+                '',
+                `**Editing the vote file always works**, and that is the route to take now:`,
+                `https://github.com/${owner}/${repo}/pulls — open the proposal, then \`votes/pr-{number}.md\``,
+                `on its branch. A maintainer needs to look at this run.`,
+              ].join('\n'));
+            }

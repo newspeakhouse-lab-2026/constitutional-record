@@ -28,6 +28,7 @@ A time-limited experiment takes the `exp-` prefix at whatever layer it belongs t
 | `members.md` | Authoritative membership. Every threshold is a fraction of this. |
 | `roles.md` | Current role holders and when their terms end, maintained by the Record Keepers. |
 | `rules/` | Standalone Ordinary Rules. |
+| `votes/` | One file per proposal, named for its pull request. Where the procedure voted: every member listed, and the result with its arithmetic. At Tier A and Tier B, where no vote is held, the file holds the objections alone — it exists only because somebody objected. **None yet.** |
 | `policies/` | One folder per governed area. **None yet** — the first Policy resolution creates one. |
 | `disputes/` | Adjudication decisions. **None yet.** |
 | `CONTRIBUTING.md` | **How to propose, deliberate and record a decision.** Start here. |
@@ -38,17 +39,17 @@ A time-limited experiment takes the `exp-` prefix at whatever layer it belongs t
 
 Put the text on a branch and open a pull request — that is the proposal of record, and its template asks for everything the Constitution requires, including the reasoning behind your layer classification. If you want to propose something before drafting the text, open an issue with the Proposal form first. Full walkthrough in [CONTRIBUTING.md](CONTRIBUTING.md) — no command line needed.
 
-Deliberation happens here, in the governance channel, and in meetings. Voting happens as the Constitution specifies for the layer; **GitHub is not the voting platform.** A Record Keeper merges once the process has been verified, which is a clerical act and not a second vote.
+Deliberation happens here, in the governance channel, and in meetings. **A position may be stated anywhere** — in the channel, in person, by message — and stating it is the vote. Where a procedure votes, the positions are then written into `votes/pr-{number}.md` on the proposal's branch, so the evidence sits beside the text it decided. Where it does not — Tier A and Tier B pass absent a stated objection — the same file holds any objection raised, with the reason and route forward Section 2 requires. A Record Keeper merges once the process has been verified, which is a clerical act and not a second vote.
 
 If GitHub is a barrier for you, it must not cost you a right: the Convener provides a reasonably equivalent route, and anything submitted that way is recorded as the Constitution otherwise requires.
 
 ## Current state
 
-- **14 members.** Majority of all members is 8; two-thirds is 10; quorum is 7.
+- **`members.md` is the list of who may vote**, and every threshold is a fraction of it, so none is written down as a number here. `.github/scripts/tally.py` computes one and shows its working. Two rules: a named fraction rounds up, and a majority is *more than half* — so a tie fails.
 - **Interim role holders** — Agent, Convener, Treasurer and Record Keeper — were elected after the Constitutional Convention under Constitution §6 and are recorded in `roles.md`. Ordinary elections follow Constitution §3.2, which #2 rewrote: each office, including each deputy, is filled by its own anonymous ranked-choice ballot for a two-month term.
-- **Those interim terms were extended to 23:59 UK time on Monday 2 November 2026** by pull request #2, adopted under §6 on 4 October, or until holders are elected under §3.2, whichever is earlier. All four offices still end at the same moment, so §3's fallback — the Convener covering unfilled roles — will not cover the next expiry either.
+- **Those interim terms were extended by pull request #2**, adopted under §6, and end either on the date `roles.md` records or when holders are elected under §3.2, whichever is earlier. All four offices still end at the same moment, so §3's fallback — the Convener covering unfilled roles — will not cover the next expiry either.
 - **§6's expedited amendment window was not extended** and closed at 23:59 on 4 October. An amendment is once again Layer 4: two endorsing reviews, seven days, and two-thirds of all members.
-- **This Constitution expires at 23:59 UK time on Monday 30 November 2026** unless re-ratified or replaced by two-thirds of all members. A re-ratification or replacement proposal must have obtained its endorsements and entered its seven-day deliberation period **no later than Monday 23 November 2026.** If it lapses, functions revert to the College.
+- **This Constitution expires**, on the date §5 states, unless re-ratified or replaced by two-thirds of all members. A re-ratification or replacement proposal must have obtained its endorsements and entered its seven-day deliberation period by the date §5 sets. If it lapses, functions revert to the College.
 
 ## Notes on this repository
 

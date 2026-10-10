@@ -1,0 +1,16 @@
+# check-record.py imports tally.py, so Python caches bytecode beside them.
+__pycache__/
+*.pyc
+
+# Built by tools/preview/build.py. A harness aimed at the sandbox, never committed.
+tools/preview/out/
+
+# The preview harness. It points at a throwaway sandbox repository by name, and
+# the Record should not carry a reference to something that may not exist
+# tomorrow. Kept locally, out of the Record.
+tools/preview/
+
+# Working notes from AI review panels — my scratch, not the Laboratory's. Never
+# curated for the Record, referenced by nothing outside themselves, and 248K that
+# every clone would carry forever.
+.ai-symposium/

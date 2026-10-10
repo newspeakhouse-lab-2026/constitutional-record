@@ -30,7 +30,7 @@ Never state what a governing document says from memory or from an earlier summar
 |---|---|
 | `constitution.md` | The authority. Read it before anything else. |
 | `members.md` | Authoritative membership. Every threshold is a fraction of it. |
-| `roles.md` | Who holds which office, and when each term ends. Read it rather than naming an office holder from memory. A commit confers no role. The interim Agent, Convener, Treasurer and Record Keeper hold office until **23:59 UK on 2 November 2026** (extended by #2 under §6), or until holders are elected under §3.2, so check before relying on any of them. |
+| `roles.md` | Who holds which office, and when each term ends. Read it rather than naming an office holder from memory. A commit confers no role. **All the interim offices are time-limited and end at the same moment** — `roles.md` says when, so read it rather than relying on an office being filled. |
 | `rules/`, `policies/` | What is already adopted. |
 | The Charter | What is devolved, and what Charter §8 reserves to the College. **Check first** — legislating for what was never granted is the commonest way a draft turns out void. |
 
@@ -116,17 +116,23 @@ Determined by **actual effect**, never by convenience. Where two layers are argu
 
 ## Procedures and thresholds
 
-**14 members** (`members.md`, 2026-09-20). Fractions of all members **round up**. Recompute if membership changes.
+**Never state a threshold as a number from memory.** Count the rows in `members.md` and compute, every time. A count written down goes stale the moment membership changes; a fraction does not.
 
 | Procedure | Requirement |
 |---|---|
 | Tier A (Ordinary) | 48h **visible in the governance channel**; passes absent a stated objection |
 | Tier B (Ordinary) | Stated period under 7 days; passes absent a stated objection |
-| Tier C (Ordinary) | ≥7 days; simple majority of those voting; **quorum 7** |
-| Layer 3 Policy | 1 endorsement + preference mapping + 7 days; **8 affirmative** |
-| Layer 4 Constitutional | 2 endorsing reviews + 7 days; **10 affirmative** |
-| Emergency | Majority of those voting within 12h; **quorum 7**; expires after 7 days unless confirmed |
-| Removal from membership | **9 affirmative** (two-thirds of all but the respondent) |
+| Tier C (Ordinary) | ≥7 days; **simple majority of those voting**, quorum of **half of all members** |
+| Layer 3 Policy | 1 endorsement + preference mapping + 7 days; **majority of all members** |
+| Layer 4 Constitutional | 2 endorsing reviews + 7 days; **two-thirds of all members** |
+| Emergency | Majority of those voting within 12h, quorum of **half**; expires after 7 days unless confirmed |
+| Re-ratification (§5) | 7 days, entered by the date §5 sets; **two-thirds of all members** |
+| Removal from membership (§4) | **two-thirds of all members other than the respondent** |
+| Adjudication remedy (§4) | **two-thirds of the other members who vote**, quorum **half of all other members** |
+
+**Two rounding rules, and they differ when the membership is an even number.** A named fraction rounds up — two-thirds of 14 is 10. A **majority is more than half** — a majority of 14 is 8, not 7, so a 7–7 split fails. §1's "fractions round up" sentence reaches only the first, and using `ceil` for a majority is the mistake that carries a tied vote.
+
+`.github/scripts/tally.py` does this arithmetic and shows its working; the fractions it uses live in `docs/data.json`, each carrying the sentence it was read from. Run it rather than counting by hand, and report what it prints.
 
 One stated objection moves an Ordinary proposal **up** a tier, never down. "Those who vote" means Preference or Objection; Toleration and Abstention count toward quorum, not the denominator. At Layers 3 and 4, **prefer** is affirmative, **tolerate** is abstention, **object** is opposition; non-response and abstention never count toward an affirmative threshold. "All members" means those entitled to vote **when the vote opens**. A material change restarts a deliberation period; a correction that does not change meaning does not.
 
@@ -154,10 +160,10 @@ Before filing, check these too, and report what is missing rather than quietly f
 | | |
 |---|---|
 | `.github/pull_request_template.md` | Pre-fills every pull request. It asks for the layer and its reasoning, the tier, the deliberation period, `Observed by:`, conflicts searched, source of authority for Layers 3 and 4, experiment fields, and the amendment record. **Fill it rather than replacing it** — a member's proposal is judged on what it contains. |
-| `.github/ISSUE_TEMPLATE/proposal.yml` | One issue form for proposing before any text exists. Three required fields: layer, what is proposed, and why that layer. |
-| `.github/instrument-templates/` | Skeletons for a rule, a policy and a record of an adjudication, each naming the path it belongs at. The dashboard's *Start a proposal* button opens GitHub's editor prefilled with one. Read the right one before drafting rather than inventing a shape. |
+| `.github/ISSUE_TEMPLATE/vote.yml` | One form for all four positions, including an objection. A member submits it; `.github/workflows/record-vote.yml` writes it into `votes/pr-{number}.md` on the proposal's branch, as them, or says why it could not. At Tier A and Tier B it creates that file and writes the objection into it — there is no table and no row, because §2 holds no vote there, and only an objection can be recorded. **You may fill it in only with a position the member has stated in terms** — see *Hard rules*. |
+| `.github/instrument-templates/` | Skeletons for a rule, a policy, a record of an adjudication and a vote, each naming the path it belongs at. The dashboard's *Start a proposal* button opens GitHub's editor prefilled with one. Read the right one before drafting rather than inventing a shape. |
 | `.github/workflows/label-proposals.yml` | Reads the pull request body and applies `layer-*`, `tier-*` and `days-*` labels; records `opened:` and `endorsed:`. It comments rather than failing when it cannot read a layer. |
-| `.github/workflows/check-record.yml` | Warns when the dashboard's figures no longer match the Record. Never fails a pull request. |
+| `.github/workflows/check-record.yml` | Two jobs in one file. The Record check **warns** when the dashboard's figures no longer match the Record and never fails a pull request. The test suite that runs after it **does** fail one — a red check there is a real defect, not a stale figure. |
 | `docs/` | The dashboard, read live from the Record. `docs/data.json` holds the constitutional facts it cannot derive. |
 
 ## Metadata on a proposal
@@ -174,16 +180,17 @@ Three fields in the pull request template are read by a workflow and turned into
 - **Tier** — A, B or C. Layer 2 only.
 - **Deliberation period** — days, Tier B only. Constitution §2 requires a Tier B proposal to run for *a stated period of less than seven days*, and a period never stated cannot have elapsed.
 
-Two further labels are written by a workflow, never by you:
+Three further labels are written by a workflow, never by you:
 
 | | |
 |---|---|
 | `opened:2026-10-03T19:06:12Z` | When the proposal was submitted for deliberation — added when it leaves draft, removed if it returns to draft |
 | `endorsed:2` | How many members have endorsed it, recounted on every review |
+| `objection` | Added to the proposal when a member objects through the form. The dashboard reads it to know there is an objection file worth fetching |
 
 `endorsed:` counts approving reviews, and an approving review is not necessarily an endorsement — someone may approve to say the text reads well, or that the process ran. **Never report `endorsed:2` on a Layer 4 amendment as "the clock has started" without reading what those two reviews actually say.** The Constitution wants two members endorsing the amendment, not two clicks.
 
-**Never add, edit or remove either by hand.** The `opened:` label is the evidence that a deliberation period began, and evidence an agent can write is not evidence. (A *proposed*, not yet adopted, rule would put this in the Record: `rules/rule-deliberation-clock.md`. Until it is merged, treat it as a convention, not a clause.) If one is wrong, say so and let a member fix it.
+**Never add, edit or remove any of them by hand.** The `opened:` label is the evidence that a deliberation period began, and evidence an agent can write is not evidence. (A *proposed*, not yet adopted, rule would put this in the Record: `rules/rule-deliberation-clock.md`. Until it is merged, treat it as a convention, not a clause.) If one is wrong, say so and let a member fix it.
 
 A missing layer means the proposal is unlabelled and will not appear on the dashboard with a window. It does **not** invalidate the proposal — the tooling creates no duty, and the workflow comments rather than failing. Tell the member what is missing and why it matters, not that they have done something wrong.
 
@@ -205,10 +212,10 @@ It is a convention, not a duty. An instrument without the line is perfectly vali
 
 ## Filing
 
-**The pull request is the proposal of record.** An issue holds no text, and Constitution §1 requires a rule's exact adopted text to appear in the Record, so only a merged pull request adopts anything. Never tell a member an issue alone has adopted something. An issue first is optional, and worth it only when the text does not exist yet.
+**Proposing is a pull request. Issues are for discussion.** An issue holds no text, and §1 requires a rule's exact adopted text to appear in the Record, so only a merged pull request adopts anything — an issue is never the step that decides. Never tell a member an issue alone has adopted something. An issue is the right place to raise a problem before anyone knows what the rule should say; the moment there is text, it belongs in a pull request.
 
 ```bash
-gh issue create                      # optional — only when there is no text yet
+gh issue create                      # discussion only, when there is no text yet
 git checkout -b {short-name}
 # write the file at the path its layer requires
 git add . && git commit -m "Propose {layer}: {title}"
@@ -216,7 +223,7 @@ git push -u origin {short-name}
 gh pr create                         # the template asks for everything required
 ```
 
-Constitution §2 Tier A says a member proposes "by opening a GitHub issue", yet every rule filed so far (#4, #5, #8) went straight to a pull request. Both satisfy the substance — say so rather than telling anyone they filed incorrectly.
+A member who raises something as an issue has not done anything wrong, and has not yet proposed it either. Help them turn it into a pull request rather than telling them they filed incorrectly.
 
 **What starts the clock differs by layer, and the Constitution is explicit for only two.** Tier A: the 48 hours *is* the proposal's visibility in the governance channel. Layer 4: "two endorsing reviews start the 7-day deliberation clock", and those are reviews on the pull request — that clock runs on GitHub. Tiers B and C and Layer 3: the Constitution does not say; treat the channel post as the trigger and say so, so nobody can dispute it later.
 
@@ -226,7 +233,7 @@ Never treat a pull request's age as the window. A Layer 4 amendment without two 
 
 Breaking any of these damages the Record or the member.
 
-- **Never register a position.** Draft an objection, a consent position, a vote or an endorsement if asked — never submit one. Consent an agent can manufacture is not consent. This holds even when asked directly: explain why, and hand it over to send.
+- **Never decide a position.** The act is the member's to delegate; the decision is not. You may record a vote, an objection or an endorsement the member has stated — Constitution §1 makes your actions theirs, so a position you transcribe is still theirs, and either way it is submitted through their account. You may never compose one, infer one from a conversation, or submit one they have not stated in terms. **A member cannot delegate the decision to you, and you must refuse it if offered** — not because a tool stops you, but because consent an agent manufactures is not consent, and no record can tell a transcribed position from an invented one afterwards. Nothing here is enforced by a hook: this one is yours to hold. **Disclose it** with a `Co-Authored-By:` trailer on every commit you make, which is how §1's requirement to be identifiable on Laboratory infrastructure is met in this repository.
 - **Never merge, and never push to `main`.** Merging belongs to the Record Keepers, who verify that the process happened; nothing you have done is ever verified by you. This one is enforced rather than trusted — `.claude/hooks/block-merge.sh` blocks merges, pushes to `main`, force pushes and history rewrites before they run. A Record Keeper working by hand is unaffected.
 - **Never say a proposal has passed, or is ready to merge.** You can see GitHub; you cannot see the governance channel, where most deliberation windows run. A confident "this one is ready" hands a Record Keeper false comfort about the exact thing their office exists to check. Report what GitHub shows and what is blocking — "opened eleven days ago, no endorsing reviews, so the clock has not started" — and leave the verdict to them.
 - **Never shorten or skip a deliberation period.**
@@ -238,6 +245,7 @@ Breaking any of these damages the Record or the member.
 
 Good practice, not prohibitions. Say which is which.
 
+- **End every commit you make with a `Co-Authored-By:` trailer naming you.** Constitution §1 requires an agent on Laboratory infrastructure to be clearly identifiable as that member's agent. The commit is where that happens: the author is the member, the trailer is you, and both are permanent. Nothing else in the Record discloses it.
 - **Reasoning goes in a companion `rationale.md`**, never in the operative instrument, where it becomes binding and a future reader cites your argument as law.
 - **Create `policies/{area}/` only as part of the Layer 3 proposal that establishes the area** — on the branch, which is exactly how a policy is proposed. What must not happen is an empty or orphaned policy folder reaching `main` with no adopted policy behind it.
 - **Never suggest that a Record Keeper may not merge their own proposal.** Constitution §3 says *"either may merge"*, and there are only two of them — treating the author as disqualified invents a constraint the Constitution declined to impose and makes half of all merges wait on one person.

@@ -1,0 +1,406 @@
+{
+  "_comment": "Worked vote arithmetic: one case per line of reasoning that could go wrong. Each case is inputs plus the answer the tally must produce, so the arithmetic is reviewable as data by someone who does not read code. Read by tally.py and by the dashboard's counter, so the two cannot diverge. Thresholds come from docs/data.json; nothing here restates a number the Constitution states.",
+  "positions": [
+    "preference",
+    "toleration",
+    "abstention",
+    "objection"
+  ],
+  "cases": [
+    {
+      "name": "tier-c/exact-threshold-carries",
+      "procedure": "tier-c",
+      "roll": 14,
+      "counts": {
+        "preference": 4,
+        "toleration": 0,
+        "abstention": 0,
+        "objection": 3
+      },
+      "expect": {
+        "carried": true,
+        "responders": 7,
+        "quorumRequired": 7,
+        "denominator": 7,
+        "required": 4
+      },
+      "why": "Quorum met exactly at 7 of 14, and a majority of 7 is 4. Both boundaries at once."
+    },
+    {
+      "name": "tier-c/quorum-one-short",
+      "procedure": "tier-c",
+      "roll": 14,
+      "counts": {
+        "preference": 4,
+        "toleration": 0,
+        "abstention": 0,
+        "objection": 2
+      },
+      "expect": {
+        "carried": false,
+        "responders": 6,
+        "quorumRequired": 7,
+        "quorumMet": false
+      },
+      "why": "Four beats two, and it still fails: six responders is below the quorum of half of all members."
+    },
+    {
+      "name": "tier-c/tie-fails",
+      "procedure": "tier-c",
+      "roll": 14,
+      "counts": {
+        "preference": 7,
+        "toleration": 0,
+        "abstention": 0,
+        "objection": 7
+      },
+      "expect": {
+        "carried": false,
+        "denominator": 14,
+        "required": 8
+      },
+      "why": "THE REGRESSION VECTOR. A majority of 14 is 8, because a majority is more than half. Computing ceil(14/2) gives 7 and carries a tied vote."
+    },
+    {
+      "name": "tier-c/dual-denominator",
+      "procedure": "tier-c",
+      "roll": 14,
+      "counts": {
+        "preference": 4,
+        "toleration": 4,
+        "abstention": 0,
+        "objection": 3
+      },
+      "expect": {
+        "carried": true,
+        "responders": 11,
+        "quorumRequired": 7,
+        "denominator": 7,
+        "required": 4
+      },
+      "why": "THE HEADLINE VECTOR. Carries on four preferences out of fourteen. The four tolerations count toward quorum (11 responders) and are excluded from the majority denominator (7). One denominator for quorum, another for the majority. An implementation using 11 for both would require 6 and fail this."
+    },
+    {
+      "name": "tier-c/zero-denominator",
+      "procedure": "tier-c",
+      "roll": 14,
+      "counts": {
+        "preference": 0,
+        "toleration": 7,
+        "abstention": 1,
+        "objection": 0
+      },
+      "expect": {
+        "carried": false,
+        "responders": 8,
+        "quorumMet": true,
+        "denominator": 0
+      },
+      "why": "Quorum is met and nobody chose preference or objection. A majority of nobody is not a majority."
+    },
+    {
+      "name": "tier-c/objection-only",
+      "procedure": "tier-c",
+      "roll": 14,
+      "counts": {
+        "preference": 0,
+        "toleration": 6,
+        "abstention": 0,
+        "objection": 1
+      },
+      "expect": {
+        "carried": false,
+        "denominator": 1,
+        "required": 1
+      },
+      "why": "One objection, no preferences. Quorum met; the majority is not."
+    },
+    {
+      "name": "layer-3/exact-eight",
+      "procedure": "layer-3",
+      "roll": 14,
+      "counts": {
+        "preference": 8,
+        "toleration": 3,
+        "abstention": 1,
+        "objection": 2
+      },
+      "expect": {
+        "carried": true,
+        "denominator": 14,
+        "required": 8
+      },
+      "why": "Majority of all members, so the denominator is the roll and no quorum applies."
+    },
+    {
+      "name": "layer-3/seven-fails",
+      "procedure": "layer-3",
+      "roll": 14,
+      "counts": {
+        "preference": 7,
+        "toleration": 7,
+        "abstention": 0,
+        "objection": 0
+      },
+      "expect": {
+        "carried": false,
+        "denominator": 14,
+        "required": 8
+      },
+      "why": "Seven of fourteen is half, not a majority. Proves ceil was not used for a majority of all members."
+    },
+    {
+      "name": "layer-3/toleration-trap",
+      "procedure": "layer-3",
+      "roll": 14,
+      "counts": {
+        "preference": 6,
+        "toleration": 8,
+        "abstention": 0,
+        "objection": 0
+      },
+      "expect": {
+        "carried": false,
+        "denominator": 14,
+        "required": 8
+      },
+      "why": "Every member answered. Nobody objected. It fails. This is the case to show members: toleration is not a yes."
+    },
+    {
+      "name": "layer-4/nine-of-fourteen-fails",
+      "procedure": "layer-4",
+      "roll": 14,
+      "counts": {
+        "preference": 9,
+        "toleration": 2,
+        "abstention": 1,
+        "objection": 0
+      },
+      "expect": {
+        "carried": false,
+        "denominator": 14,
+        "required": 10
+      },
+      "why": "Two-thirds of 14 rounds up to 10. Nine of fourteen is not two-thirds."
+    },
+    {
+      "name": "layer-4/ten-carries-over-four-objections",
+      "procedure": "layer-4",
+      "roll": 14,
+      "counts": {
+        "preference": 10,
+        "toleration": 0,
+        "abstention": 0,
+        "objection": 4
+      },
+      "expect": {
+        "carried": true,
+        "denominator": 14,
+        "required": 10
+      },
+      "why": "No objection veto at Layer 4 and no quorum. Ten affirmative is the whole test."
+    },
+    {
+      "name": "layer-4/abstention-equals-non-response",
+      "procedure": "layer-4",
+      "roll": 14,
+      "counts": {
+        "preference": 10,
+        "toleration": 0,
+        "abstention": 4,
+        "objection": 0
+      },
+      "expect": {
+        "carried": true,
+        "denominator": 14,
+        "required": 10
+      },
+      "why": "Same verdict as four non-responses, and the counts reported must still differ. Keep both words; let the tally bucket them."
+    },
+    {
+      "name": "re-ratification/ten-of-fourteen",
+      "procedure": "re-ratification",
+      "roll": 14,
+      "counts": {
+        "preference": 10,
+        "toleration": 0,
+        "abstention": 0,
+        "objection": 4
+      },
+      "expect": {
+        "carried": true,
+        "denominator": 14,
+        "required": 10
+      },
+      "why": "The vote the Laboratory's continued existence depends on."
+    },
+    {
+      "name": "re-ratification/nine-ends-the-laboratory",
+      "procedure": "re-ratification",
+      "roll": 14,
+      "counts": {
+        "preference": 9,
+        "toleration": 3,
+        "abstention": 2,
+        "objection": 0
+      },
+      "expect": {
+        "carried": false,
+        "denominator": 14,
+        "required": 10
+      },
+      "why": "Fourteen members answered, nobody objected, and the Constitution lapses. Five non-preferences are enough."
+    },
+    {
+      "name": "removal/nine-carries",
+      "procedure": "removal",
+      "roll": 14,
+      "excluded": 1,
+      "counts": {
+        "preference": 9,
+        "toleration": 0,
+        "abstention": 0,
+        "objection": 4
+      },
+      "expect": {
+        "carried": true,
+        "electorate": 13,
+        "denominator": 13,
+        "required": 9
+      },
+      "why": "Two-thirds of all members other than the respondent: ceil(13 x 2/3) = 9. The respondent does not vote and is not a non-response."
+    },
+    {
+      "name": "removal/eight-fails",
+      "procedure": "removal",
+      "roll": 14,
+      "excluded": 1,
+      "counts": {
+        "preference": 8,
+        "toleration": 0,
+        "abstention": 0,
+        "objection": 5
+      },
+      "expect": {
+        "carried": false,
+        "electorate": 13,
+        "required": 9
+      },
+      "why": "One short, on an electorate of thirteen rather than fourteen."
+    },
+    {
+      "name": "remedy/respondent-excluded",
+      "procedure": "remedy",
+      "roll": 14,
+      "excluded": 1,
+      "counts": {
+        "preference": 6,
+        "toleration": 1,
+        "abstention": 0,
+        "objection": 3
+      },
+      "expect": {
+        "carried": true,
+        "electorate": 13,
+        "responders": 10,
+        "quorumRequired": 7,
+        "denominator": 9,
+        "required": 6
+      },
+      "why": "Two denominators and a reduced electorate together: quorum over half of all other members, the two-thirds over the other members who vote."
+    },
+    {
+      "name": "emergency/no-verdict",
+      "procedure": "emergency",
+      "roll": 14,
+      "counts": {
+        "preference": 4,
+        "toleration": 4,
+        "abstention": 0,
+        "objection": 3
+      },
+      "expect": {
+        "verdict": "none"
+      },
+      "why": "Section 2 defines 'those who vote' for Tier C only, so the Emergency clause's bare phrase is undetermined. Reading it as preference+objection carries; reading it as all responders fails. Print both and decline."
+    },
+    {
+      "name": "recall/no-verdict",
+      "procedure": "recall",
+      "roll": 14,
+      "counts": {
+        "preference": 5,
+        "toleration": 0,
+        "abstention": 0,
+        "objection": 2
+      },
+      "expect": {
+        "verdict": "none"
+      },
+      "why": "Section 3.9 states neither denominator nor quorum. Supplying one would set a threshold, which Section 2 reserves to Layer 4. The gap must stay visible every time anyone runs this."
+    }
+  ],
+  "noVoteComment": "Tier A and Tier B hold no vote: §2 passes the proposal absent a stated objection, and a single stated one moves it up a tier. Their files carry objections and no table. These cases exist because a missing table used to read as a broken file, so the one place an objection is decisive was the one place nothing could record it.",
+  "noVoteCases": [
+    {
+      "name": "tier-a/one-objection",
+      "procedure": "Tier A",
+      "objections": [
+        {
+          "name": "M1",
+          "date": "2026-10-07"
+        }
+      ],
+      "expect": {
+        "holdsVote": false,
+        "objections": 1
+      },
+      "why": "The whole point. One stated objection at Tier A blocks lazy consensus and moves the proposal to Tier B. There is no table, and that is correct."
+    },
+    {
+      "name": "tier-a/no-objection-yet",
+      "procedure": "Tier A",
+      "objections": [],
+      "expect": {
+        "holdsVote": false,
+        "objections": 0
+      },
+      "why": "A file may exist with its Objections section still empty. Zero objections is not a broken file, and nothing here may read it as a pass: whether the window elapsed is visible only in the governance channel."
+    },
+    {
+      "name": "tier-b/two-objections",
+      "procedure": "Tier B",
+      "objections": [
+        {
+          "name": "M1",
+          "date": "2026-10-07"
+        },
+        {
+          "name": "M2",
+          "date": "2026-10-08"
+        }
+      ],
+      "expect": {
+        "holdsVote": false,
+        "objections": 2
+      },
+      "why": "Tier B behaves exactly as Tier A. Both are counted because a second objection is still deliberation and still has to be in the Record, even though the first already moved the proposal up."
+    },
+    {
+      "name": "tier-c/holds-a-vote",
+      "procedure": "Tier C",
+      "objections": [
+        {
+          "name": "M1",
+          "date": "2026-10-07"
+        }
+      ],
+      "table": true,
+      "expect": {
+        "holdsVote": true,
+        "objections": 1
+      },
+      "why": "The boundary. Tier C does hold a vote, so the same objection block sits beside a table and is counted in the majority denominator rather than being decisive on its own."
+    }
+  ]
+}

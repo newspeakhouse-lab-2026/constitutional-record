@@ -1,0 +1,114 @@
+# An objection at Tier A or Tier B is decisive, and until now nothing enforced it.
+#
+# §2, Tier A: "A single stated objection is sufficient to block lazy consensus and
+# move the proposal to Tier B."
+# §2, Tier B: "A single stated objection at this tier moves the proposal to Tier C."
+#
+# So a proposal carrying a stated objection cannot be adopted AT THE TIER WHERE IT
+# WAS RAISED. It is not dead — §2 moves it up, never down — but it has stopped
+# passing by silence, and merging it at that tier adopts something §2 says is still
+# being deliberated.
+#
+# This check fails only in that case. It does NOT fire at Tier C, Layer 3 or
+# Layer 4, where an objection is opposition that can be outvoted: 8 preferring and
+# 6 objecting still carries a Layer 3 policy, and a check that blocked it would be
+# inventing a veto the Constitution declined to give.
+#
+# It is cleared by doing what §2 says: relabel the proposal to the next tier and
+# deliberate again. Or by the objector withdrawing, which removes their block from
+# the file.
+#
+# A Record Keeper can still merge past it — §3 gives them the verification, and a
+# tool must not be able to overrule the office that exists to check tools. This
+# makes the mistake loud, not impossible.
+
+name: Objection check
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, labeled, unlabeled, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  objection:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const labels = (pr.labels || []).map(l => String((l && l.name) || ''));
+            const tier = labels.includes('tier-a') ? 'A'
+                       : labels.includes('tier-b') ? 'B' : null;
+
+            /* Only these two tiers. Everywhere else an objection is counted, not
+               decisive, and blocking would invent a veto §2 declined to give. */
+            if (!tier) {
+              core.info('Not Tier A or Tier B, so an objection here is counted rather than decisive. Nothing to check.');
+              return;
+            }
+
+            const path = `votes/pr-${pr.number}.md`;
+            let text = null;
+            try {
+              const r = await github.rest.repos.getContent({
+                owner: context.repo.owner, repo: context.repo.repo,
+                path, ref: pr.head.sha });
+              text = Buffer.from(r.data.content, 'base64').toString('utf8');
+            } catch (e) {
+              if (e.status !== 404) {
+                /* A 403 or 500 is GitHub being unavailable. Failing the pull
+                   request on that would block a merge on the strength of a
+                   transient fault, which is worse than the thing being guarded. */
+                core.warning(`Could not read ${path} (GitHub answered ${e.status}). This is not a statement that no objection exists; it is a statement that this check could not find out.`);
+                return;
+              }
+            }
+
+            if (text === null) {
+              core.info(`No ${path} on this branch, so no objection is recorded in the Record.`);
+              return;
+            }
+
+            /* Bounded to its own section: ## Notes holds blocks of the same shape,
+               and counting those as objections would block a proposal nobody
+               objected to. Comments are stripped first so the anchors do not
+               double-count. */
+            const clean = text.replace(/<!--[\s\S]*?-->/g, '');
+            const section = (clean.split(/^## Objections[^\n]*$/m)[1] || '').split(/^## /m)[0];
+            const objectors = [...section.matchAll(/^\*\*(.+?)\*\*\s*[—–-]\s*(\S+)/gm)]
+              .map(m => m[1].trim());
+
+            if (!objectors.length) {
+              core.info(`${path} records no objection.`);
+              return;
+            }
+
+            const next = tier === 'A' ? 'B' : 'C';
+            const who = objectors.length === 1 ? objectors[0]
+              : `${objectors.slice(0, -1).join(', ')} and ${objectors[objectors.length - 1]}`;
+
+            core.summary.addHeading(`Objected at Tier ${tier}`, 2);
+            core.summary.addRaw([
+              `**${who}** ${objectors.length === 1 ? 'has' : 'have'} objected, so this cannot pass on silence.`,
+              '',
+              `Section 2: *a single stated objection is sufficient to block lazy consensus and move the`,
+              `proposal to Tier ${next}.* It does not stop the proposal — it moves it up, never down.`,
+              '',
+              `**To clear this:** relabel the proposal \`tier-${next.toLowerCase()}\` and deliberate again`,
+              `for the period that tier requires. The objection stays in \`${path}\`; an escalation does`,
+              `not clear it, any more than a restart does.`,
+              '',
+              `If the objection has been withdrawn, the member removes their own block from the file.`,
+              '',
+              `A Record Keeper can merge past this check. Section 3 gives them the verification, and a`,
+              `tool must not overrule the office that exists to check tools.`,
+            ].join('\n'));
+            await core.summary.write();
+
+            core.setFailed(
+              `Objected at Tier ${tier} by ${who}. Section 2 moves this to Tier ${next}; ` +
+              `it cannot be adopted at Tier ${tier}. Relabel it tier-${next.toLowerCase()} and deliberate again.`);

@@ -6,10 +6,13 @@ says the tooling creates no duty, and an amendment is valid whatever our JSON
 happens to contain. The job is to tell whoever is amending the Constitution,
 at the moment they amend it, that something else needs updating too.
 
-Three checks:
+Six checks:
   1. Every sentence docs/data.json quotes still appears in constitution.md.
   2. Every instant agrees with the wall-clock time its own quote states.
   3. Every instrument that expires declares it in a form the page can read.
+  4. Every vote's written result still matches its own rows.
+  5. Every vote that restarted records what the earlier round decided.
+  6. Every recorded outcome carries the amendment record §1 requires.
 """
 import json, re, sys, glob
 from datetime import datetime
@@ -98,7 +101,10 @@ def main():
 
     # 1 — quotes still present
     entries = [("procedures." + k, v) for k, v in data.get("procedures", {}).items()]
+    entries += [("thresholds." + k, v) for k, v in data.get("thresholds", {}).items()]
     entries += [("fixed[%d]" % i, v) for i, v in enumerate(data.get("fixed", []))]
+    if "rounding" in data:
+        entries.append(("rounding", data["rounding"]))
     for name, e in entries if cn else []:
         if "quote" not in e:
             warn("docs/data.json", f"{name} has no quote, so nothing can verify it against the Constitution")
@@ -170,6 +176,82 @@ def main():
                        "so its expiry will not appear on the dashboard. Add one, for example: "
                        "**Ends:** 23:59 UK time, Monday 30 November 2026 "
                        "(`2026-11-30T23:59:00+00:00`) — reason")
+
+    # 4 — a vote's written result still matches its own rows
+    #
+    # Warns, never decides. Section 3 gives the outcome to a Record Keeper; this
+    # only makes a disagreement visible, because the likeliest failure here is
+    # two people counting Tier C differently in good faith, not an attack.
+    import tally
+    for path in sorted(glob.glob("votes/*.md")):
+        text = read(path)
+        if text is None:
+            continue
+        parsed, err = tally.parse(text)
+        if err:
+            warn(path, f"this vote cannot be recounted: {err}")
+            continue
+        got = tally.tally(parsed["procedure"], parsed["roll"], parsed["counts"],
+                          data.get("thresholds", {}), parsed["excluded"],
+                          no_vote=not parsed.get("holdsVote", True),
+                          objections=parsed.get("objections") or ())
+        clean = re.sub(r"<!--.*?-->", "", text, flags=re.S)
+        # A restart means a round closed. If its outcome was never written into
+        # Earlier rounds, it survives only in git history — which is still the
+        # Record, but nothing on the page or in this file can say what happened.
+        if parsed.get("restarted") and not parsed.get("earlier"):
+            warn(path, "this vote says it restarted but records no earlier round, so the outcome of "
+                       "the round that closed is not written down. Add a line under Earlier rounds; "
+                       "`git log -p " + path + "` has the detail.")
+        # 6 -- §1 requires five things recorded for every adopted amendment, and
+        # the pull request body that also asks for them is discarded at merge: a
+        # merge commit carries the title, not the body. So a file that records an
+        # outcome and no amendment record is a decision whose reasoning left no
+        # trace. Warns, like everything else here -- the tooling creates no duty,
+        # and §1's requirement binds whether or not this file notices.
+        FIELDS = ["How it was made", "Assumptions", "Status",
+                  "Notes from the discussion", "Abstentions or objections"]
+        has_outcome = re.search(r"^\*\*(Carried|Did not carry)\b", clean, re.M) \
+            or (parsed.get("objections") and not parsed.get("holdsVote", True))
+        if has_outcome:
+            sec = re.search(r"^## Amendment record\s*$(.*?)(?=^## |\Z)", clean, re.M | re.S)
+            if not sec:
+                warn(path, "this records an outcome but has no `## Amendment record` section. "
+                           "\u00a71 requires five things recorded for every amendment to the Constitution "
+                           "or a rule, and the pull request body that also asks for them is discarded "
+                           "at merge. `.github/instrument-templates/vote.md` has the section.")
+            else:
+                body = sec.group(1)
+                missing = [f for f in FIELDS
+                           if not re.search(r"^\*\*" + re.escape(f) + r":\*\*[^\S\n]*(\S.*)$", body, re.M)
+                           or re.search(r"^\*\*" + re.escape(f) + r":\*\*[^\S\n]*<", body, re.M)]
+                if missing:
+                    warn(path, "the `## Amendment record` is incomplete \u2014 " + ", ".join(missing)
+                               + (" is" if len(missing) == 1 else " are") + " still blank or still the "
+                               "template's placeholder. \u00a71 asks for each of them.")
+
+        stated = re.search(r"^\*\*(Carried|Did not carry)\b", clean, re.M)
+        if not stated:
+            continue  # no result written yet: an open vote, not a defect
+        said = stated.group(1) == "Carried"
+        if got.get("verdict") == "no-vote":
+            # §2: a single stated objection blocks lazy consensus and moves the
+            # proposal up a tier. A file recording both an objection and a pass
+            # is the one contradiction that matters at these tiers.
+            if said and got.get("objections"):
+                who = ", ".join(n for n, _ in got["objections"])
+                warn(path, f'the result says "Carried" but this file records an objection from {who}. '
+                           "At Tier A and Tier B a single stated objection blocks lazy consensus and moves "
+                           "the proposal up a tier (\u00a72), so one of the two is wrong.")
+            continue
+        if got.get("verdict") == "none":
+            warn(path, f'the result says "{stated.group(1)}", but {got["note"]} for this procedure, '
+                       f"so no arithmetic can confirm it. Record who decided and on what reading.")
+        elif got.get("carried") is not None and said != got["carried"]:
+            warn(path, f'the result says "{stated.group(1)}" but recounting the rows gives '
+                       f'"{"Carried" if got["carried"] else "Did not carry"}" — '
+                       f"{got['counts']['preference']} preference of {got.get('denominator')}, "
+                       f"needed {got.get('required')}. One of the two is wrong.")
 
     print(f"\n{len(warnings)} warning(s).")
     summary = __import__("os").environ.get("GITHUB_STEP_SUMMARY")

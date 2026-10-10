@@ -13,10 +13,18 @@ on:
   pull_request:
     paths:
       - 'constitution.md'
-      - 'docs/data.json'
+      - 'docs/**'
       - 'rules/**'
       - 'policies/**'
+      - 'votes/**'
       - '.github/workflows/label-proposals.yml'
+      # record-vote.yml was absent, so a pull request touching only it ran none
+      # of the tests written for it -- which is most of the suite.
+      - '.github/workflows/record-vote.yml'
+      - '.github/workflows/objection-check.yml'
+      - '.github/workflows/check-record.yml'
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/instrument-templates/**'
       - '.github/scripts/**'
   workflow_dispatch:
 
@@ -37,3 +45,37 @@ jobs:
       # means the workflow would mislabel a proposal.
       - name: Test the labelling workflow's logic
         run: node .github/scripts/test-label-proposals.mjs
+
+      # The arithmetic every vote depends on, against the worked cases in
+      # vote-cases.json. A failure here means a vote would be counted wrongly,
+      # so unlike the Record check it fails the pull request.
+      - name: Test the vote arithmetic
+        run: python3 .github/scripts/test-tally.py
+
+      # The Record check above never fails a pull request, which is right - but
+      # it means a check that silently stopped checking would look exactly like a
+      # Record with nothing wrong. This exercises its date comparisons directly,
+      # including the summer-time trap that has already put a deadline an hour
+      # out once, and a failure HERE is a real failure.
+      - name: Test the Record check's own date logic
+        run: python3 .github/scripts/test-check-record.py
+
+      # The merge block. What matters most here is that it does NOT fire at Tier C,
+      # Layer 3 or Layer 4, where §2 makes an objection countable rather than
+      # decisive - a check that blocked those would invent a veto.
+      - name: Test the objection merge block
+        run: node .github/scripts/test-objection-check.mjs
+
+      # The dashboard reads a vote file too. Its reader is extracted from
+      # index.html rather than copied, so a change to the page that broke the
+      # reading would fail here rather than misreport a live vote.
+      - name: Test the dashboard's vote reader
+        run: node .github/scripts/test-vote-parse.mjs
+
+      # record-vote.yml triggers on `issues`, which GitHub always runs from the
+      # default branch, so it cannot be exercised by the pull request that
+      # introduces it. This runs its logic against a stubbed API — including a
+      # forced write conflict, which is the case that proves a retry reapplies
+      # rather than resending stale bytes and erasing another member's row.
+      - name: Test the vote-recording workflow's logic
+        run: node .github/scripts/test-record-vote.mjs

@@ -3,7 +3,7 @@ This opened as a Policy (Layer 3), at policies/{area}/policy.md. The area came
 from what you typed in the dashboard; rename the file if it was wrong.
 
 A POLICY IS LAYER 3: one endorsement from another member, a preference mapping,
-seven days of deliberation, and 8 affirmative votes out of 14. File it as an
+seven days of deliberation, and affirmative support from a majority of all members. File it as an
 Ordinary rule only if it genuinely operates inside a frame that already exists —
 the layer follows what this does, not what is convenient, and where two layers
 are arguable the more demanding one applies.

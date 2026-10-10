@@ -18,6 +18,7 @@ deny() {
   exit 2
 }
 
+
 # This guards the Constitutional Record. Matching on the command alone blocked
 # pushes to main in every repository, which is wider than it claims. Identify the
 # repository first, and step aside for anything else — but fail closed, because a
@@ -26,7 +27,10 @@ origin=$(git config --get remote.origin.url 2>/dev/null)
 case "$origin" in
   *constitutional-record*) ;;   # the Record: everything below applies
   "")                      ;;   # cannot tell: fail closed
-  *) exit 0 ;;                  # some other repository: not this hook's business
+  # Some other repository. A copy of a Record made to test workflows is still a
+  # Record for this purpose, so identify one by its own files rather than by a
+  # name — that way a sandbox is covered without this hook naming it.
+  *) { [ -f constitution.md ] && [ -f members.md ]; } || exit 0 ;;
 esac
 
 norm=$(printf '%s' "$cmd" | tr -s '[:space:]' ' ')
@@ -39,6 +43,8 @@ case "$norm" in
     [ "$(git rev-parse --abbrev-ref HEAD 2>/dev/null)" = "main" ] && deny "a git merge while on main"
     ;;
   *"gh api"*"/merge"*)                   deny "a merge through the GitHub API" ;;
+  # Filing a vote through an issue has a workflow write the row, so the issue is
+  # the position. Proposals and every other kind of issue are untouched.
   *"git push"*" main"*|*"git push"*":main"*) deny "a push to main" ;;
   *"git push --force"*|*"git push -f"*)  deny "a force push — the Record's history is append-only (Constitution §1)" ;;
   *"git reset --hard"*)                  deny "git reset --hard" ;;

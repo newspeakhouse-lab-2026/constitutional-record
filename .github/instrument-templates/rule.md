@@ -6,7 +6,7 @@ is a time-limited experiment.
 If it turns out to be a Policy — it creates or redesigns the governance of an
 area, or creates an office — close this tab without committing and start again
 from the dashboard. A Policy is Layer 3: different path, one endorsement, seven
-days, and 8 of 14 in favour.
+days, and affirmative support from a majority of all members.
 
 Reasoning does not belong in this file. Put it in a companion rationale.md, or a
 future reader will cite your argument as law.

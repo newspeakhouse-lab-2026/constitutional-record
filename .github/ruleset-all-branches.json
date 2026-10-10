@@ -1,0 +1,13 @@
+{
+  "name": "no deleting or rewriting any branch",
+  "target": "branch",
+  "enforcement": "active",
+  "bypass_actors": [
+    { "actor_id": null, "actor_type": "OrganizationAdmin", "bypass_mode": "always" }
+  ],
+  "conditions": { "ref_name": { "include": ["~ALL"], "exclude": ["refs/heads/main"] } },
+  "rules": [
+    { "type": "deletion" },
+    { "type": "non_fast_forward" }
+  ]
+}

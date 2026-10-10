@@ -1,0 +1,74 @@
+name: "Record a position on a vote"
+description: Say preference, toleration, abstention or objection on an open vote. A workflow writes your row for you.
+title: "Vote: PR #"
+labels: ["vote"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Only `preference` counts as a yes.** At Layer 3, Layer 4 and re-ratification the Constitution asks for affirmative support from a fraction of *all* members — so toleration, abstention and never answering are the same number. None of them is a yes.
+
+        A workflow writes your row into `votes/pr-{number}.md` on the proposal's own branch, as you, and replies with a link to the commit. If it cannot, it says why, and you can edit the file directly — that always works.
+
+        **At Tier A and Tier B there is no vote.** Section 2 passes those absent a stated objection, so only an **objection** has an effect there — a single stated one is enough to move the proposal up a tier. Choose it and your reason and route forward are written into the Record; choose anything else and this form will say why it cannot record it.
+
+  - type: input
+    id: pr
+    attributes:
+      label: Pull request number
+      description: Digits only. A vote belongs to the pull request carrying the text, because an issue adopts nothing.
+      placeholder: "14"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: position
+    attributes:
+      label: Your position
+      description: "Section 2's four positions, in its own words. Pick deliberately — this is the whole vote."
+      options:
+        - "preference — I support this outcome. THE ONLY ANSWER THAT COUNTS AS A YES"
+        - "toleration — I may not be in favour, but I have no reasoned objection. Counted as an abstention, not a yes"
+        - "abstention — I do not take a position. Not a yes"
+        - "objection — I object. Fill in BOTH boxes below; Section 2 requires them"
+    validations:
+      required: true
+
+  - type: textarea
+    id: note
+    attributes:
+      label: Anything that would move your position
+      description: "Optional, and most useful on **toleration**. Section 2 defines toleration as having no reasoned objection — if something would change that, say what. Written into the vote file under Notes, word for word, and replaced rather than duplicated if you submit again."
+    validations:
+      required: false
+
+  - type: textarea
+    id: reason
+    attributes:
+      label: Your reason — required if you are objecting
+      description: "Leave empty unless you chose **objection**. Section 2 asks for an objection on the basis of potential harm to the Laboratory: what is the harm, and to whom? Written into the vote file word for word."
+    validations:
+      required: false
+
+  - type: textarea
+    id: route
+    attributes:
+      label: A suggested route forward — required if you are objecting
+      description: "Leave empty unless you chose **objection**. Section 2: an objection is offered alongside a route forward, *\"so that raising a concern moves the cohort closer to a decision rather than simply halting it.\"* It need not be a solution you are confident in — it has to be something the cohort can act on."
+    validations:
+      required: false
+
+  - type: input
+    id: discussion
+    attributes:
+      label: Link to the discussion
+      description: Optional. Where this was argued, for context. The operative sentences still go above, in the file.
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        **An objection missing a part is never discounted.** If something is incomplete you will be asked for the rest; nobody may treat your concern as absent because a box was blank. It stands as deliberation from the moment you raise it, and one objection moves an Ordinary proposal up a tier — never down.
+
+        Changed your mind? Submit this again while the window is open. Your row is updated, not duplicated, and the earlier one stays in the file's history.

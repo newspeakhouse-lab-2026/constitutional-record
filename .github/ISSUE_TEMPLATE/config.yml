@@ -5,4 +5,4 @@ contact_links:
     about: The authority. A proposal is classified by its actual effect, not by the label its proposer chooses.
   - name: How to propose, deliberate and record a decision
     url: https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/CONTRIBUTING.md
-    about: An issue cannot adopt anything — only a merged pull request does. Start here if you are unsure which you need.
+    about: Issues are for discussion and adopt nothing. To propose a rule, a policy or an amendment, open a pull request — the dashboard's Start a proposal button does it in the browser.
