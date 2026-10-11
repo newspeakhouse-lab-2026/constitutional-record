@@ -311,13 +311,31 @@ function render(d){
     ${d.stale.map(e=>`<span class="q">${esc(e.source)} was quoted as: &ldquo;${esc(e.quote)}&rdquo;</span>`).join("")}</div>`);
   else if(!d.checked) o.push(`<div class="warn">Could not read <code>constitution.md</code>, so the figures below are unverified.</div>`);
 
+  /* An instrument that ends WITH the Constitution is not announcing its own
+     expiry — it is restating §5, and every rule does that whether it says so or
+     not. Three of them currently do say so, so the list carried four rows for
+     one instant and would have carried one more with every rule written. They
+     fold into the Constitution's own row; the instrument's Ends: line is
+     untouched and still reads as it always did in the file itself. */
+  const SAME=6e4;   // same minute is the same deadline
+  const sharing={};
+  for(const e of d.ends||[]){
+    const f=(d.cfg.fixed||[]).find(x=>Math.abs(+new Date(x.at)-+new Date(e.at))<SAME);
+    if(f) (sharing[f.at]=sharing[f.at]||[]).push(e.name);
+  }
+
   for(const f of d.cfg.fixed||[]){
     const at=new Date(f.at), r=rem(at);
-    live.push({ms:r.ms,html:row(r.word,esc(f.label),
-      `<span class="tag ty">Constitution</span><span class="tag">${esc(f.source)}</span>${esc(f.note)}`,
-      r.txt,fmt(at),r.cls)});
+    const also=sharing[f.at]||[];
+    const bits=[`<span class="tag ty">Constitution</span><span class="tag">${esc(f.source)}</span>${esc(f.note)}`];
+    if(also.length)
+      bits.push(`<span class="quiet">${also.length} instrument${also.length>1?"s":""} ${
+        also.length>1?"end":"ends"} here too</span> — ${also.map(n=>`<code>${esc(n)}</code>`).join(", ")}`);
+    live.push({ms:r.ms,html:row(r.word,esc(f.label),bits.join(" &middot; "),r.txt,fmt(at),r.cls)});
   }
   for(const e of d.ends||[]){
+    // Already named on the row of the deadline it shares.
+    if((d.cfg.fixed||[]).some(x=>Math.abs(+new Date(x.at)-+new Date(e.at))<SAME)) continue;
     const r=rem(e.at);
     live.push({ms:r.ms,html:row(r.word,esc(e.name),
       `<span class="tag ty">Instrument</span>${esc(e.why||"")}`,r.txt,fmt(e.at),r.cls)});
