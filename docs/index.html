@@ -23,7 +23,22 @@
       <span class="stamp" id="stamp" aria-live="polite">reading the Record…</span>
     </nav>
   </header>
-  <main id="out" aria-busy="true"></main>
+
+  <!-- Two tabs, one page. The history answers a different question from the rest
+       and most visits never ask it, so its data is not fetched until the tab is
+       opened. Real buttons in a real tablist: a screen reader is told these are
+       tabs, arrow keys move between them, and the panel each controls is named. -->
+  <div class="tabs" role="tablist" aria-label="What to look at">
+    <button type="button" role="tab" id="tab-now" aria-controls="panel-now"
+            aria-selected="true">What needs attention</button>
+    <button type="button" role="tab" id="tab-history" aria-controls="panel-history"
+            aria-selected="false" tabindex="-1">How the Record got here</button>
+  </div>
+
+  <main>
+    <div id="panel-now" role="tabpanel" aria-labelledby="tab-now" aria-busy="true"></div>
+    <div id="panel-history" role="tabpanel" aria-labelledby="tab-history" hidden></div>
+  </main>
   <dialog id="pick">
     <h3>Start a proposal</h3>
     <p class="note" style="padding-left:0">What you are filing decides where it goes, and where it goes
@@ -838,11 +853,11 @@ function render(d){
   /* The dialogs go in after the rows that trigger them, once, rather than being
      nested inside each row: a <dialog> inside a grid cell inherits the cell's
      clipping and width. */
-  $("#out").innerHTML=o.join("")+MODALS.join("");
-  $("#out").setAttribute("aria-busy","false");
+  $("#panel-now").innerHTML=o.join("")+MODALS.join("");
+  $("#panel-now").setAttribute("aria-busy","false");
   // Announced on its own now, so it says what it is rather than a bare time.
   /* Delegated, so it survives every redraw without being re-attached — and
-     attached to the document rather than to #out, whose contents are replaced. */
+     attached to the document rather than to a panel, whose contents are replaced. */
   /* Fetch the next few comparisons and redraw. The ones already read come from
      the cache, so this costs only what has not been looked at. */
   const mb=$("#morebranches");
@@ -920,6 +935,168 @@ document.addEventListener("click",async e=>{
   }));
 });
 
+/* ---- the history tab ------------------------------------------------------
+   Nothing here runs until the tab is opened. It answers a different question
+   from the panel beside it — how a decision was made, rather than what needs
+   attention now — and most visits never ask it, so most visits should not pay
+   for it. GitHub's own merged-pull-request list cannot answer it either: the
+   vote outcome lives in a file, not in the pull request. */
+let histLoaded=false, histData=null, histShown=10;
+const HIST_PAGE=10;
+
+async function collectHistory(){
+  const [closedF, treeF] = await Promise.all([
+    apiOrLast("/pulls?state=closed&sort=updated&direction=desc&per_page=100"),
+    apiOrLast("/git/trees/main?recursive=1")]);
+  const closed=closedF.v, tree=treeF.v;
+  const at={};
+  for(const e of (tree&&tree.tree)||[]) if(e.type==="blob") at[e.path]=e.sha;
+  const merged=(closed||[]).filter(p=>p.merged_at)
+    .sort((a,b)=>new Date(b.merged_at)-new Date(a.merged_at));
+
+  /* Keyed on constitution.md's own blob SHA, so the whole amendment history is
+     read once and never again until the Constitution actually changes. The
+     per-commit lookup that finds which pull request each amendment arrived
+     through is the only cost here that grows with the Record; it is what lets a
+     constitutional change annotate the proposal that carried it rather than
+     appear as a second entry for the same event. */
+  let amendments=[];
+  if(at["constitution.md"]){
+    const hk="hist:"+at["constitution.md"];
+    let hit=null; try{ hit=localStorage.getItem(hk) }catch{}
+    if(hit!==null){ try{ amendments=JSON.parse(hit) }catch{} }
+    else try{
+      const cs=(await api("/commits?path=constitution.md&per_page=20"))
+        .filter(c=>(c.parents||[]).length<2).slice(0,20);
+      amendments=await Promise.all(cs.map(async c=>{
+        let prs=[];
+        try{ prs=(await api(`/commits/${c.sha}/pulls`)).map(x=>x.number) }catch{}
+        return {sha:c.sha.slice(0,7), url:c.html_url, at:c.commit.committer.date,
+                msg:(c.commit.message||"").split("\n")[0],
+                who:(c.author&&c.author.login)||c.commit.author.name, prs};
+      }));
+      try{ localStorage.setItem(hk,JSON.stringify(amendments)) }catch{}
+    }catch{}
+  }
+
+  // Read from raw, so the vote each adopted proposal carried costs nothing.
+  const mergedVotes={};
+  await Promise.all(merged.slice(0,10).map(async p=>{
+    const path=`votes/pr-${p.number}.md`;
+    if(!at[path]) return;
+    try{ const v=voteOf(await file(path,"main",at[path])); if(v) mergedVotes[p.number]=v; }catch{}
+  }));
+  return {merged, amendments, mergedVotes, shas:at};
+}
+
+function renderHistory(d){
+  histData=d;
+  const o=[];
+  // One history. A change to the Constitution that arrived through a pull request
+  // is an annotation on that pull request, not a second entry for the same event.
+  const am=d.amendments||[], byPR={};
+  for(const a of am) for(const n of (a.prs||[])) (byPR[n]=byPR[n]||[]).push(a);
+  const founding=am.length?am[am.length-1]:null;
+  const events=[
+    ...(d.merged||[]).map(m=>({at:new Date(m.merged_at),m,amends:byPR[m.number]||[]})),
+    ...am.filter(a=>!a.prs||!a.prs.length).map(a=>({at:new Date(a.at),a}))
+  ].sort((x,y)=>y.at-x.at);
+
+  o.push(`<h2>Changes to the Record <em>${events.length}</em></h2>`);
+  o.push(`<p class="note">Every change that has entered <code>main</code>, newest first; changes to
+    the Constitution are marked. Whether the deliberation each one records actually happened is for a
+    Record Keeper to verify — most of it runs in the governance channel, which this page cannot see.</p>`);
+
+  o.push(events.length?events.slice(0,histShown).map(e=>{
+    if(e.m){
+      const parts=[`@${esc(e.m.user?e.m.user.login:"unknown")}`];
+      if(e.amends.length) parts.push(`<span class="warnish">amended the Constitution</span> `
+        + e.amends.map(a=>`<a href="${a.url}">${a.sha}</a>`).join(", "));
+      const vpath=`votes/pr-${e.m.number}.md`;
+      const mv=(d.mergedVotes||{})[e.m.number];
+      let voteLine="";
+      if((d.shas||{})[vpath]){
+        const bits=[];
+        if(mv&&mv.result){
+          bits.push(`<strong>vote ${mv.result.carried?"carried":"did not carry"}</strong>`
+            +(mv.result.affirmative!=null
+              ? ` — ${mv.result.affirmative} of ${mv.result.of} affirmative, needed ${mv.result.needed}`
+              : ``));
+          /* A proposal that failed once and passed after amendment is a different
+             thing from one that passed first time, and §1's amendment record asks
+             how a decision was made. The detail is in the file. */
+          if(mv.rounds>1) bits.push(`after ${mv.rounds} rounds`);
+        } else bits.push(`<strong>vote recorded</strong>, with no result written into it`);
+        bits.push(`<a href="https://github.com/${REPO}/blob/main/${vpath}">the vote</a>`);
+        voteLine=bits.join(" · ");
+      }
+      return row("",`<span class="num">#${e.m.number}</span><a href="${e.m.html_url}">${esc(e.m.title)}</a>`,
+        parts.join(" &middot; "),"",fmt(e.at),"idle",voteLine);
+    }
+    const a=e.a;
+    return row("",esc(a.msg),
+      `@${esc(a.who)} &middot; <a href="${a.url}">${a.sha}</a> &middot; `
+      + (a===founding?`the commit that founded the Record`:`<span class="warnish">no pull request</span>`),
+      "",fmt(e.at),"idle");
+  }).join(""):`<p class="note">Nothing has entered the Record yet.</p>`);
+
+  /* Show more, rather than a silent cap. Everything is already in hand, so this
+     costs no request at all. */
+  if(events.length>histShown)
+    o.push(`<div class="acts"><button type="button" class="act" id="histmore">`
+      + `Show ${Math.min(HIST_PAGE,events.length-histShown)} more</button></div>`);
+  else if(events.length>HIST_PAGE)
+    o.push(`<p class="note">All ${events.length} shown.</p>`);
+
+  $("#panel-history").innerHTML=o.join("");
+  $("#panel-history").setAttribute("aria-busy","false");
+}
+
+/* ---- the tabs -------------------------------------------------------------
+   The open tab is in the URL, so a member can be sent straight to the history
+   and the back button does what it should. */
+function showTab(name,push){
+  const isHist=name==="history";
+  $("#tab-now").setAttribute("aria-selected",String(!isHist));
+  $("#tab-history").setAttribute("aria-selected",String(isHist));
+  $("#tab-now").tabIndex=isHist?-1:0;
+  $("#tab-history").tabIndex=isHist?0:-1;
+  $("#panel-now").hidden=isHist;
+  $("#panel-history").hidden=!isHist;
+  if(push&&location.hash!==(isHist?"#history":"")){
+    history.pushState(null,"",isHist?"#history":location.pathname);
+  }
+  if(isHist&&!histLoaded){
+    histLoaded=true;
+    $("#panel-history").innerHTML=`<p class="note">Reading the Record…</p>`;
+    collectHistory().then(renderHistory).catch(e=>{
+      histLoaded=false;
+      $("#panel-history").innerHTML=`<div class="blind"><strong>The history could not be read.</strong>
+        <p>${esc(e&&e.message?e.message:"the request failed")}${e&&e.reset?` It resets at ${fmt(e.reset)}.`:""}</p>
+        <p>That is not a statement that nothing has happened — it is a statement that this page could
+        not find out. <a href="https://github.com/${REPO}/pulls?q=is%3Apr+is%3Amerged">The merged
+        proposals are on GitHub</a>, without the vote each one carried.</p></div>`;
+    });
+  }
+}
+
+document.addEventListener("click",e=>{
+  const tab=e.target.closest('[role="tab"]');
+  if(tab){ showTab(tab.id==="tab-history"?"history":"now",true); return; }
+  if(e.target.closest("#histmore")){ histShown+=HIST_PAGE; renderHistory(histData); }
+});
+/* Arrow keys move between tabs, which is what a tablist is expected to do. */
+document.addEventListener("keydown",e=>{
+  if(!e.target.closest('[role="tab"]')) return;
+  if(e.key!=="ArrowRight"&&e.key!=="ArrowLeft") return;
+  e.preventDefault();
+  const to=e.target.id==="tab-now"?"tab-history":"tab-now";
+  showTab(to==="tab-history"?"history":"now",true);
+  $("#"+to).focus();
+});
+addEventListener("hashchange",()=>showTab(location.hash==="#history"?"history":"now",false));
+if(location.hash==="#history") showTab("history",false);
+
 collect().then(render).catch(e=>{
   const rl = e.reset
     ? `GitHub allows 60 unauthenticated requests an hour from one address, and this one has used them. It resets at <strong>${e.reset.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"})}</strong>.`
@@ -927,12 +1104,12 @@ collect().then(render).catch(e=>{
   /* Not a .warn. --urgent is for the Record contradicting itself; the page
      failing to SEE the Record is not a defect in the Record, and drawing it in
      the same red is how a page starts crying wolf. */
-  $("#out").innerHTML=`<div class="blind"><strong>This page cannot see the Record just now.</strong>
+  $("#panel-now").innerHTML=`<div class="blind"><strong>This page cannot see the Record just now.</strong>
     ${esc(e.message||"unknown error")}. ${rl}
     <span class="q">That is not a statement that nothing is happening. Proposals may be open and
     windows may be running. Open <a href="https://github.com/${REPO}/pulls">the pull requests</a>
     directly.</span></div>`;
-  $("#out").setAttribute("aria-busy","false");
+  $("#panel-now").setAttribute("aria-busy","false");
   $("#stamp").textContent="could not read the Record";
 });
 </script>

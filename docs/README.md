@@ -2,13 +2,12 @@
 
 Published at **<https://newspeakhouse-lab-2026.github.io/constitutional-record/>**.
 
-Five files. None is an instrument, and none has any force: nothing here creates, amends or records a decision.
+Four files. None is an instrument, and none has any force: nothing here creates, amends or records a decision.
 
 | | |
 |---|---|
-| `index.html` | What needs attention now: deadlines and open proposals with their deliberation windows, where each vote stands, branches nobody has proposed, and issues under discussion. Read live each time someone opens it. |
-| `history.html` | How the Record got here: every change that entered `main`, and the vote each one carried where there was one. Its own page because it answers a different question, and because it cost its requests on every visit when it sat below the fold of the other one. |
-| `record.css`, `record.js` | The styles and the helper layer, shared by both pages — the cache, the readers, the row, and the vote arithmetic. Shared rather than copied so the two cannot drift: `.github/scripts/test-vote-parse.mjs` lifts the vote reader out of `record.js` and drives it from the same worked cases as `tally.py`. |
+| `index.html` | One page, two tabs. **What needs attention** — deadlines and open proposals with their deliberation windows, where each vote stands, branches nobody has proposed, and issues under discussion. **How the Record got here** — every change that entered `main`, and the vote each one carried. The second tab fetches nothing until it is opened, so a visit that does not ask about history does not pay for it. |
+| `record.css`, `record.js` | The styles and the helper layer — the cache, the readers, the row, and the vote arithmetic. In files of their own rather than inline so the page stays legible, and so `.github/scripts/test-vote-parse.mjs` can lift the vote reader out of `record.js` and drive it from the same worked cases as `tally.py`. |
 | `data.json` | The handful of constitutional facts the page cannot work out for itself: how long each kind of deliberation runs, and the dates the Constitution names. |
 
 ## Why the folder is called `docs`

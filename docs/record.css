@@ -499,6 +499,21 @@
     display:block;margin-bottom:.3rem}
   .blind .q{display:block;font-size:var(--t1);color:var(--faint);margin-top:.5rem}
 
+  /* ---- the tabs ---------------------------------------------------------
+     Underline-as-selection, which is the same grammar h2 already uses, rather
+     than boxes. The unselected one is quiet but not disabled-looking: it is a
+     place to go, not a thing that is off. */
+  .tabs{display:flex;gap:1.6rem;margin:.2rem 0 .1rem;border-bottom:1px solid var(--line)}
+  .tabs [role=tab]{appearance:none;background:none;border:0;cursor:pointer;
+    font:400 var(--t2)/1.3 var(--serif);color:var(--faint);
+    padding:.5rem 0 .55rem;margin-bottom:-1px;
+    border-bottom:2px solid transparent;letter-spacing:-.006em}
+  .tabs [role=tab]:hover{color:var(--muted)}
+  .tabs [role=tab][aria-selected=true]{color:var(--ink);border-bottom-color:var(--accent)}
+  .tabs [role=tab]:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
+  /* The first h2 inside a panel sits right under the tab that named it. */
+  [role=tabpanel]>h2:first-child{margin-top:1.1rem}
+
   /* ---- the glossary, the picker, the footer --------------------------- */
   .glossary{color:var(--muted);font-size:var(--t1);line-height:1.65;padding:0 0 .6rem;max-width:var(--prose)}
   .glossary summary{cursor:pointer;color:var(--faint);font-size:var(--t0);padding:.3rem 0;min-height:1.9rem}
@@ -568,6 +583,8 @@
     .rail{margin-top:.6rem}
     .rail .acts{align-items:stretch}
     .what{font-size:var(--t0)}
+    .tabs{gap:1.1rem}
+    .tabs [role=tab]{font-size:var(--t1);padding:.45rem 0 .5rem}
     h2{font-size:1.15rem}
     a.btn{padding:.35rem .75rem}
     .div{margin:1rem 0 .2rem}
