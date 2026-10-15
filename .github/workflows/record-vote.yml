@@ -667,11 +667,38 @@ jobs:
                 }
                 /* Read from the file once it exists, exactly as a vote's window is,
                    so there is one answer rather than one per caller. */
+                let nvBase = base;
                 const cleanNV = base.replace(/<!--[\s\S]*?-->/g, '');
-                const isoNV = (cleanNV.match(/^\*\*Closes:\*\*[^\n]*?`([^`]+)`/m) || [])[1];
+                let isoNV = (cleanNV.match(/^\*\*Closes:\*\*[^\n]*?`([^`]+)`/m) || [])[1];
                 if (!isoNV || isNaN(new Date(isoNV))) {
-                  return await brokenTooling(`\`${path}\` has no readable **Closes:** line, so I cannot tell ` +
-                    `whether the window is open. Nothing has been written.\n\n` + byHand(branch, n));
+                  /* The file can now exist WITHOUT a window, and that is not a
+                     defect. record-amendment.yml creates it as soon as a
+                     proposer fills in §1's amendment record, and a deliberation
+                     window is not that workflow's business to assert. Refusing
+                     here would mean no objection could be recorded on any
+                     proposal whose author had filled that section in — the
+                     mechanism lazy consensus depends on, switched off by an
+                     unrelated workflow writing an unrelated section.
+
+                     So fall back to the labels, which are where the window comes
+                     from in the first place, and write the lines into the file so
+                     every later reader finds them there as before. */
+                  const w = await noVoteWindow();
+                  if (w.err) {
+                    return await refuse(`\`${path}\` states no **Closes:** line, and I cannot work the window ` +
+                      `out from the proposal's labels either: ${w.err}.\n\nNothing has been written, and your ` +
+                      `objection is not lost by this — say it on the proposal and in the governance channel, ` +
+                      `and ask for the proposal's labels to be put right.`, branch, n);
+                  }
+                  isoNV = w.closes.toISOString();
+                  const hdr = [`**Carries if:** no member objects before it closes`,
+                               `**Opened:** ${stamp(w.opened)}`,
+                               `**Closes:** ${stamp(w.closes)}`];
+                  if (/^\*\*Procedure:\*\*/m.test(nvBase)) {
+                    nvBase = nvBase.replace(/^\*\*Procedure:\*\*[^\n]*$/m, h => h + '\n' + hdr.join('\n'));
+                  } else {
+                    nvBase = nvBase.replace(/^(#[^\n]*\n)/, h => h + '\n' + hdr.join('\n') + '\n');
+                  }
                 }
                 if (ACTED > new Date(isoNV)) {
                   return await refuse(`The deliberation period on #${n} closed at **${isoNV}**, and you submitted ` +
@@ -683,18 +710,21 @@ jobs:
                     `conversation.`, branch, n);
                 }
                 let next2;
-                try { next2 = writeBlock(base);
+                try { next2 = writeBlock(nvBase);
                       if (typeof globalThis.__TAMPER === 'function') next2 = globalThis.__TAMPER(next2, base); }
                 catch (e) {
                   return await brokenTooling(`I could not write your objection into \`${path}\`: ${e.message}.` +
                     `\n\n` + byHand(branch, n));
                 }
-                if (next2 === base && !creating) {
+                if (next2 === nvBase && nvBase === base && !creating) {
                   await say(`Your objection is already recorded on #${n}, word for word — nothing to change. ` +
                     `It stands as it is.`);
                   return await close('vote-recorded');
                 }
-                const bad2 = invariantsNoTable(base, next2);
+                /* Compared against nvBase, not base: where the window lines
+                   were just added, those ARE this write's business and the
+                   invariant would otherwise reject its own repair. */
+                const bad2 = invariantsNoTable(nvBase, next2);
                 if (bad2) {
                   return await brokenTooling(`I built a new version of \`${path}\` and then refused to write it, ` +
                     `because it failed an internal check: **${bad2}**.\n\n` +
