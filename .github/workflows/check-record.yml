@@ -16,13 +16,18 @@ on:
       - 'docs/**'
       - 'rules/**'
       - 'policies/**'
-      - 'votes/**'
+      - 'amendment-record/**'
       - '.github/workflows/label-proposals.yml'
       # record-vote.yml was absent, so a pull request touching only it ran none
       # of the tests written for it -- which is most of the suite.
       - '.github/workflows/record-vote.yml'
+      - '.github/workflows/record-amendment.yml'
       - '.github/workflows/objection-check.yml'
       - '.github/workflows/check-record.yml'
+      # The template carries the five field labels check-record.py matches
+      # literally, and a test pins the two together. Without this line a pull
+      # request changing only the template could drift them with a green tick.
+      - '.github/pull_request_template.md'
       - '.github/ISSUE_TEMPLATE/**'
       - '.github/instrument-templates/**'
       - '.github/scripts/**'
@@ -79,3 +84,13 @@ jobs:
       # rather than resending stale bytes and erasing another member's row.
       - name: Test the vote-recording workflow's logic
         run: node .github/scripts/test-record-vote.mjs
+
+      # record-amendment.yml is the SECOND writer to a proposal's record file,
+      # and the hazard there is not the race — the Contents API sha serialises
+      # any number of writers. It is record-vote.yml's invariants: that workflow
+      # asserts nothing outside the voting member's own block has moved,
+      # including five exact header lines, so a careless second writer would not
+      # corrupt the file but WOULD make a voter's write fail and tell the voter
+      # their position was not recorded. These cases prove it touches one region.
+      - name: Test the amendment-record workflow's logic
+        run: node .github/scripts/test-record-amendment.mjs

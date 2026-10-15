@@ -1,7 +1,7 @@
 <!--
 A vote. Adopted by rules/rule-recording-votes.md.
 
-PATH: votes/pr-{number}.md, on the proposal's own branch — the same branch as the
+PATH: amendment-record/pr-{number}.md, on the proposal's own branch — the same branch as the
 text being decided, so the evidence merges into the Record beside it, and so a
 proposal that fails keeps its vote where the branch keeps it.
 
@@ -28,23 +28,36 @@ Then delete this comment.
 <!--
 TIER A AND TIER B USE A SHORTER FORM. Section 2 holds no vote at those tiers: the
 proposal passes absent a stated objection. So the file has no table, no roll and
-no threshold, it states no window, and it exists only because somebody objected.
-All of it is:
+no threshold, and it states no window. It exists because §1 requires a record of
+every amendment — not because somebody objected. All of it is:
 
-    # Objections — PR #NNN: <proposal title>
+    # Amendment record — PR #NNN: <proposal title>
 
     **Procedure:** Tier A
 
     Section 2 passes a Tier A proposal absent a stated objection, so no vote is
     held and this file has no table.
 
-    ## Objections
+    ## Amendment record
+
+    **How it was made:** Lazy consensus — posted to the governance channel on
+    <date>, no objection within the 48-hour window.
+    **Assumptions:** <what has to stay true for this to keep making sense>
+    **Status:** live
+    **Notes from the discussion:** <what was argued, and what changed>
+    **Abstentions or objections:** None.
+
+    ## Objections                        <- only if somebody objected
 
     **<member>** — <date>
 
     > Reason: <verbatim>
     >
     > Route forward: <verbatim>
+
+KEEP THE Procedure: LINE, in every form of this file. Without it tally.py cannot
+tell which arithmetic applies, check-record.py stops at that parse error, and the
+check that looks for the Amendment record section never runs at all.
 
 If the proposal later reaches a tier that votes, add the table below to that same
 file and update the Procedure: line. Do not clear the objections — they were
@@ -53,7 +66,7 @@ deliberation, and an escalation no more clears them than a restart does.
 Everything from here down is the full form, for a tier that votes.
 -->
 
-# Vote — PR #NNN: <proposal title>
+# Amendment record — PR #NNN: <proposal title>
 
 **Procedure:** <Tier C | Layer 3 Policy | Layer 4 Constitutional | Emergency | Re-ratification | §3.9 recall | §4 remedy | §4 removal>
 **Carries if:** <the Constitution's own words> — **N of 14**
@@ -111,6 +124,53 @@ Opened and Closes. Then vote again.
 > re-ratification all do — toleration, abstention and never answering are the
 > same number. None of them is a yes.
 
+## Amendment record
+
+*Section 1 requires six things recorded for every amendment to the Constitution
+or a rule; the first is the commit timestamp, so five are left. Write them in the
+pull request description and a workflow copies them here.*
+
+<!--
+WHY A FILE AS WELL AS THE DESCRIPTION. The pull request template asks for these
+five, and a workflow copies them here. The description is not lost — GitHub keeps
+it, with an edit history — but `git clone` retrieves no descriptions, so a clone
+of the Record, which is the only copy that outlives GitHub, would not have them.
+A description can also be edited in place, where this file's history may not be
+rewritten, and §1 ties the record's date to the commit timestamp. A merge commit
+carries the pull request TITLE and not its body, so the merge itself does not
+bring the description across. The description is where you write it; this is
+where it is kept.
+
+EVERY ADOPTED PROPOSAL NEEDS ONE — §1 says "all amendments to the Constitution and
+rules", with no exception for the ones that passed quietly. A Tier A rule adopted
+by lazy consensus has no vote and may have no objection, so this file may hold
+nothing but the section below. That is correct and it is not an empty file: it is
+the record of how something was decided.
+
+ASSUMPTIONS IS THE ONE THAT EARNS ITS KEEP. The others say what happened;
+assumptions say what has to stay true for the rule to still make sense. In six
+months the question is never "what did we decide" — the text says so — it is "does
+this still fit?", and nothing else in the Record answers it.
+-->
+
+**How it was made:** <one sentence. §2's own examples: by consent, by consensus,
+by majority or supermajority vote. For a Tier A rule nobody objected to: "Lazy
+consensus — posted to the governance channel on 4 October, no objection within the
+48-hour window." Where there was a vote, the numbers.>
+
+**Assumptions:** <what has to stay true for this to keep making sense — a price, a
+headcount, a role being filled, a room existing, a platform still running.>
+
+**Status:** <live, experimental, or archived — §1's own three words.>
+
+**Notes from the discussion:** <what was argued, and what changed because of it.
+Anything a reader would otherwise have to reconstruct from scattered comments.>
+
+**Abstentions or objections:** <§1 asks for these "in aggregate where the
+applicable procedure uses an anonymous or secret ballot" — which in this
+Constitution is §3.2 elections and nothing else, so name people here. "None" if
+there were none. The objections themselves stay in full above.>
+
 ## Result
 
 *Written when the window closes, with the arithmetic shown.*
@@ -165,48 +225,6 @@ treat the concern as absent. Anyone may ask.
 
 Discussion: <link>
 
-## Amendment record
-
-*Completed before merge, by whoever merges. Section 1 requires six things recorded
-for every amendment to the Constitution or a rule; the first is the commit
-timestamp, so five are left.*
-
-<!--
-WHY HERE. The pull request template asks for these too, and that copy is thrown
-away: this repository merges with merge commits, and a GitHub merge commit carries
-the pull request TITLE and not its body. So a record typed into the web form never
-enters the repository at all. `git clone` retrieves this file.
-
-EVERY ADOPTED PROPOSAL NEEDS ONE — §1 says "all amendments to the Constitution and
-rules", with no exception for the ones that passed quietly. A Tier A rule adopted
-by lazy consensus has no vote and may have no objection, so this file may hold
-nothing but the section below. That is correct and it is not an empty file: it is
-the record of how something was decided.
-
-ASSUMPTIONS IS THE ONE THAT EARNS ITS KEEP. The others say what happened;
-assumptions say what has to stay true for the rule to still make sense. In six
-months the question is never "what did we decide" — the text says so — it is "does
-this still fit?", and nothing else in the Record answers it.
--->
-
-**How it was made:** <one sentence. §2's own examples: by consent, by consensus,
-by majority or supermajority vote. For a Tier A rule nobody objected to: "Lazy
-consensus — posted to the governance channel on 4 October, no objection within the
-48-hour window." Where there was a vote, the numbers.>
-
-**Assumptions:** <what has to stay true for this to keep making sense — a price, a
-headcount, a role being filled, a room existing, a platform still running.>
-
-**Status:** <live, experimental, or archived — §1's own three words.>
-
-**Notes from the discussion:** <what was argued, and what changed because of it.
-Anything a reader would otherwise have to reconstruct from scattered comments.>
-
-**Abstentions or objections:** <§1 asks for these "in aggregate where the
-applicable procedure uses an anonymous or secret ballot" — which in this
-Constitution is §3.2 elections and nothing else, so name people here. "None" if
-there were none. The objections themselves stay in full above.>
-
 ## Notes
 
 *Optional. Section 2 invites a member to say what would move their position.*
@@ -227,7 +245,7 @@ every tool that writes to it depends on that: with two tables, nothing can be
 sure which one is current, and a row could be written into a closed round.
 
 The detail — who held which position in an earlier round — is in this file's git
-history, which is the Record. `git log -p votes/pr-NNN.md` shows every round in
+history, which is the Record. `git log -p amendment-record/pr-NNN.md` shows every round in
 full. What belongs here is the fact a round closed, how it closed, and why it
 restarted, because a proposal that failed once and passed after amendment is a
 different thing from one that passed first time, and Section 1's amendment record

@@ -264,6 +264,80 @@ check('a NEGATED quorum is not a quorum',
 check('and Layer 4 is not a quorum',
   q('affirmative support from two-thirds of all members — **10 of 14**'), false);
 
+/* ---- voteFileFor: opening a vote must not destroy the §1 record -----------
+ *
+ * It sits outside the ---8<--- region, so it was untested. Since
+ * record-amendment.yml began writing the record as soon as a proposer fills it
+ * in, a proposal that votes usually HAS a file by the time anyone opens the
+ * vote — and voteOf returns null for a file holding only that record, so the row
+ * renders as "no vote yet". The old voteFileFor built the whole file and the
+ * page pointed GitHub's /new/ editor at a path that already existed.
+ */
+const SANDBOX = {
+  document: {}, window: {}, localStorage: { getItem: () => null, setItem: () => {} },
+  atob: x => Buffer.from(x, 'base64').toString('binary'), TextDecoder,
+};
+const { voteFileFor } = new Function(...Object.keys(SANDBOX),
+  readFileSync(join(HERE, '..', '..', 'docs', 'record.js'), 'utf8') + '\nreturn {voteFileFor};'
+)(...Object.values(SANDBOX));
+
+const THR = { 'tier-c': { name: 'Tier C', words: 'a simple majority of those voting',
+  over: 'voting', quorum: { num: 1, den: 2 } } };
+const PR = { number: 18, title: 'a proposal', head: { ref: 'a-branch' } };
+/* ukStamp takes a Date, which is what windowOf hands it. */
+const WIN = { tier: 'c', layer: '2',
+  opened: new Date('2026-05-31T10:00:00Z'), closes: new Date('2099-01-01T12:00:00Z') };
+const NAMES = ['Ada Lovelace', 'Blaise Pascal'];
+
+const fresh = voteFileFor(PR, WIN, THR, NAMES, 'abcdef1234', null);
+check('with no file, a whole one is built', typeof fresh, 'string');
+check('titled for the record, not for a vote',
+  fresh.startsWith('# Amendment record — PR #18: a proposal'), true);
+check('and it carries an Amendment record heading for the workflow to fill',
+  /^## Amendment record$/m.test(fresh), true);
+check('whose body is empty, so the workflow does not read it as hand-written',
+  fresh.split(/^## Amendment record$/m)[1].replace(/<!--[\s\S]*?-->/g, '').split(/^## /m)[0].trim(), '');
+
+const EXISTING = ['# Amendment record — PR #18: a proposal', '',
+  '**Procedure:** Tier A', '',
+  '## Amendment record', '',
+  '<!-- amendment-record: copied from the pull request description -->',
+  '**How it was made:** Lazy consensus — no objection within 48 hours.',
+  '**Status:** live',
+  '<!-- /amendment-record -->', ''].join('\n');
+
+const spliced = voteFileFor(PR, WIN, THR, NAMES, 'abcdef1234', EXISTING);
+check('with a file, the roll is spliced in rather than replacing it',
+  spliced.includes('| Ada Lovelace | — | |'), true);
+check('the §1 record survives verbatim',
+  spliced.includes('**How it was made:** Lazy consensus — no objection within 48 hours.'), true);
+check('and so do the workflow\'s anchors, so it can still update it',
+  [spliced.includes('<!-- amendment-record: copied from the pull request description -->'),
+   spliced.includes('<!-- /amendment-record -->')], [true, true]);
+check('the Procedure line becomes the procedure that votes',
+  /^\*\*Procedure:\*\* Tier C$/m.test(spliced), true);
+check('and Tier A is gone, because opening a vote is when that changes',
+  /^\*\*Procedure:\*\* Tier A$/m.test(spliced), false);
+check('the other four header lines are added',
+  ['**Carries if:**', '**Opened:**', '**Closes:**', '**Entitled to vote:**']
+    .every(h => spliced.includes(h)), true);
+check('Result and Objections are added once each',
+  [(spliced.match(/^## Result$/gm) || []).length, (spliced.match(/^## Objections$/gm) || []).length],
+  [1, 1]);
+check('exactly one table, which is the roll',
+  (spliced.match(/^\|---/gm) || []).length, 1);
+/* voteOf and tally.py both scan for the FIRST table and read the roll out of
+   it. A second one anywhere above it would be read as the roll. */
+check('and the roll is still what voteOf finds',
+  (voteOf(spliced).members || []).map(x => x.name || x), NAMES);
+
+const twice = voteFileFor(PR, WIN, THR, NAMES, 'abcdef1234', spliced);
+check('splicing an already-spliced file does not duplicate the roll',
+  (twice.match(/^\|---/gm) || []).length, 1);
+check('nor the sections',
+  [(twice.match(/^## Result$/gm) || []).length, (twice.match(/^## Objections$/gm) || []).length],
+  [1, 1]);
+
 const passed = results.filter(Boolean).length;
 console.log(`\n${passed}/${results.length} passed`);
 process.exit(results.every(Boolean) ? 0 : 1);

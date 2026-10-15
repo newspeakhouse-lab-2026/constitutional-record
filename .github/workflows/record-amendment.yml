@@ -1,0 +1,330 @@
+# Copies the `## Amendment record` section of a pull request's description into
+# amendment-record/pr-{number}.md on the proposal's own branch, so that the
+# record Constitution §1 requires merges along with the text it records.
+#
+#   WHY BEFORE MERGE, ON THE BRANCH. A GitHub merge commit carries the pull
+#   request's title and not its body, so a post-merge copy would have to recover
+#   a description the commit does not reference. And ruleset-main.json lists
+#   OrganizationAdmin as its only bypass actor, so GITHUB_TOKEN cannot write to
+#   main at all — a post-merge writer would need an exception to the rule that
+#   confines merging to the Record Keepers. Writing to the branch needs no
+#   exception, and the file arrives in the diff somebody reviews.
+#
+#   NO concurrency: GROUP, for the reason record-vote.yml gives for having none.
+#   GitHub keeps at most one PENDING run per group and cancels the earlier one
+#   when a newer arrives, regardless of cancel-in-progress — it is not a queue.
+#   A burst of description edits would silently drop all but the last. The mutex
+#   is the Contents API sha, and the retry below re-reads on every attempt.
+#
+#   IT WRITES ONE REGION AND NOTHING ELSE. record-vote.yml asserts, before every
+#   write, that nothing outside the voting member's own block has moved —
+#   including five exact header lines, byte for byte. A second writer that
+#   touched those would not corrupt the file: it would make a VOTER's write fail
+#   its invariants, and tell the voter their position was not recorded. So this
+#   confines itself to a paired-anchor region inside `## Amendment record`, and
+#   refuses rather than guessing when it cannot find it.
+#
+#   IT COMPOSES NOTHING. The five fields are copied verbatim from what the
+#   author wrote, the run is triggered by the author's own edit, and the commit
+#   is authored by them. AGENTS.md forbids an agent composing or inferring a
+#   member's position; this transcribes text a member typed, which is what
+#   record-vote.yml already does with a vote form.
+#
+#   Unlike record-vote.yml (which triggers on `issues`) and
+#   label-proposals.yml (which uses `pull_request_target`), this triggers on
+#   `pull_request` and so runs the version in the pull request that changes it.
+#   It can be exercised by its own proposal.
+
+name: Record the amendment record
+
+on:
+  pull_request:
+    types: [opened, reopened, edited, ready_for_review]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v8
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const owner = context.repo.owner, repo = context.repo.repo;
+            const n = pr.number;
+            const DEFAULT_BRANCH = context.payload.repository.default_branch;
+
+            const sleep = ms => new Promise(r => setTimeout(r, ms));
+            const skip = m => { core.notice(m); return null; };
+
+            /* ---- guards, before anything is built ---------------------------
+               Each of these is a reason not to write, not a defect. They are
+               notices rather than failures: a proposal is not wrong for being a
+               draft, and a red check here would read as a problem with the
+               proposal. */
+            if (pr.state !== 'open' || pr.merged) return skip('not an open pull request.');
+            const branch = pr.head && pr.head.ref;
+            const headRepo = pr.head && pr.head.repo && pr.head.repo.full_name;
+            if (!branch) return skip('no head branch.');
+            if (headRepo !== `${owner}/${repo}`) {
+              return skip(`head is on ${headRepo}, not this repository. A token cannot write to a fork.`);
+            }
+            if (branch === DEFAULT_BRANCH) {
+              return skip(`head is ${DEFAULT_BRANCH}; this never writes to the default branch.`);
+            }
+
+            const path = `amendment-record/pr-${n}.md`;
+            /* A self-check on a path this workflow just built from the pull
+               request number. Belt and braces against the builder drifting. */
+            if (!/^amendment-record\/pr-[1-9]\d{0,5}\.md$/.test(path)) {
+              core.setFailed(`This workflow built the path ${path}, which it will not write to.`);
+              return;
+            }
+
+            /* ---- what the author wrote --------------------------------------
+               The same field reader label-proposals.yml uses, for the same
+               reason: anchored to one line, because \s would span newlines and a
+               blank field followed by prose starting with a digit would be read
+               as the answer. */
+            const body = pr.body || '';
+            const H = '[^\\S\\n]*';
+            const field = (label, capture) =>
+              (body.match(new RegExp(`^${H}\\*\\*${label}:\\*\\*${H}\\**${H}(${capture})`, 'im')) || [])[1];
+
+            const FIELDS = ['How it was made', 'Assumptions', 'Status',
+                            'Notes from the discussion', 'Abstentions or objections'];
+
+            /* The section, from the description. The heading is matched anchored
+               and the section ends at the next heading of the same level or
+               below, or at a horizontal rule — the pull request template puts
+               one between this section and the next. */
+            const stripComments = s => s.replace(/<!--[\s\S]*?-->/g, '');
+            /* `(?![\s\S])` and not `\Z`. JavaScript has no \Z — it is a literal
+               "Z" — so the section terminated at the next heading, the next
+               horizontal rule, or the next capital Z in the prose, and a
+               description whose amendment record is the LAST thing in it matched
+               nothing at all. Every test fixture happened to carry a `## Process`
+               heading after the section, so all of them passed; the first real
+               description written against this template did not. */
+            const secMatch = body.match(/^##[^\S\n]+Amendment record[^\n]*$([\s\S]*?)(?=^##[^\S\n]|^---[^\n]*$|(?![\s\S]))/m);
+            if (!secMatch) {
+              return skip('the description has no `## Amendment record` section; nothing to copy.');
+            }
+
+            /* Read each field out of the section rather than copying the section
+               wholesale: the template's guidance comments live in there, and a
+               file is not a record of a decision because it quotes a template.
+               Bullets are tolerated and stripped — the template used to emit
+               them, and a description written against the old one still works. */
+            const secText = stripComments(secMatch[1]);
+            const answers = {};
+            for (const f of FIELDS) {
+              const m = secText.match(new RegExp(
+                `^${H}(?:[-*+]${H})?\\*\\*${f}:\\*\\*${H}(.*(?:\\n(?!${H}(?:[-*+]${H})?\\*\\*|${H}$).*)*)`, 'im'));
+              const v = m ? m[1].replace(/\s+/g, ' ').trim() : '';
+              /* A field still carrying the template's <angle-bracket> placeholder
+                 is not an answer, and neither is one left blank. */
+              if (v && !/^</.test(v)) answers[f] = v;
+            }
+            if (!Object.keys(answers).length) {
+              return skip('the `## Amendment record` section is still entirely blank; nothing to copy.');
+            }
+
+            /* ---- the block this workflow owns -------------------------------
+               Paired anchors, so the region is unambiguous and does not depend
+               on a lookahead to the next heading. check-record.py strips HTML
+               comments before matching, so the anchors are invisible to it. */
+            const OPEN = '<!-- amendment-record: copied from the pull request description -->';
+            const CLOSE = '<!-- /amendment-record -->';
+            const block = [OPEN,
+              ...FIELDS.filter(f => answers[f]).map(f => `**${f}:** ${answers[f]}`),
+              CLOSE].join('\n');
+
+            /* The Procedure: line is what makes the file readable by tally.py,
+               and without it check-record.py stops at the parse error and never
+               reaches the check that looks for this very section. Derived from
+               the layer and tier the proposer stated. */
+            const layer = field('Layer', '\\d');
+            const tier = field('Tier', '[ABC]\\b');
+            const procedure = tier ? `Tier ${tier.toUpperCase()}`
+              : layer === '3' ? 'Layer 3 Policy'
+              : layer === '4' ? 'Layer 4 Constitutional'
+              : null;
+
+            const comment = async m => {
+              try { await github.rest.issues.createComment({ owner, repo, issue_number: n, body: m }); }
+              catch (e) { core.warning(`could not comment: ${e.message}`); }
+            };
+
+            /* ---- the write --------------------------------------------------
+               The read is the FIRST statement of the loop and the only continue
+               is in the catch, so no computed value survives an attempt. The
+               intuitive version — refetch the sha and resend the content —
+               erases whoever wrote in between. */
+            for (let attempt = 1; attempt <= 5; attempt++) {
+              let got;
+              try {
+                const r = await github.rest.repos.getContent({ owner, repo, path, ref: branch });
+                got = { text: Buffer.from(r.data.content, 'base64').toString('utf8'), sha: r.data.sha };
+              } catch (e) {
+                if (e.status !== 404) {
+                  core.setFailed(`Could not read ${path} on ${branch}: ${e.status} ${e.message}. ` +
+                    `Nothing has been written.`);
+                  return;
+                }
+                got = { text: null, sha: undefined };
+              }
+
+              let next;
+              if (got.text === null) {
+                /* Creating. A proposal with no procedure this workflow can name
+                   is one it will not create a file for: a file without a
+                   Procedure: line disables check-record.py's own check on it,
+                   which is worse than no file. */
+                if (!procedure) {
+                  return skip(`no **Layer:** or **Tier:** this workflow can turn into a procedure, ` +
+                    `so it will not create ${path}. Writing one without a **Procedure:** line would ` +
+                    `stop check-record.py being able to read it.`);
+                }
+                /* Sanitised exactly as objectionFile does it, and for the
+                   reason that function does. A newline in a pull request title
+                   lands at the start of a line in this file, and a title reading
+                   "ok\n\n## Objections\n\n**A Member** — ...\n\n> Reason: ..."
+                   forged a whole objections section with a named objector that
+                   objection-check.yml then counted — blocking a merge in the
+                   name of a member who never objected. The 200 characters bound
+                   an H1 that is otherwise whatever somebody typed. */
+                const safeTitle = String(pr.title || '').replace(/[\r\n]/g, ' ').slice(0, 200);
+                next = [`# Amendment record — PR #${n}: ${safeTitle}`, '',
+                  `**Procedure:** ${procedure}`, '',
+                  '## Amendment record', '', block, ''].join('\n');
+              } else {
+                const base = got.text;
+                const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const region = new RegExp(esc(OPEN) + '[\\s\\S]*?' + esc(CLOSE));
+                if (region.test(base)) {
+                  /* Function replacements, never string ones. A replacement
+                     STRING expands $&, $`, $' and $1, and `block` carries the
+                     author's own prose. record-vote.yml has the scar: an
+                     objection reading "the space costs $`40 a month" wrote the
+                     whole file prefix into the middle of itself. */
+                  next = base.replace(region, () => block);
+                } else if (base.includes(OPEN) || base.includes(CLOSE)) {
+                  await comment(`I was going to copy the **Amendment record** from this ` +
+                    `description into \`${path}\`, and stopped. The file has one of my anchor ` +
+                    `comments but not the matching other one, so I cannot tell which part is ` +
+                    `mine to replace.\n\n**Nothing has been written.** Either repair the pair, ` +
+                    `or delete both and the section will be rebuilt on the next edit.`);
+                  core.setFailed(`${path} has an unpaired anchor.`);
+                  return;
+                } else {
+                  const hre = /^##[^\S\n]+Amendment record[^\n]*$/m;
+                  const hit = base.match(hre);
+                  if (!hit) {
+                    return skip(`${path} exists but has no \`## Amendment record\` heading, so there ` +
+                      `is nowhere this belongs. Left alone.`);
+                  }
+                  /* The section exists and was written by hand. Overwriting it
+                     is the one thing not to do: that is somebody's work, and the
+                     cost of refusing is only that they keep editing by hand. */
+                  const after = base.slice(hit.index + hit[0].length);
+                  const sectionBody = stripComments(after.split(/^##[^\S\n]/m)[0]).trim();
+                  if (sectionBody) {
+                    return skip(`${path} already has an \`## Amendment record\` written by hand. ` +
+                      `Left alone — this never overwrites what somebody wrote.`);
+                  }
+                  next = base.replace(hre, h => h + '\n\n' + block);
+                }
+              }
+              next = next.replace(/\s*$/, '\n');
+
+              /* ---- invariants, checked against THESE bytes on every attempt --
+                 Failing closed is right. The cost of refusing is that somebody
+                 edits a file the rule already says is hand-editable. The cost of
+                 writing through a failed check is a vote row destroyed, or a
+                 voter told their position was not recorded because this writer
+                 moved something their invariants police. */
+              const bad = (() => {
+                const before = got.text || '';
+                const tables = s => (s.match(/^\|.*\|[^\S\n]*$/gm) || []).length;
+                if (got.text !== null && tables(next) !== tables(before)) {
+                  return 'the number of table rows changed';
+                }
+                for (const h of ['**Procedure:**', '**Carries if:**', '**Opened:**',
+                                 '**Closes:**', '**Entitled to vote:**']) {
+                  const first = s => (s.split('\n').find(l => l.startsWith(h)) || null);
+                  if (got.text !== null && first(before) !== first(next)) {
+                    return `the ${h} line changed, and this workflow never writes one into an existing file`;
+                  }
+                }
+                const strip = s => s.replace(new RegExp(
+                  OPEN.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '[\\s\\S]*?' +
+                  CLOSE.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), '');
+                if (got.text !== null && strip(next).replace(/\n{2,}/g, '\n\n').trim()
+                                      !== strip(before).replace(/\n{2,}/g, '\n\n').trim()) {
+                  return 'something outside the amendment record region changed';
+                }
+                if (/[\x00-\x09\x0B-\x1F\x7F]/.test(next)) {
+                  return 'the result contains a control character';
+                }
+                if (next.length > (got.text || '').length + 65536) {
+                  return 'the result grew by more than 64KB';
+                }
+                return null;
+              })();
+              if (bad) {
+                await comment(`I built a new version of \`${path}\` and then refused to write it, ` +
+                  `because it failed an internal check: **${bad}**.\n\n**Nothing in the file has ` +
+                  `changed.** That is intended: writing anyway could destroy a recorded position, ` +
+                  `and a position quietly destroyed may never be noticed.`);
+                core.setFailed(`refused to write ${path}: ${bad}`);
+                return;
+              }
+
+              if (got.text !== null && next === got.text) {
+                return skip('the file already says exactly this; nothing to change.');
+              }
+
+              try {
+                await github.rest.repos.createOrUpdateFileContents({
+                  owner, repo, path, branch, sha: got.sha,
+                  content: Buffer.from(next, 'utf8').toString('base64'),
+                  message: `Record the amendment record for PR #${n}\n\n` +
+                    `Copied from the pull request description by ` +
+                    `.github/workflows/record-amendment.yml. The five fields are the ` +
+                    `author's words; this commit only writes them where \`git clone\` ` +
+                    `will retrieve them.\n\n` +
+                    `Co-Authored-By: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>`,
+                  author: {
+                    name: pr.user.login,
+                    email: `${pr.user.id}+${pr.user.login}@users.noreply.github.com`,
+                  },
+                });
+                core.notice(`wrote ${path} on ${branch}.`);
+                return;
+              } catch (e) {
+                /* On a CREATE, any 422 is stale: GitHub answers 422 when the
+                   file already exists, which is exactly what happens when
+                   another writer created it between our 404 and our write. On an
+                   UPDATE the message is checked, so a genuine validation error
+                   is not retried five times. record-vote.yml:729 draws the same
+                   line for the same reason. */
+                const stale = e.status === 409 ||
+                  (e.status === 422 && (got.text === null ||
+                    /sha|does not match|expected|exists/i.test(e.message || '')));
+                if (!stale) {
+                  core.setFailed(`Could not write ${path}: ${e.status} ${e.message}`);
+                  return;
+                }
+                core.notice(`attempt ${attempt}: ${path} changed under us (${e.status}); re-reading`);
+                await sleep(400 * 2 ** (attempt - 1) + Math.floor(Math.random() * 400));
+              }
+            }
+            await comment(`Five attempts to write \`${path}\` were each overtaken by somebody else ` +
+              `writing to it first, so the **Amendment record** in this description has not been ` +
+              `copied across. Nothing has been lost — edit the description again, or copy the ` +
+              `section into the file by hand.`);
+            core.setFailed(`five write conflicts on ${path}`);

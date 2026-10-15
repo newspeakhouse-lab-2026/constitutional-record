@@ -242,6 +242,13 @@
   .sheetbody strong{color:var(--ink);font-weight:600}
   .sheetbody em{font-style:italic}
   .sheetbody code{font:400 .88em/1 var(--mono)}
+  /* The vote roll, to copy into GitHub's editor. Scrolls in its own box rather
+     than widening the sheet: a roll is fourteen rows of pipes and the page body
+     must never scroll sideways. */
+  .sheetbody pre.paste{font:400 .82rem/1.5 var(--mono);color:var(--ink);
+    background:var(--sunk);border:1px solid var(--line);border-radius:3px;
+    padding:.6rem .7rem;margin:.5rem 0 0;max-height:16rem;
+    overflow:auto;white-space:pre;-webkit-overflow-scrolling:touch}
   /* Each position is a group, and they ran together: the label sat on the line
      above its names with nothing separating one group from the next. */
   .sheetbody .names{font:400 var(--t0)/1.65 var(--ui);margin:0 0 .85rem}
