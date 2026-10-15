@@ -317,25 +317,32 @@ function render(d){
      one instant and would have carried one more with every rule written. They
      fold into the Constitution's own row; the instrument's Ends: line is
      untouched and still reads as it always did in the file itself. */
-  const SAME=6e4;   // same minute is the same deadline
-  const sharing={};
+  /* Decided once, read twice. The first version tested the same thing in two
+     places — once to build the list and once to skip the row — so editing one
+     and not the other would have given an instrument both a row and a mention,
+     or neither. Here the pairing is computed once and both loops read it.
+     Indexed by position rather than by the timestamp string, because two fixed
+     dates at the same instant would otherwise each claim all of them. */
+  const SAME=6e4;                                   // the same minute is the same deadline
+  const fixed=d.cfg.fixed||[];
+  const sharedWith=fixed.map(()=>[]);               // one list per fixed row
+  const folded=new Set();                           // instruments named on another row
   for(const e of d.ends||[]){
-    const f=(d.cfg.fixed||[]).find(x=>Math.abs(+new Date(x.at)-+new Date(e.at))<SAME);
-    if(f) (sharing[f.at]=sharing[f.at]||[]).push(e.name);
+    const i=fixed.findIndex(x=>Math.abs(+new Date(x.at)-+new Date(e.at))<SAME);
+    if(i>=0){ sharedWith[i].push(e.name); folded.add(e); }
   }
 
-  for(const f of d.cfg.fixed||[]){
-    const at=new Date(f.at), r=rem(at);
-    const also=sharing[f.at]||[];
+  fixed.forEach((f,i)=>{
+    const at=new Date(f.at), r=rem(at), also=sharedWith[i];
     const bits=[`<span class="tag ty">Constitution</span><span class="tag">${esc(f.source)}</span>${esc(f.note)}`];
     if(also.length)
-      bits.push(`<span class="quiet">${also.length} instrument${also.length>1?"s":""} ${
-        also.length>1?"end":"ends"} here too</span> — ${also.map(n=>`<code>${esc(n)}</code>`).join(", ")}`);
+      bits.push(`<span class="quiet">${also.length} instrument${also.length>1?"s":""} `
+        + `${also.length>1?"end":"ends"} here too</span> — `
+        + also.map(n=>`<code>${esc(n)}</code>`).join(", "));
     live.push({ms:r.ms,html:row(r.word,esc(f.label),bits.join(" &middot; "),r.txt,fmt(at),r.cls)});
-  }
+  });
   for(const e of d.ends||[]){
-    // Already named on the row of the deadline it shares.
-    if((d.cfg.fixed||[]).some(x=>Math.abs(+new Date(x.at)-+new Date(e.at))<SAME)) continue;
+    if(folded.has(e)) continue;                     // already named on the row it shares
     const r=rem(e.at);
     live.push({ms:r.ms,html:row(r.word,esc(e.name),
       `<span class="tag ty">Instrument</span>${esc(e.why||"")}`,r.txt,fmt(e.at),r.cls)});
@@ -857,15 +864,6 @@ function render(d){
     appears below. §3 requires one, maintained by the Record Keepers.</p>`);
   o.push(inforce.length?inforce.join(""):`<p class="note">Nothing adopted yet.</p>`);
   }
-
-  /* The history moved to its own page. It answers a different question from
-     this one — how a decision was made, rather than what needs attention now —
-     and it cost its requests on every visit, including the many that never
-     scrolled to it. */
-  o.push(`<h2>How the Record got here</h2>`);
-  o.push(`<p class="note">Every change that has entered <code>main</code>, and the vote each one
-    carried where there was one. <a href="history.html">Open the history</a> — it is a separate page
-    so that reading it is a choice rather than a cost on every visit.</p>`);
 
   SHAS=d.shas;
   /* The dialogs go in after the rows that trigger them, once, rather than being
