@@ -102,7 +102,14 @@ jobs:
                below, or at a horizontal rule — the pull request template puts
                one between this section and the next. */
             const stripComments = s => s.replace(/<!--[\s\S]*?-->/g, '');
-            const secMatch = body.match(/^##[^\S\n]+Amendment record[^\n]*$([\s\S]*?)(?=^##[^\S\n]|^---[^\n]*$|\Z)/m);
+            /* `(?![\s\S])` and not `\Z`. JavaScript has no \Z — it is a literal
+               "Z" — so the section terminated at the next heading, the next
+               horizontal rule, or the next capital Z in the prose, and a
+               description whose amendment record is the LAST thing in it matched
+               nothing at all. Every test fixture happened to carry a `## Process`
+               heading after the section, so all of them passed; the first real
+               description written against this template did not. */
+            const secMatch = body.match(/^##[^\S\n]+Amendment record[^\n]*$([\s\S]*?)(?=^##[^\S\n]|^---[^\n]*$|(?![\s\S]))/m);
             if (!secMatch) {
               return skip('the description has no `## Amendment record` section; nothing to copy.');
             }

@@ -220,6 +220,22 @@ check('and a forged row cannot be read as the roll',
 
 /* ---- when there is nothing to copy -------------------------------------- */
 
+/* Every fixture above carries a `## Process` heading after the section, so all
+   of them exercised the "terminated by the next heading" branch and none
+   exercised end-of-description. JavaScript has no \Z, and the first real
+   description written against the new template ended with this section. */
+r = await run({ body: `## Proposal\n\n**Layer:** 2\n\n**Tier:** A\n\n---\n\n${SECTION}\n` });
+check('a section that is the LAST thing in the description is still read', r.writes.length, 1);
+check('and all five fields come across',
+  ['How it was made', 'Assumptions', 'Status', 'Notes from the discussion',
+   'Abstentions or objections'].filter(f => !has(r.writes[0].text, `**${f}:** `)), []);
+r = await run({ body: `## Proposal\n\n**Tier:** A\n\n---\n\n${SECTION}` });
+check('with no trailing newline either', r.writes.length, 1);
+/* The old regex also stopped at any capital Z in the prose. */
+r = await run({ body: BODY(SECTION.replace('**Status:** live', () => '**Status:** live in Zone 2')) });
+check('a capital Z in an answer does not truncate the section',
+  has(r.writes[0].text, '**Abstentions or objections:** None.'), true);
+
 r = await run({ body: '## Proposal\n\nNo record section at all.\n' });
 check('a description with no Amendment record section writes nothing', r.writes.length, 0);
 check('and is not a failure — an operational merge needs no record', r.failed.length, 0);
