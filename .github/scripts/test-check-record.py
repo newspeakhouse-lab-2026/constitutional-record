@@ -107,6 +107,86 @@ case("a winter date written +01:00 is caught", offset_wrong("2026-11-30T23:59:00
      "The same error in the other direction, which a rule copied from an October one would make.")
 
 
+# ---- the amendment record: §1's five fields ---------------------------------
+#
+# Check 6 had no coverage at all until now, which is how two defects survived in
+# it: it was gated on a written outcome, so a Tier A rule adopted by lazy
+# consensus (no result line, no objection) never reached it; and it sat after
+# tally.parse, which fails without a **Procedure:** line and skipped it.
+
+COMPLETE = """# Amendment record — PR #18: a rule
+
+**Procedure:** Tier A
+
+## Amendment record
+
+**How it was made:** Lazy consensus — no objection within 48 hours.
+**Assumptions:** That the house still has fourteen members.
+**Status:** live
+**Notes from the discussion:** Nobody argued against it.
+**Abstentions or objections:** None.
+"""
+
+case("a complete record reports nothing",
+     cr.amendment_record_gaps(COMPLETE), [],
+     "The ordinary case. If this warns, every correct file warns and the check is noise.")
+
+case("a missing section is distinguishable from a complete one",
+     cr.amendment_record_gaps("# Amendment record\n\n**Procedure:** Tier A\n"), None,
+     "None and [] are different defects: no section at all, versus a section with a gap. "
+     "Returning [] for both would report a file with no record as fully compliant.")
+
+case("every blank field is reported",
+     len(cr.amendment_record_gaps(COMPLETE.replace(" Lazy consensus — no objection within 48 hours.", "")
+                                  .replace(" That the house still has fourteen members.", "")
+                                  .replace(" live", "").replace(" Nobody argued against it.", "")
+                                  .replace(" None.", ""))), 5,
+     "A Tier A rule adopted by lazy consensus has no result line and no objection. Check 6 "
+     "was gated on an outcome, so this — the commonest case in the Record — passed in silence.")
+
+case("a field left as the template's placeholder is not an answer",
+     cr.amendment_record_gaps(COMPLETE.replace("**Status:** live", "**Status:** <live, experimental, or archived>")),
+     ["Status"],
+     "The placeholder is text, so a naive emptiness test counts it as filled and the record "
+     "ships saying nothing.")
+
+case("an answer on the line below its label does not count",
+     cr.amendment_record_gaps(COMPLETE.replace("**Status:** live", "**Status:**\nlive")),
+     ["Status"],
+     "The regex requires text after the colon. Worth pinning, because it is the mistake the "
+     "pull request template invites if it stops saying so.")
+
+case("the pull request template's list-item form is not matched",
+     cr.amendment_record_gaps(COMPLETE.replace("**Status:** live", "- **Status:** live")),
+     ["Status"],
+     "The template used `- **Label:**` bullets while the checker anchors `^**Label:**`, so a "
+     "body copied across verbatim was reported incomplete on every bulleted field.")
+
+case("the section demoted to ### is not found",
+     cr.amendment_record_gaps(COMPLETE.replace("## Amendment record", "### Amendment record")), None,
+     "The heading is matched anchored at exactly `## `. Demoting it silently disables the check, "
+     "which is the same class of failure as the objection-check regression.")
+
+case("a later ## heading ends the section",
+     cr.amendment_record_gaps(COMPLETE + "\n## Objections\n\n**Status:** not this one\n"), [],
+     "The section terminates at the next `^## `. A field named below an unrelated heading must "
+     "not be read as answering this one.")
+
+# ---- the five labels exist in exactly one form, in all three places ---------
+#
+# There were three independent copies and nothing pinning them. Two of five had
+# already drifted: the template said "Assumptions it rests on" and "Explanatory
+# notes from the discussion", so a body copied into the file was reported
+# incomplete on precisely those two.
+for _f in [os.path.join(HERE, "..", "pull_request_template.md"),
+           os.path.join(HERE, "..", "instrument-templates", "vote.md")]:
+    _text = open(_f, encoding="utf-8").read()
+    _absent = [f for f in cr.AMENDMENT_FIELDS if f"**{f}:**" not in _text]
+    case(f"{os.path.basename(_f)} uses the checker's own five labels", _absent, [],
+         "Three copies of the field list and no test holding them together. A label that drifts "
+         "here makes every copied record read as incomplete, and the warning blames the author.")
+
+
 failed = [n for n, bad, _ in results if bad]
 print(f"\n{len(results) - len(failed)}/{len(results)} passed")
 sys.exit(1 if failed else 0)

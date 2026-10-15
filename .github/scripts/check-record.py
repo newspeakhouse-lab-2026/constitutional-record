@@ -74,6 +74,32 @@ def human_disagrees(words, dt):
     return out
 
 
+AMENDMENT_FIELDS = ["How it was made", "Assumptions", "Status",
+                    "Notes from the discussion", "Abstentions or objections"]
+
+
+def amendment_record_gaps(text):
+    """Which of \u00a71's five fields a record file leaves unanswered.
+
+    Returns None when there is no `## Amendment record` section at all, which is
+    a different defect from a section with a field missing, and [] when every
+    field is answered.
+
+    The section heading must be exactly `## Amendment record`. It is matched
+    anchored and terminates at the next `^## `, so the section may sit anywhere
+    among the file's headings but may not be demoted to `###` or renamed.
+    """
+    clean = re.sub(r"<!--.*?-->", "", text, flags=re.S)
+    sec = re.search(r"^## Amendment record\s*$(.*?)(?=^## |\Z)", clean, re.M | re.S)
+    if not sec:
+        return None
+    body = sec.group(1)
+    # Blank, or still carrying the template's <angle-bracket> placeholder.
+    return [f for f in AMENDMENT_FIELDS
+            if not re.search(r"^\*\*" + re.escape(f) + r":\*\*[^\S\n]*(\S.*)$", body, re.M)
+            or re.search(r"^\*\*" + re.escape(f) + r":\*\*[^\S\n]*<", body, re.M)]
+
+
 def read(path):
     try:
         return open(path).read()
@@ -187,6 +213,37 @@ def main():
         text = read(path)
         if text is None:
             continue
+        clean = re.sub(r"<!--.*?-->", "", text, flags=re.S)
+
+        # 6 -- §1 requires five things recorded for EVERY amendment to the
+        # Constitution or a rule, with no exception for the ones that passed
+        # quietly. A file in this directory is a proposal being recorded, so the
+        # section is checked on the file existing -- not on an outcome being
+        # written. Gating it on an outcome missed the commonest case entirely: a
+        # Tier A rule adopted by lazy consensus has no result line and no
+        # objection, so a wholly blank record passed unremarked.
+        #
+        # Checked BEFORE tally.parse, because parse fails without a
+        # **Procedure:** line and the old order then skipped straight past this
+        # -- disabling the check on exactly the files it exists for.
+        #
+        # The pull request description asks for the same five and a workflow
+        # copies them here. The description is not lost -- GitHub keeps it, with
+        # an edit history -- but `git clone` retrieves no descriptions, and §1
+        # ties the record's date to the commit timestamp. Warns, like everything
+        # here: the tooling creates no duty, and §1 binds whether or not this
+        # file notices.
+        missing = amendment_record_gaps(text)
+        if missing is None:
+            warn(path, "this has no `## Amendment record` section. \u00a71 requires five things "
+                       "recorded for every amendment to the Constitution or a rule -- including "
+                       "one adopted by lazy consensus, which has no vote and may have no "
+                       "objection. `.github/instrument-templates/vote.md` has the section.")
+        elif missing:
+            warn(path, "the `## Amendment record` is incomplete \u2014 " + ", ".join(missing)
+                       + (" is" if len(missing) == 1 else " are") + " still blank or still the "
+                       "template's placeholder. \u00a71 asks for each of them before this merges.")
+
         parsed, err = tally.parse(text)
         if err:
             warn(path, f"this vote cannot be recounted: {err}")
@@ -195,7 +252,6 @@ def main():
                           data.get("thresholds", {}), parsed["excluded"],
                           no_vote=not parsed.get("holdsVote", True),
                           objections=parsed.get("objections") or ())
-        clean = re.sub(r"<!--.*?-->", "", text, flags=re.S)
         # A restart means a round closed. If its outcome was never written into
         # Earlier rounds, it survives only in git history — which is still the
         # Record, but nothing on the page or in this file can say what happened.
@@ -203,33 +259,6 @@ def main():
             warn(path, "this vote says it restarted but records no earlier round, so the outcome of "
                        "the round that closed is not written down. Add a line under Earlier rounds; "
                        "`git log -p " + path + "` has the detail.")
-        # 6 -- §1 requires five things recorded for every adopted amendment, and
-        # the pull request body that also asks for them is discarded at merge: a
-        # merge commit carries the title, not the body. So a file that records an
-        # outcome and no amendment record is a decision whose reasoning left no
-        # trace. Warns, like everything else here -- the tooling creates no duty,
-        # and §1's requirement binds whether or not this file notices.
-        FIELDS = ["How it was made", "Assumptions", "Status",
-                  "Notes from the discussion", "Abstentions or objections"]
-        has_outcome = re.search(r"^\*\*(Carried|Did not carry)\b", clean, re.M) \
-            or (parsed.get("objections") and not parsed.get("holdsVote", True))
-        if has_outcome:
-            sec = re.search(r"^## Amendment record\s*$(.*?)(?=^## |\Z)", clean, re.M | re.S)
-            if not sec:
-                warn(path, "this records an outcome but has no `## Amendment record` section. "
-                           "\u00a71 requires five things recorded for every amendment to the Constitution "
-                           "or a rule, and the pull request body that also asks for them is discarded "
-                           "at merge. `.github/instrument-templates/vote.md` has the section.")
-            else:
-                body = sec.group(1)
-                missing = [f for f in FIELDS
-                           if not re.search(r"^\*\*" + re.escape(f) + r":\*\*[^\S\n]*(\S.*)$", body, re.M)
-                           or re.search(r"^\*\*" + re.escape(f) + r":\*\*[^\S\n]*<", body, re.M)]
-                if missing:
-                    warn(path, "the `## Amendment record` is incomplete \u2014 " + ", ".join(missing)
-                               + (" is" if len(missing) == 1 else " are") + " still blank or still the "
-                               "template's placeholder. \u00a71 asks for each of them.")
-
         stated = re.search(r"^\*\*(Carried|Did not carry)\b", clean, re.M)
         if not stated:
             continue  # no result written yet: an open vote, not a defect
