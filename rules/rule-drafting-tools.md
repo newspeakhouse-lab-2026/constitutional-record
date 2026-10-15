@@ -68,7 +68,30 @@ If the Laboratory later issues the Policy Section 2 anticipates, it supersedes t
 
 ## Amendment
 
-Any part of this rule may be amended by Ordinary resolution. Changes to files it adopts follow the same route.
+Any part of this rule may be amended by Ordinary resolution, and so may **what** the
+tooling it adopts does: what a page claims, what a template asks for, what a workflow
+records, and what any of them refuses. Those are what the Laboratory agreed to.
+
+**How those things are done is operational.** A Record Keeper may merge it directly, as
+Section 1 allows for reversible action within existing rules. That covers rebuilding,
+refactoring, restyling, fixing a defect, changing where data is read from, and building
+an additional way to read the Record — another interface, another host, another tool —
+provided it only reads.
+
+Three limits, and they are what make the rest safe:
+
+- **Nothing that writes.** A tool that commits to the Record, or that a member's vote,
+  objection or proposal passes through, is not operational — whatever it is written in,
+  and however small the change looks.
+- **Nothing that changes a claim.** A figure, a threshold, an outcome, or a sentence a
+  member relies on in order to act is part of what was adopted. How it is drawn is not.
+- **No view is the Record.** Section 1 puts the Record in this repository. Anything built
+  to read it is a view of it, wherever it is hosted and however good it is. Moving the
+  Record itself would be a Layer 4 amendment.
+
+**If any member thinks a change crossed from *how* into *what*, saying so makes it an
+Ordinary proposal and it waits.** The distinction is a judgement, and this is who judges
+it: not the person who made the change.
 
 ## Ends
 

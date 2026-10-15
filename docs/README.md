@@ -2,11 +2,12 @@
 
 Published at **<https://newspeakhouse-lab-2026.github.io/constitutional-record/>**.
 
-Two files. Neither is an instrument, and neither has any force: nothing here creates, amends or records a decision.
+Four files. None is an instrument, and none has any force: nothing here creates, amends or records a decision.
 
 | | |
 |---|---|
-| `index.html` | A page showing the state of the Record in four sections: deadlines and open proposals, issues under discussion, what is in force, and how the Record got here. It reads the Record live from the GitHub API each time someone opens it. |
+| `index.html` | One page, two tabs. **What needs attention** — deadlines and open proposals with their deliberation windows, where each vote stands, branches nobody has proposed, and issues under discussion. **How the Record got here** — every change that entered `main`, and the vote each one carried. The second tab fetches nothing until it is opened, so a visit that does not ask about history does not pay for it. |
+| `record.css`, `record.js` | The styles and the helper layer — the cache, the readers, the row, and the vote arithmetic. In files of their own rather than inline so the page stays legible, and so `.github/scripts/test-vote-parse.mjs` can lift the vote reader out of `record.js` and drive it from the same worked cases as `tally.py`. |
 | `data.json` | The handful of constitutional facts the page cannot work out for itself: how long each kind of deliberation runs, and the dates the Constitution names. |
 
 ## Why the folder is called `docs`
@@ -15,7 +16,9 @@ Not because it holds documents — the whole repository does. **GitHub Pages wil
 
 ## Where the rest comes from
 
-Everything other than `data.json` is read live: which proposals are open, what has been adopted, who holds which office. Two facts come from **labels a workflow writes** rather than from an events API — `opened:<timestamp>`, the moment a proposal left draft, and `endorsed:<n>`, how many members have endorsed it.
+Everything other than `data.json` is read live: which proposals are open, what has been adopted, who holds which office. Three facts come from **labels a workflow writes** rather than from an events API — `opened:<timestamp>`, the moment a proposal left draft, `endorsed:<n>`, how many members have endorsed it, and `objection`, which says there is an objection recorded on a proposal.
+
+**File content does not come from the API.** The unauthenticated API allows sixty requests an hour per address, and everyone on one connection shares it. `raw.githubusercontent.com` serves the same files with no such limit, so the Constitution, the instruments, `members.md` and the vote files are read there. The API is kept for the queries raw cannot answer: which proposals are open, which branches exist, what changed.
 
 That is partly cheaper and mostly better: a label is visible on the proposal itself, with GitHub's own record of who added it and when, which is what showing that a period began ought to mean. (A proposed but **not adopted** rule, `rules/rule-deliberation-clock.md`, would put that principle in the Record. Until it is merged it is a convention, not a clause.)
 
