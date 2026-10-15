@@ -16,7 +16,7 @@ on:
       - 'docs/**'
       - 'rules/**'
       - 'policies/**'
-      - 'votes/**'
+      - 'amendment-record/**'
       - '.github/workflows/label-proposals.yml'
       # record-vote.yml was absent, so a pull request touching only it ran none
       # of the tests written for it -- which is most of the suite.

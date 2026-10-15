@@ -18,7 +18,7 @@ Almost all Laboratory members have write access, which is what lets you push a b
 | Amend an existing rule | Open file → pencil icon → **Commit changes** → new branch → **Propose changes** |
 | Discuss a proposal | Comment on the pull request |
 | Raise a problem you cannot draft yet | Open an issue. Issues are for discussion and adopt nothing |
-| Record a vote | Your row in `votes/pr-{number}.md` on the proposal's branch — step 10 |
+| Record a vote | Your row in `amendment-record/pr-{number}.md` on the proposal's branch — step 10 |
 | See what's being proposed | Open pull requests — plus the dashboard, which also lists drafts still sitting on a branch |
 | See the full history of a rule | Open the file → **History** |
 | See all current rules | Browse the repo on `main` |
@@ -69,8 +69,8 @@ policies/
     rationale.md                     Reasoning, explicitly not operative
 rules/
   rule-{name}.md                     Layer 2 — Standalone rules, no policy area or crossing several
-votes/
-  pr-{number}.md                     Positions on one proposal, beside the text it decides
+amendment-record/
+  pr-{number}.md                     How one proposal was decided, beside the text it decided
 disputes/
   dispute-{date}-{name}.md           A decision, binding on the parties only
 AGENTS.md                            Instructions for members' AI agents
@@ -117,8 +117,8 @@ Every amendment follows the same arc. The deliberation periods and thresholds di
 | 7 | Take it out of draft — it is posted to Discord automatically, and **this starts the deliberation clock** | You | GitHub, relayed |
 | 8 | Deliberate | You. An agent may draft your words; it may never post a position | Channel, pull request, meetings |
 | 9 | Endorsements, where the layer needs them | Other members. Never an agent | Pull request or channel |
-| 10 | Vote, and record it | Members. **Never an agent** | Stating it is the vote, wherever you state it; `votes/pr-{number}.md` is the evidence |
-| 11 | Write the result into `votes/pr-{number}.md`, arithmetic shown | You, or a Record Keeper | The proposal's branch |
+| 10 | Vote, and record it | Members. **Never an agent** | Stating it is the vote, wherever you state it; `amendment-record/pr-{number}.md` is the evidence |
+| 11 | Write the result into `amendment-record/pr-{number}.md`, arithmetic shown | You, or a Record Keeper | The proposal's branch |
 | 12 | Verify the process and merge | A Record Keeper — §3: either may merge | GitHub |
 | 13 | Announce the result | The merging Record Keeper | Governance channel |
 
@@ -299,7 +299,7 @@ This is the commonest decisive act in the Constitution, and the only one that ch
 
 **Use the form.** The dashboard's **Object to this proposal** button, or Issues → New issue → *Record a position on a vote*. Section 2 asks an objection to carry two things: the harm you foresee, and a route forward the cohort can act on. The form asks for both.
 
-A workflow creates `votes/pr-{number}.md` on the proposal's branch, writes your reason and route **word for word**, commits it as you, and labels the proposal `objection`. There is no table in that file and no row for you: no vote is held at these tiers, so there is nothing to count.
+A workflow creates `amendment-record/pr-{number}.md` on the proposal's branch, writes your reason and route **word for word**, commits it as you, and labels the proposal `objection`. There is no table in that file and no row for you: no vote is held at these tiers, so there is nothing to count.
 
 **Only an objection can be recorded here.** Preference, toleration, abstention and saying nothing are the same act at Tier A and Tier B — the proposal passes absent an objection — so the form will tell you why it cannot record any of them. To express support, say so on the proposal or in the governance channel.
 
@@ -307,7 +307,7 @@ A workflow creates `votes/pr-{number}.md` on the proposal's branch, writes your 
 
 ### Recording a vote
 
-For the procedures that do vote. In **`votes/pr-{number}.md`, on the proposal's own branch**, so the evidence merges into the Record beside the text it adopted. Start it from `.github/instrument-templates/vote.md`; the dashboard's *Start a vote* button opens it prefilled.
+For the procedures that do vote. In **`amendment-record/pr-{number}.md`, on the proposal's own branch**, so the evidence merges into the Record beside the text it adopted. Start it from `.github/instrument-templates/vote.md`; the dashboard's *Start a vote* button opens it prefilled.
 
 One table, one row per member — **all of them, including anyone who has said nothing**, because every threshold is a fraction of everyone entitled to vote, and you cannot check the arithmetic unless you can see them all.
 
@@ -321,7 +321,7 @@ One table, one row per member — **all of them, including anyone who has said n
 
 **An objection goes in the file, in full** — its reason *and* a suggested route forward, both of which Section 2 requires. A reason that lives only in a pull request comment is not in the Record: `git clone` retrieves none of it. Link the discussion for context; put the operative sentences in the file.
 
-When the window closes, write the result in with the arithmetic shown, so a Record Keeper verifying it under Section 3 has something to verify *against*. `python3 .github/scripts/tally.py votes/pr-{number}.md` recomputes it and prints the working; it is advisory, and a check warns if the written result and the rows disagree.
+When the window closes, write the result in with the arithmetic shown, so a Record Keeper verifying it under Section 3 has something to verify *against*. `python3 .github/scripts/tally.py amendment-record/pr-{number}.md` recomputes it and prints the working; it is advisory, and a check warns if the written result and the rows disagree.
 
 Section 1's amendment record — the assumptions the decision rests on, its status, explanatory notes — belongs in the same file. **Not in the pull request description:** a merge commit carries only the title, so a description never enters the repository at all.
 

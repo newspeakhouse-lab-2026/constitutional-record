@@ -222,7 +222,7 @@ async function collect(){
       try{
         // On the proposal's branch, which moves as people vote, so there is no
         // blob sha to key on — the cache key above already carries updated_at.
-        t=await file(`votes/pr-${p.number}.md`,p.head.ref,null);
+        t=await file(`amendment-record/pr-${p.number}.md`,p.head.ref,null);
       }catch(e){
         /* ONLY a 404 is evidence that no vote has been opened, and only that may
            be remembered. The empty string used to be cached for any failure at
@@ -354,7 +354,7 @@ function render(d){
                 /* A file at Tier A or Tier B is objections, not a vote (§2 holds
                    none there), so the tag would be false on the one row where the
                    distinction decides what a member can do. */
-                vote&&vote.holdsVote?`<span class="tag open" title="A vote is recorded in votes/pr-${pr.number}.md on this proposal's branch">vote open</span>`:"",
+                vote&&vote.holdsVote?`<span class="tag open" title="A vote is recorded in amendment-record/pr-${pr.number}.md on this proposal's branch">vote open</span>`:"",
                 win.layer?`<span class="tag" title="${esc(LAYER[win.layer]||"")}">L${win.layer}</span>`:"",
                 win.tier?`<span class="tag" title="${esc(tp?tp.source+": “"+tp.quote+"”":"")}">${win.tier.toUpperCase()}</span>`:"",
                 st?`<span class="tag st" title="${esc(st.d)}">${esc(st.t)}</span>`:"",
@@ -444,7 +444,7 @@ function render(d){
         verify (\u00a73).</p>`);
       A.push(`<div class="acts"><a class="act" href="https://github.com/${REPO}/issues/new`
         +`?template=vote.yml&title=${encodeURIComponent("Vote: PR #"+pr.number)}&pr=${pr.number}">Object to this proposal</a>`
-        +`<a class="actalt" href="https://github.com/${REPO}/blob/${encodeURIComponent(pr.head.ref)}/votes/pr-${pr.number}.md">Read votes/pr-${pr.number}.md</a></div>`);
+        +`<a class="actalt" href="https://github.com/${REPO}/blob/${encodeURIComponent(pr.head.ref)}/amendment-record/pr-${pr.number}.md">Read amendment-record/pr-${pr.number}.md</a></div>`);
       voteWhy=`<div class="vote">${L.join("")}</div>`;
       voteAct=A.join("");
     }else if(vote){
@@ -473,7 +473,7 @@ function render(d){
          needs only once they have seen that there is a disagreement. */
       if(vote.badCloses)
         warns.push(["The vote file's closing time cannot be read",
-          `<p><code>votes/pr-${pr.number}.md</code> has a <strong>Closes:</strong> line, but the instant in
+          `<p><code>amendment-record/pr-${pr.number}.md</code> has a <strong>Closes:</strong> line, but the instant in
            its backticks is not a date this page can read.</p>
            <p><strong>The workflow refuses every submission while that is true</strong> — it reads the same
            line and fails the same way. So the window may look open here and accept nothing.</p>
@@ -485,7 +485,7 @@ function render(d){
           `<p>This row and the vote file disagree about when the window shuts, so the row can show a
            vote running while every position submitted to it is refused.</p>
            <p>The countdown here runs to <strong>${fmt(win.closes)}</strong>, computed from the recorded
-           opening. <code>votes/pr-${pr.number}.md</code> says <strong>${fmt(vote.closes)}</strong>.</p>
+           opening. <code>amendment-record/pr-${pr.number}.md</code> says <strong>${fmt(vote.closes)}</strong>.</p>
            <p><strong>The file is the one that decides.</strong> The workflow reads the file and refuses
            anything submitted after it \u2014 so vote by the file's time, not this row's.</p>
            <p>One of the two is wrong and nothing here can say which. A window extended in the file
@@ -493,7 +493,7 @@ function render(d){
            window would all look like this.</p>`]);
       else if(!win.closes&&vote.closes)
         warns.push(["No countdown on this row, but a window in the file",
-          `<p><code>votes/pr-${pr.number}.md</code> says this closes <strong>${fmt(vote.closes)}</strong>,
+          `<p><code>amendment-record/pr-${pr.number}.md</code> says this closes <strong>${fmt(vote.closes)}</strong>,
            and the workflow enforces that.</p>
            <p>This row shows no countdown because the proposal records no opening this page can read \u2014
            so the vote is running, and only the file says until when.</p>`]);
@@ -680,7 +680,7 @@ function render(d){
         L.push(`<p class="vnote">The window closed ${fmt(enforced)}, so a position submitted now is refused.
           Next: a Record Keeper writes the result into the file with the arithmetic shown, and verifies it
           before merging (§3).</p>`);
-        A.push(`<div class="acts"><a class="actalt" href="https://github.com/${REPO}/blob/${encodeURIComponent(pr.head.ref)}/votes/pr-${pr.number}.md">Read votes/pr-${pr.number}.md</a></div>`);
+        A.push(`<div class="acts"><a class="actalt" href="https://github.com/${REPO}/blob/${encodeURIComponent(pr.head.ref)}/amendment-record/pr-${pr.number}.md">Read amendment-record/pr-${pr.number}.md</a></div>`);
       }else{
         /* The form first, the file second. Opening an issue needs only read
            access, so it is the one route that works for a member who cannot push
@@ -714,7 +714,7 @@ function render(d){
       const f=voteFileFor(pr,win,d.cfg.thresholds||{},d.roll,d.rollSha);
       if(f){
         voteWhy=`<div class="vote"><p class="vnote">This procedure votes, and no positions are recorded yet.</p></div>`;
-        voteAct=`<div class="acts"><a class="act" href="${newVoteURL(pr.head.ref,`votes/pr-${pr.number}.md`,f)}">Start a vote</a></div>`;
+        voteAct=`<div class="acts"><a class="act" href="${newVoteURL(pr.head.ref,`amendment-record/pr-${pr.number}.md`,f)}">Start a vote</a></div>`;
       }
     }
 
@@ -741,7 +741,7 @@ function render(d){
         <a href="${pr.html_url}">read it</a>.</p></div>`;
     else if(!vote&&(win.tier==="a"||win.tier==="b")&&win.closes){
       /* The form is the route now. It used to send a member to the proposal
-         thread instead, because record-vote.yml refused whenever votes/pr-N.md
+         thread instead, because record-vote.yml refused whenever amendment-record/pr-N.md
          did not exist and at these tiers it never does — a button that sends
          someone somewhere they will be refused is the dead route this page
          exists to prevent. The workflow now creates the file on the first
@@ -998,7 +998,7 @@ async function collectHistory(){
   // Read from raw, so the vote each adopted proposal carried costs nothing.
   const mergedVotes={};
   await Promise.all(merged.slice(0,10).map(async p=>{
-    const path=`votes/pr-${p.number}.md`;
+    const path=`amendment-record/pr-${p.number}.md`;
     if(!at[path]) return;
     try{ const v=voteOf(await file(path,"main",at[path])); if(v) mergedVotes[p.number]=v; }catch{}
   }));
@@ -1028,7 +1028,7 @@ function renderHistory(d){
       const parts=[`@${esc(e.m.user?e.m.user.login:"unknown")}`];
       if(e.amends.length) parts.push(`<span class="warnish">amended the Constitution</span> `
         + e.amends.map(a=>`<a href="${a.url}">${a.sha}</a>`).join(", "));
-      const vpath=`votes/pr-${e.m.number}.md`;
+      const vpath=`amendment-record/pr-${e.m.number}.md`;
       const mv=(d.mergedVotes||{})[e.m.number];
       let voteLine="";
       if((d.shas||{})[vpath]){

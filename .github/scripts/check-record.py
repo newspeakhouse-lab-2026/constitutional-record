@@ -183,7 +183,7 @@ def main():
     # only makes a disagreement visible, because the likeliest failure here is
     # two people counting Tier C differently in good faith, not an attack.
     import tally
-    for path in sorted(glob.glob("votes/*.md")):
+    for path in sorted(glob.glob("amendment-record/*.md")):
         text = read(path)
         if text is None:
             continue

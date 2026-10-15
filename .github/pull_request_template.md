@@ -118,7 +118,7 @@ box is ticked; delete them otherwise. -->
 Constitution or to a rule. The date and time is the commit timestamp, so five are
 left for you. Write what actually happened, not what was proposed.
 
-WRITE THEM INTO votes/pr-{number}.md, NOT HERE. This description does not reach
+WRITE THEM INTO amendment-record/pr-{number}.md, NOT HERE. This description does not reach
 the repository: this repository merges with merge commits, and a merge commit
 carries the pull request's title and not its body. Anything typed below is
 discarded at the moment of adoption, which is the moment §1 is asking about.

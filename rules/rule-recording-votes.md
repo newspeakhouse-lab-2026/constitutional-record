@@ -19,7 +19,7 @@ resolution because prompting for what Section 2 already requires creates nothing
 
 ## Where a vote lives
 
-**`votes/pr-{number}.md`, on the proposal's own branch.**
+**`amendment-record/pr-{number}.md`, on the proposal's own branch.**
 
 On the proposal's branch so the evidence merges into the Record beside the text it
 adopted — and so a proposal that fails keeps its vote on the branch, where it
@@ -198,7 +198,7 @@ with this Constitution, whose votes it exists to record.
 
 `Observed by:` A vote's existence and outcome are visible in the file and its
 history. A vote held with no file recorded is visible as a merged proposal with
-no `votes/` entry. A row written by someone other than the member it names is
-visible in `git log`, which records who made every commit — and where a tool
-transcribed a submission, the commit names the member as author, the tool as
-committer, and the submission it came from.
+no `amendment-record/` entry. A row written by someone other than the member it
+names is visible in `git log`, which records who made every commit — and where
+a tool transcribed a submission, the commit names the member as author, the
+tool as committer, and the submission it came from.

@@ -1,4 +1,4 @@
-# Writes a member's position into votes/pr-{n}.md when they submit the vote form.
+# Writes a member's position into amendment-record/pr-{n}.md when they submit the vote form.
 #
 # The issue proves it was you, at the time — GitHub generated the author id and
 # the submitter cannot forge it. Git carries the claim forever. Nothing
@@ -56,7 +56,7 @@ jobs:
             const DEFAULT_BRANCH = context.payload.repository.default_branch;
 
             const hand = (branch, n) =>
-              `https://github.com/${owner}/${repo}/edit/${branch}/votes/pr-${n}.md`;
+              `https://github.com/${owner}/${repo}/edit/${branch}/amendment-record/pr-${n}.md`;
             /* Editing the file by hand always works — but GitHub's commit dialog
                offers two radios and the wrong one looks exactly like the right
                one. "Create a new branch for this commit and start a pull
@@ -364,8 +364,8 @@ jobs:
               return await refuse(`Pull request #${n}'s branch is \`${branch}\`, this repository's default branch. ` +
                 `A vote is written on the proposal's own branch, so nothing has been written.`);
             }
-            const path = `votes/pr-${n}.md`;
-            if (!/^votes\/pr-[1-9]\d{0,5}\.md$/.test(path)) {
+            const path = `amendment-record/pr-${n}.md`;
+            if (!/^amendment-record\/pr-[1-9]\d{0,5}\.md$/.test(path)) {
               return await brokenTooling(`This workflow built the path \`${path}\`, which it will not write to.`);
             }
 
@@ -843,7 +843,7 @@ jobs:
                 `The error was: \`${String((e && e.message) || e).slice(0, 300)}\``,
                 '',
                 `**Editing the vote file always works**, and that is the route to take now:`,
-                `https://github.com/${owner}/${repo}/pulls — open the proposal, then \`votes/pr-{number}.md\``,
+                `https://github.com/${owner}/${repo}/pulls — open the proposal, then \`amendment-record/pr-{number}.md\``,
                 `on its branch. A maintainer needs to look at this run.`,
               ].join('\n'));
             }

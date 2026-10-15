@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Recompute a vote from its own file, and show the working.
 
-    python3 .github/scripts/tally.py votes/pr-14.md
+    python3 .github/scripts/tally.py amendment-record/pr-14.md
 
 Advisory. Section 3 gives the outcome to a Record Keeper, who verifies that the
 vote happened and that the correct outcome is recorded. This prints arithmetic to

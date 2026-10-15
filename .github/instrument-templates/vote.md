@@ -1,7 +1,7 @@
 <!--
 A vote. Adopted by rules/rule-recording-votes.md.
 
-PATH: votes/pr-{number}.md, on the proposal's own branch — the same branch as the
+PATH: amendment-record/pr-{number}.md, on the proposal's own branch — the same branch as the
 text being decided, so the evidence merges into the Record beside it, and so a
 proposal that fails keeps its vote where the branch keeps it.
 
@@ -227,7 +227,7 @@ every tool that writes to it depends on that: with two tables, nothing can be
 sure which one is current, and a row could be written into a closed round.
 
 The detail — who held which position in an earlier round — is in this file's git
-history, which is the Record. `git log -p votes/pr-NNN.md` shows every round in
+history, which is the Record. `git log -p amendment-record/pr-NNN.md` shows every round in
 full. What belongs here is the fact a round closed, how it closed, and why it
 restarted, because a proposal that failed once and passed after amendment is a
 different thing from one that passed first time, and Section 1's amendment record
