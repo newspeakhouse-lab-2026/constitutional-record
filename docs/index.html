@@ -213,9 +213,11 @@ async function collect(){
     /* Tier A and Tier B hold no vote, so there is usually no file and fetching
        one for every such proposal would spend calls to learn nothing — a cold
        load already costs 25-30 against a ceiling of 60 an hour shared by the
-       whole building. The file exists only when somebody objected, and the
-       workflow that writes it labels the proposal in the same breath, so the
-       label is the cheap signal that there is something to read.
+       whole building. Every adopted proposal now has such a file — it carries
+       §1's amendment record — but at these tiers this page only needs to know
+       about an objection, and the workflow that records one labels the proposal
+       in the same breath, so the label is the cheap signal that there is
+       something here worth reading.
        The cost of that: an objection written into the file by hand, without the
        label, is invisible here until the label is added. The file is still the
        Record; it is this page that is behind. */

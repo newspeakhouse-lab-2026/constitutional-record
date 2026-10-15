@@ -119,12 +119,15 @@ Every amendment follows the same arc. The deliberation periods and thresholds di
 | 9 | Endorsements, where the layer needs them | Other members. Never an agent | Pull request or channel |
 | 10 | Vote, and record it | Members. **Never an agent** | Stating it is the vote, wherever you state it; `amendment-record/pr-{number}.md` is the evidence |
 | 11 | Write the result into `amendment-record/pr-{number}.md`, arithmetic shown | You, or a Record Keeper | The proposal's branch |
+| 11a | Complete `## Amendment record` in the pull request description — a workflow commits it | You, or a Record Keeper | The description; the file follows |
 | 12 | Verify the process and merge | A Record Keeper — §3: either may merge | GitHub |
 | 13 | Announce the result | The merging Record Keeper | Governance channel |
 
 A webhook posts repository events to Discord, so taking a proposal out of draft announces it without you doing anything further — that is the visibility Section 2 asks for. The relay posts a bare GitHub notification though, so saying what tier you are claiming and when the window closes still saves everyone reconstructing it later.
 
-Two things happen on their own as you go. When you fill in the Layer, Tier and Deliberation period, a workflow turns them into **labels**; and when you take the pull request out of draft it adds an **`opened:`** label recording the moment, which is what shows that a deliberation period began. A second, **`endorsed:`**, counts endorsing reviews. A third, **`objection`**, is added to the proposal when someone objects through the form — the dashboard reads it to know there is an objection file to show. Nobody writes any of them by hand.
+Three things happen on their own as you go. When you fill in the Layer, Tier and Deliberation period, a workflow turns them into **labels**; and when you take the pull request out of draft it adds an **`opened:`** label recording the moment, which is what shows that a deliberation period began. A second, **`endorsed:`**, counts endorsing reviews. A third, **`objection`**, is added to the proposal when someone objects through the form — the dashboard reads it to know there is an objection file to show. Nobody writes any of them by hand.
+
+And when you fill in `## Amendment record` in the description, a workflow commits it to `amendment-record/pr-{number}.md` on your branch within seconds, and keeps it in step as you edit. It copies your words and composes nothing; the commit is authored by you. It will not overwrite a record somebody wrote into that file by hand, and it says so rather than doing it.
 
 The [dashboard](https://newspeakhouse-lab-2026.github.io/constitutional-record/) reads them, so a proposal with no layer recorded is shown as **No layer recorded** rather than appearing to have no window running. If your proposal looks wrong there, the labels are the place to look.
 
@@ -260,7 +263,7 @@ For constitutional amendments, edit `constitution.md` on a new branch. Two endor
 
 The pull request is pre-filled with everything the Constitution requires: the layer **and the reasoning for it**, the tier, the `Observed by:` line if the proposal creates any duty, the conflicts you searched, the source of authority for a Policy or an amendment, and the experiment fields if it is one. If you discussed it in an issue first, link it with `Resolves #N` so the discussion and the text stay connected.
 
-You don't need everything immediately — the amendment record and the vote evidence are completed after deliberation, before merge.
+You don't need everything immediately. The vote evidence is written as the vote happens. The amendment record is the one part you cannot finish at the start — *how it was made* is not known until the window has closed — so fill in what you can and come back to it; the file keeps pace with the description.
 
 ### Discussion and deliberation
 
@@ -323,7 +326,9 @@ One table, one row per member — **all of them, including anyone who has said n
 
 When the window closes, write the result in with the arithmetic shown, so a Record Keeper verifying it under Section 3 has something to verify *against*. `python3 .github/scripts/tally.py amendment-record/pr-{number}.md` recomputes it and prints the working; it is advisory, and a check warns if the written result and the rows disagree.
 
-Section 1's amendment record — the assumptions the decision rests on, its status, explanatory notes — belongs in the same file. **Not in the pull request description:** a merge commit carries only the title, so a description never enters the repository at all.
+Section 1's amendment record — how it was made, the assumptions it rests on, its status, notes from the discussion, abstentions or objections — goes in the **pull request description**, under `## Amendment record`. A workflow copies it into `amendment-record/pr-{number}.md` on this branch, so it merges along with the text it records. Fill it in once, where you were already writing; edit the description later and the file follows.
+
+It is kept in both places on purpose. Nothing typed in a description is lost — GitHub keeps it, and keeps an edit history for it — but `git clone` retrieves no descriptions, and a clone is the only copy of the Record that outlives GitHub. A description can also be edited in place, where the file's history may not be rewritten, and Section 1 ties the record's date to a commit timestamp.
 
 ### Merging
 
