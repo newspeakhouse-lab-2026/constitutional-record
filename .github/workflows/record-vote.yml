@@ -491,7 +491,7 @@ jobs:
                window is read from, exactly as for a vote. */
             function objectionFile(tier, number, title, win) {
               return [
-                `# Objections — PR #${number}: ${String(title).replace(/[\r\n]/g, ' ').slice(0, 200)}`, '',
+                `# Amendment record — PR #${number}: ${String(title).replace(/[\r\n]/g, ' ').slice(0, 200)}`, '',
                 `**Procedure:** ${tier}`,
                 `**Carries if:** no member objects before it closes`,
                 `**Opened:** ${stamp(win.opened)}`,
@@ -504,6 +504,17 @@ jobs:
                 '**A single stated objection is enough.** Section 2 moves the proposal up a tier;',
                 'it never moves down. Nothing here decides that — it is written down so a Record',
                 'Keeper can verify it.', '',
+                /* The heading with no body of its own, so
+                   record-amendment.yml can insert the §1 record here when the
+                   proposer fills it in. §1 wants a record of every amendment,
+                   including one nobody voted on, and check-record.py reports a
+                   file with no such heading at all. Deliberately empty:
+                   emitting the five labels blank would read to that workflow as
+                   a record written by hand, and it would stand down. */
+                '## Amendment record', '',
+                '<!-- Copied from this proposal\'s pull request description by',
+                '     .github/workflows/record-amendment.yml. Fill the Amendment record',
+                '     section there and it appears here. -->', '',
                 '## Objections', '',
               ].join('\n');
             }

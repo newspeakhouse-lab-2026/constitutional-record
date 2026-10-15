@@ -512,6 +512,22 @@ for (const [name, fn] of NV_TAMPERS) {
   check(`  and fails loudly`, r.failed.length > 0, true);
 }
 
+/* ---- the file objectionFile() creates ------------------------------------ */
+/* §1 wants a record of every amendment, including one nobody voted on, so the
+   file this creates on a first objection carries the heading for it — with an
+   empty body, so record-amendment.yml fills it rather than reading it as a
+   record somebody wrote by hand and standing down. */
+r = await run({ pull: TIER('a'), fileMissing: true, body: OBJ('the bins overflow', 'collect twice') });
+check('a created Tier A file is titled for the record, not "Objections"',
+  r.writes[0].text.startsWith('# Amendment record — PR #14:'), true);
+check('it carries an Amendment record heading', /^## Amendment record$/m.test(r.writes[0].text), true);
+check('whose body is empty, so the workflow will fill it',
+  r.writes[0].text.split(/^## Amendment record$/m)[1]
+    .replace(/<!--[\s\S]*?-->/g, '').split(/^## /m)[0].trim(), '');
+check('and it still keeps its Procedure line, which tally.py needs',
+  /^\*\*Procedure:\*\* Tier A$/m.test(r.writes[0].text), true);
+check('and the objection is in it', has(r.writes[0].text, '> Reason: the bins overflow'), true);
+
 /* ---- the path, and a file copied from the template ----------------------- */
 
 /* The getContent stub matches members.md and docs/data.json by name and lets

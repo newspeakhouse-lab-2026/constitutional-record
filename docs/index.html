@@ -193,6 +193,14 @@ async function collect(){
      does. An empty string is cached too, so a proposal with no vote is asked
      about once. */
   const votes={};
+  /* The file's own text, kept beside the parsed vote. Since
+     record-amendment.yml began writing the §1 record as soon as a proposer
+     fills it in, a proposal that votes usually HAS a file before anyone opens
+     the vote — and voteOf returns null for a file holding only that record, so
+     the row renders as "no vote yet". Without the text, opening the vote
+     prefilled a /new/ editor at a path that already existed, which would have
+     written over the record. */
+  const voteText={};
   /* Reads that failed for a reason that is not "no such file". Counted so the
      banner can say so: a row whose vote could not be read looks exactly like a
      row with no vote, and that is the difference between a member seeing an open
@@ -236,7 +244,7 @@ async function collect(){
       }
       if(keep){ try{ localStorage.setItem(k,t) }catch{} }
     }
-    if(t){ try{ const v=voteOf(t); if(v) votes[p.number]=v; }catch{} }
+    if(t){ voteText[p.number]=t; try{ const v=voteOf(t); if(v) votes[p.number]=v; }catch{} }
   }));
 
   /* The roll, read only when some proposal needs a vote opened and has none —
@@ -261,6 +269,7 @@ async function collect(){
     roll, rollSha,
     props: prs.map(pr=>({pr,win:wins.get(pr.number),
                          vote:votes[pr.number]||null,
+                         voteText:voteText[pr.number]||null,
                          notes:notes[pr.number]||0, resolves:linkFor[pr.number]||[]})),
     /* A vote or objection form opens an issue, and the workflow closes it within
        seconds. One still open means it did not record — the member was told, but
@@ -347,7 +356,7 @@ function render(d){
     live.push({ms:r.ms,html:row(r.word,esc(e.name),
       `<span class="tag ty">Instrument</span>${esc(e.why||"")}`,r.txt,fmt(e.at),r.cls)});
   }
-  for(const {pr,win,notes,resolves,vote} of d.props){
+  for(const {pr,win,notes,resolves,vote,voteText} of d.props){
     const tp=win.tier&&(d.cfg.procedures||{})["tier-"+win.tier];
     const st=win.closes?null:stateOf(win);
     const tags=[`<span class="tag ty">Proposal</span>`,
@@ -711,10 +720,30 @@ function render(d){
       /* This procedure votes and no file exists yet, so offer to open one —
          prefilled with the procedure, the threshold computed once from the
          frozen roll, the window already running, and every member's row. */
-      const f=voteFileFor(pr,win,d.cfg.thresholds||{},d.roll,d.rollSha);
+      const path=`amendment-record/pr-${pr.number}.md`;
+      const f=voteFileFor(pr,win,d.cfg.thresholds||{},d.roll,d.rollSha,voteText);
       if(f){
         voteWhy=`<div class="vote"><p class="vnote">This procedure votes, and no positions are recorded yet.</p></div>`;
-        voteAct=`<div class="acts"><a class="act" href="${newVoteURL(pr.head.ref,`amendment-record/pr-${pr.number}.md`,f)}">Start a vote</a></div>`;
+        if(voteText){
+          /* The file already exists — record-amendment.yml wrote the §1 record
+             into it. GitHub's /new/ editor cannot be pointed at an existing
+             path without risking what is there, and its /edit/ editor takes no
+             prefill, so the roll goes in a sheet to paste rather than into a
+             URL. The alternative was a prefilled link that could overwrite an
+             adopted record, which is not a trade worth making for one click. */
+          voteAct=`<div class="acts">`
+            +modal(id=>`<button type="button" class="act" data-sheet="${id}">Start a vote</button>`,
+              "Open the vote in this proposal's record",
+              `<p>This proposal already has <code>${esc(path)}</code> — the record of how it is`
+              +` being decided. Opening a vote adds the roll to that same file rather than`
+              +` replacing it.</p>`
+              +`<p><a href="https://github.com/${REPO}/edit/${encodeURIComponent(pr.head.ref)}/${path}">`
+              +`Edit the file on ${esc(pr.head.ref)}</a>, then replace what is there with this:</p>`
+              +`<pre class="paste">${esc(f)}</pre>`)
+            +`</div>`;
+        }else{
+          voteAct=`<div class="acts"><a class="act" href="${newVoteURL(pr.head.ref,path,f)}">Start a vote</a></div>`;
+        }
       }
     }
 
