@@ -512,6 +512,42 @@ for (const [name, fn] of NV_TAMPERS) {
   check(`  and fails loudly`, r.failed.length > 0, true);
 }
 
+/* ---- the path, and a file copied from the template ----------------------- */
+
+/* The getContent stub matches members.md and docs/data.json by name and lets
+   everything else fall through, so the vote file's own path was never asserted
+   by any test and a rename of the directory was invisible to this suite. */
+r = await run();
+check('the file is written to amendment-record/, not votes/',
+  r.writes[0].path, 'amendment-record/pr-14.md');
+
+/* A file hand-copied from .github/instrument-templates/vote.md keeps the
+   template's comment block, and that block shows the Tier A short form with an
+   indented `## Objections` inside it. The heading match in writeBlock must be
+   ANCHORED: a substring match finds the one in the comment first, splices the
+   member's objection in there where nobody will see it, and leaves the real
+   heading empty — so objection-check.yml, which anchors its own regex, counts
+   no objector and the merge goes through. */
+const COPIED = [
+  '# Amendment record — PR #14: a proposal', '',
+  '**Procedure:** Tier A',
+  '**Carries if:** no member objects before it closes',
+  '**Opened:** Sunday 31 May 2026, 10:00 UK (`2026-05-31T10:00:00+01:00`)',
+  '**Closes:** Friday 1 January 2099, 12:00 UK (`2099-01-01T12:00:00+00:00`)', '',
+  '<!--', 'TIER A AND TIER B USE A SHORTER FORM. All of it is:', '',
+  '    ## Amendment record', '',
+  '    ## Objections', '',
+  '    **<member>** — <date>', '-->', '',
+  '## Objections', '',
+].join('\n');
+r = await run({ pull: TIER('a'), file: COPIED, body: OBJ('mine', 'my route') });
+check('a file copied from the template is written once', r.writes.length, 1);
+check('the objection lands after the real heading, not inside the comment',
+  r.writes[0].text.indexOf('Reason: mine') > r.writes[0].text.lastIndexOf('-->'), true);
+check('and objection-check can still see it',
+  (r.writes[0].text.replace(/<!--[\s\S]*?-->/g, '').split(/^## Objections[^\n]*$/m)[1] || '')
+    .includes('Reason: mine'), true);
+
 const passed = results.filter(Boolean).length;
 console.log(`\n${passed}/${results.length} passed`);
 process.exit(results.every(Boolean) ? 0 : 1);

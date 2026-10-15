@@ -442,8 +442,18 @@ jobs:
                    because the duplicated table gave it two rows per member.
                    A function's return value is used literally, so there is nothing
                    to expand and no escaping to get right. */
+                /* The heading is matched ANCHORED, not as a substring. The vote
+                   template carries an indented `## Objections` inside a comment
+                   block showing the Tier A short form, and a file hand-copied
+                   from it keeps that. `s.includes('## Objections')` matches the
+                   one in the comment first, and `s.replace` with a string
+                   pattern replaces that first match — splicing a member's
+                   objection into the middle of a comment, where it is invisible
+                   and where objection-check.yml, which anchors its own regex,
+                   will not count it. The merge would then go through. */
+                const hre = new RegExp('^' + heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '[^\\n]*$', 'm');
                 if (existing.test(s)) s = s.replace(existing, () => block);
-                else if (s.includes(heading)) s = s.replace(heading, () => heading + '\n\n' + block);
+                else if (hre.test(s)) s = s.replace(hre, (h) => h + '\n\n' + block);
                 else s = s.replace(/\s*$/, () => '\n\n' + heading + '\n\n' + block + '\n');
               }
               return s.replace(/\s*$/, '\n');
