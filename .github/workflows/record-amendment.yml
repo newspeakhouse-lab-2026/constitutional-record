@@ -182,7 +182,16 @@ jobs:
                     `so it will not create ${path}. Writing one without a **Procedure:** line would ` +
                     `stop check-record.py being able to read it.`);
                 }
-                next = [`# Amendment record — PR #${n}: ${pr.title}`, '',
+                /* Sanitised exactly as objectionFile does it, and for the
+                   reason that function does. A newline in a pull request title
+                   lands at the start of a line in this file, and a title reading
+                   "ok\n\n## Objections\n\n**A Member** — ...\n\n> Reason: ..."
+                   forged a whole objections section with a named objector that
+                   objection-check.yml then counted — blocking a merge in the
+                   name of a member who never objected. The 200 characters bound
+                   an H1 that is otherwise whatever somebody typed. */
+                const safeTitle = String(pr.title || '').replace(/[\r\n]/g, ' ').slice(0, 200);
+                next = [`# Amendment record — PR #${n}: ${safeTitle}`, '',
                   `**Procedure:** ${procedure}`, '',
                   '## Amendment record', '', block, ''].join('\n');
               } else {

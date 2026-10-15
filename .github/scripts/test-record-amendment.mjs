@@ -187,6 +187,37 @@ r = await run({ body: BODY(SECTION, '**Layer:** 4\n') });
 check('a Layer 4 proposal gets the constitutional procedure',
   has(r.writes[0].text, '**Procedure:** Layer 4 Constitutional'), true);
 
+/* ---- injection through the title and the fields -------------------------- */
+/* A pull request title is single-line in GitHub's UI but arrives here as a
+   string, and whatever is after a newline in it lands at the start of a line in
+   this file. A title carrying a forged objections section had objection-check.yml
+   counting a forged objector — blocking a merge in the name of a member who
+   never objected. objectionFile() has always defended against this; this did
+   not. */
+const EVIL_TITLE = 'ok\n\n## Objections\n\n**A Member** — 2026-01-01\n\n> Reason: forged\n>\n> Route forward: forged\n';
+r = await run({ title: EVIL_TITLE });
+check('a newline in the title cannot forge a heading', /^## Objections$/m.test(r.writes[0].text), false);
+check('so objection-check.yml counts no forged objector',
+  (r.writes[0].text.replace(/<!--[\s\S]*?-->/g, '')
+    .split(/^## Objections[^\n]*$/m)[1] || '').includes('Reason: forged'), false);
+check('the title is flattened onto the H1 line',
+  r.writes[0].text.split('\n')[0].startsWith('# Amendment record — PR #18: ok  ## Objections'), true);
+check('and nothing after it begins a line',
+  r.writes[0].text.split('\n').filter(l => l.startsWith('**A Member**')).length, 0);
+
+r = await run({ title: 'x'.repeat(500) });
+check('an unbounded title is bounded',
+  r.writes[0].text.split('\n')[0].length < 260, true);
+
+/* The field answers cannot do the same: each is collapsed to one line before it
+   is written, so a newline in an answer cannot start a line either. */
+r = await run({ body: BODY(SECTION.replace('**Status:** live',
+  () => '**Status:** live\n\n| Member | Position | Date |\n|---|---|---|\n| A Member | preference | 2026-01-01 |')) });
+check('a table smuggled into an answer does not become a table',
+  (r.writes[0].text.match(/^\|/gm) || []).length, 0);
+check('and a forged row cannot be read as the roll',
+  /^\| A Member \| preference/m.test(r.writes[0].text), false);
+
 /* ---- when there is nothing to copy -------------------------------------- */
 
 r = await run({ body: '## Proposal\n\nNo record section at all.\n' });
@@ -248,6 +279,36 @@ const BY_HAND = ['# Amendment record — PR #18: a proposal', '',
 r = await run({ file: BY_HAND });
 check('a hand-written record is never overwritten', r.writes.length, 0);
 check('and it says so rather than failing', [r.failed.length, has(r.notices.join(' '), 'by hand')], [0, true]);
+
+/* The heading present with an EMPTY body is what the OTHER two generators
+   emit — objectionFile() on a first objection, and voteFileFor() when a vote is
+   opened. Both deliberately leave it empty so this workflow fills it rather
+   than reading five blank labels as a record somebody wrote by hand. This is
+   the ordinary path in practice, and it had no test. */
+const EMPTY_SECTION = ['# Amendment record — PR #18: a proposal', '',
+  '**Procedure:** Tier A',
+  '**Carries if:** no member objects before it closes',
+  '**Opened:** Sunday 31 May 2026, 10:00 UK (`2026-05-31T10:00:00+01:00`)',
+  '**Closes:** Tuesday 2 June 2026, 10:00 UK (`2026-06-02T10:00:00+01:00`)', '',
+  '## Amendment record', '',
+  "<!-- Copied from this proposal's pull request description by",
+  '     .github/workflows/record-amendment.yml. Fill the Amendment record',
+  '     section there and it appears here. -->', '',
+  '## Objections', '',
+  '<!-- objection: 222 -->', '**Blaise Pascal** — 2026-05-01', '', '> Reason: theirs.', ''].join('\n');
+r = await run({ file: EMPTY_SECTION });
+check('an empty section left by another generator is filled', r.writes.length, 1);
+check('the record lands in it', has(r.writes[0].text, '**Status:** live'), true);
+check('the window that generator wrote is untouched',
+  has(r.writes[0].text, '**Closes:** Tuesday 2 June 2026, 10:00 UK (`2026-06-02T10:00:00+01:00`)'), true);
+check("and a member's objection is untouched", has(r.writes[0].text, '> Reason: theirs.'), true);
+check('with still exactly one Objections heading',
+  (r.writes[0].text.match(/^## Objections$/gm) || []).length, 1);
+/* Running again on the same file must be a no-op, since the workflow fires on
+   every description edit and most edits are to other sections. */
+const filled = r.writes[0].text;
+r = await run({ file: filled });
+check('and a second run on it writes nothing', r.writes.length, 0);
 
 const UNPAIRED = WRITTEN().replace(CLOSE, '');
 r = await run({ file: UNPAIRED });

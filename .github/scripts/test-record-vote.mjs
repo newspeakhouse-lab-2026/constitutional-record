@@ -568,6 +568,21 @@ check('the record section still holds exactly its five fields',
     .split(/^## Amendment record$/m)[1].split(/^## /m)[0]
     .match(/^\*\*[^*]+:\*\*/gm) || []).length, 5);
 
+/* The invariant on that path is compared against the REPAIRED text, not the
+   original — otherwise it would reject the workflow's own repair. That is only
+   safe if it still catches tampering, so: same path, with the result tampered. */
+for (const [name, fn] of [
+  ['another block edited', s => s.replace('> Reason: theirs.', '> Reason: not theirs.')],
+  ['a table appearing',    s => s + '\n| Member | Position | Date |\n|---|---|---|\n| X | preference | |\n'],
+  ['the Procedure line changed', s => s.replace('**Procedure:** Tier A', '**Procedure:** Tier C')],
+]) {
+  const WITH_OTHER = FROM_WORKFLOW.replace('<!-- /amendment-record -->',
+    '<!-- /amendment-record -->\n\n## Objections\n\n<!-- objection: 222 -->\n**Blaise Pascal** — 2026-05-01\n\n> Reason: theirs.\n>\n> Route forward: theirs.\n');
+  r = await run({ pull: TIER('a'), file: WITH_OTHER, body: OBJ('mine', 'my route'), tamper: fn });
+  check(`the repair path still refuses: ${name}`, r.writes.length, 0);
+  check(`  and fails loudly`, r.failed.length > 0, true);
+}
+
 /* ---- the file objectionFile() creates ------------------------------------ */
 /* §1 wants a record of every amendment, including one nobody voted on, so the
    file this creates on a first objection carries the heading for it — with an
