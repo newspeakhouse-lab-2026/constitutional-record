@@ -17,25 +17,46 @@ Layer follows effect, and the effect here is clerical. This is the same ground a
 `rule-drafting-tools.md`, which adopted the instrument templates by Ordinary
 resolution because prompting for what Section 2 already requires creates nothing.
 
-## Where a vote lives
+## Where the record of a decision lives
 
-**`votes/pr-{number}.md`, on the proposal's own branch.**
+**`amendment-record/pr-{number}.md`, on the proposal's own branch.**
 
-On the proposal's branch so the evidence merges into the Record beside the text it
-adopted — and so a proposal that fails keeps its vote on the branch, where it
+One file per proposal, holding the record Section 1 requires of every amendment —
+and, where the procedure held a vote, the roll and the result as a section within
+it. **Every adopted proposal has one.** Section 1 says *all* amendments, with no
+exception for the ones that passed quietly, and a Tier A rule nobody objected to
+has no vote and may have no objection: it gets a file holding only the amendment
+record, which is correct and is not an empty file.
+
+The directory is named for the record and not for the vote because the file
+without a vote in it is the ordinary case, not the exception. A name that
+promised a vote sent a reader looking for one that was never held, and put the
+thing the file exists for at the bottom.
+
+On the proposal's branch so the record merges into the Record beside the text it
+adopted — and so a proposal that fails keeps its evidence on the branch, where it
 remains part of the repository.
 
 Named by pull request number because that number is immutable and is already how
 proposals are referred to everywhere else.
 
-**Not** beside the instrument under `policies/` or `rules/`. The dashboard and
-`check-record.py` both read a file in those directories as an adopted instrument,
-and a vote is not one.
+**Not** beside the instrument under `policies/` or `rules/`, despite the name. The
+dashboard and `check-record.py` read a file in those directories as an adopted
+instrument; this is a record of how one was adopted, which is a different thing.
+Both read `amendment-record/` as neither.
 
 ## What it looks like
 
-A header, one table, a result, and the objections in full. The template is
+A header, the amendment record, and — where the procedure voted — one table, a
+result, and the objections in full, in that order. The record comes first
+because it is the part every file has. The template is
 `.github/instrument-templates/vote.md`.
+
+**The headings are load-bearing and may not be demoted.** `## Objections` is
+found by the workflow that writes an objection into it and by the check that
+blocks a merge at Tier A and Tier B; `## Amendment record` is found by
+`check-record.py`. Each is matched at exactly that level. Demoting one does not
+produce an error — it produces a check that quietly stops checking.
 
 - **Every member is listed, including those who said nothing.** Every threshold in
   the Constitution is a fraction of everyone entitled to vote, so the arithmetic
@@ -142,16 +163,33 @@ a rule: the date and time, a brief narrative of how it was made, the assumptions
 it rests on, its status, explanatory notes from the discussion, and any
 abstentions or objections. The commit timestamp supplies the first.
 
-**The other five go in this file, under `## Amendment record`, completed before
-merge.** The pull request template asks for them too and that copy is discarded:
-this repository merges with merge commits, and a merge commit carries the pull
-request's title, not its body. A record typed into a web form and never committed
-is not in the Record.
+**The other five are written in the proposal's pull request description, under
+`## Amendment record`, and `.github/workflows/record-amendment.yml` copies them
+into this file on the proposal's branch.** They are written once, where the
+proposer is already writing, and the file keeps step as the description is
+edited. Asking for the same five in two places is how they went unwritten.
+
+**They are kept in both places on purpose, and the earlier version of this rule
+was wrong about why.** It said the description "is discarded" at merge. It is
+not: GitHub keeps a pull request's body, and keeps an edit history for it, and
+Section 1 puts the Record in a repository which on GitHub includes its pull
+requests. The reasons are narrower, and they are these. `git clone` retrieves no
+pull request descriptions, and a clone is the only copy of the Record that
+outlives GitHub. A description can be edited in place, where this repository's
+history may not be rewritten to erase an adopted decision. And Section 1 ties
+the record's date to the commit timestamp, which presumes a commit. What is true
+about merging is only that a merge commit carries the pull request's title and
+not its body, so the merge itself does not bring the description across.
 
 **Every adopted proposal needs one**, including those that passed quietly.
 Section 1 says *all* amendments, with no exception for lazy consensus. So a Tier A
 rule nobody objected to has a file here holding nothing but this section — which
 is not an empty file, it is the record of how something was decided.
+
+**The workflow transcribes and decides nothing.** The five fields are the
+author's own words, the run is triggered by the author's own edit, and the commit
+is authored by them. It will not overwrite a record somebody wrote into the file
+by hand, and says so rather than doing it.
 
 Of the five, **assumptions** is the one that earns its keep. The others say what
 happened. Assumptions say what has to stay true for the rule to still make sense,
@@ -198,7 +236,7 @@ with this Constitution, whose votes it exists to record.
 
 `Observed by:` A vote's existence and outcome are visible in the file and its
 history. A vote held with no file recorded is visible as a merged proposal with
-no `votes/` entry. A row written by someone other than the member it names is
-visible in `git log`, which records who made every commit — and where a tool
-transcribed a submission, the commit names the member as author, the tool as
-committer, and the submission it came from.
+no `amendment-record/` entry. A row written by someone other than the member it
+names is visible in `git log`, which records who made every commit — and where
+a tool transcribed a submission, the commit names the member as author, the
+tool as committer, and the submission it came from.

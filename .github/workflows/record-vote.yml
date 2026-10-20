@@ -1,4 +1,4 @@
-# Writes a member's position into votes/pr-{n}.md when they submit the vote form.
+# Writes a member's position into amendment-record/pr-{n}.md when they submit the vote form.
 #
 # The issue proves it was you, at the time — GitHub generated the author id and
 # the submitter cannot forge it. Git carries the claim forever. Nothing
@@ -56,7 +56,7 @@ jobs:
             const DEFAULT_BRANCH = context.payload.repository.default_branch;
 
             const hand = (branch, n) =>
-              `https://github.com/${owner}/${repo}/edit/${branch}/votes/pr-${n}.md`;
+              `https://github.com/${owner}/${repo}/edit/${branch}/amendment-record/pr-${n}.md`;
             /* Editing the file by hand always works — but GitHub's commit dialog
                offers two radios and the wrong one looks exactly like the right
                one. "Create a new branch for this commit and start a pull
@@ -364,8 +364,8 @@ jobs:
               return await refuse(`Pull request #${n}'s branch is \`${branch}\`, this repository's default branch. ` +
                 `A vote is written on the proposal's own branch, so nothing has been written.`);
             }
-            const path = `votes/pr-${n}.md`;
-            if (!/^votes\/pr-[1-9]\d{0,5}\.md$/.test(path)) {
+            const path = `amendment-record/pr-${n}.md`;
+            if (!/^amendment-record\/pr-[1-9]\d{0,5}\.md$/.test(path)) {
               return await brokenTooling(`This workflow built the path \`${path}\`, which it will not write to.`);
             }
 
@@ -442,8 +442,18 @@ jobs:
                    because the duplicated table gave it two rows per member.
                    A function's return value is used literally, so there is nothing
                    to expand and no escaping to get right. */
+                /* The heading is matched ANCHORED, not as a substring. The vote
+                   template carries an indented `## Objections` inside a comment
+                   block showing the Tier A short form, and a file hand-copied
+                   from it keeps that. `s.includes('## Objections')` matches the
+                   one in the comment first, and `s.replace` with a string
+                   pattern replaces that first match — splicing a member's
+                   objection into the middle of a comment, where it is invisible
+                   and where objection-check.yml, which anchors its own regex,
+                   will not count it. The merge would then go through. */
+                const hre = new RegExp('^' + heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '[^\\n]*$', 'm');
                 if (existing.test(s)) s = s.replace(existing, () => block);
-                else if (s.includes(heading)) s = s.replace(heading, () => heading + '\n\n' + block);
+                else if (hre.test(s)) s = s.replace(hre, (h) => h + '\n\n' + block);
                 else s = s.replace(/\s*$/, () => '\n\n' + heading + '\n\n' + block + '\n');
               }
               return s.replace(/\s*$/, '\n');
@@ -481,7 +491,7 @@ jobs:
                window is read from, exactly as for a vote. */
             function objectionFile(tier, number, title, win) {
               return [
-                `# Objections — PR #${number}: ${String(title).replace(/[\r\n]/g, ' ').slice(0, 200)}`, '',
+                `# Amendment record — PR #${number}: ${String(title).replace(/[\r\n]/g, ' ').slice(0, 200)}`, '',
                 `**Procedure:** ${tier}`,
                 `**Carries if:** no member objects before it closes`,
                 `**Opened:** ${stamp(win.opened)}`,
@@ -494,6 +504,17 @@ jobs:
                 '**A single stated objection is enough.** Section 2 moves the proposal up a tier;',
                 'it never moves down. Nothing here decides that — it is written down so a Record',
                 'Keeper can verify it.', '',
+                /* The heading with no body of its own, so
+                   record-amendment.yml can insert the §1 record here when the
+                   proposer fills it in. §1 wants a record of every amendment,
+                   including one nobody voted on, and check-record.py reports a
+                   file with no such heading at all. Deliberately empty:
+                   emitting the five labels blank would read to that workflow as
+                   a record written by hand, and it would stand down. */
+                '## Amendment record', '',
+                '<!-- Copied from this proposal\'s pull request description by',
+                '     .github/workflows/record-amendment.yml. Fill the Amendment record',
+                '     section there and it appears here. -->', '',
                 '## Objections', '',
               ].join('\n');
             }
@@ -646,11 +667,38 @@ jobs:
                 }
                 /* Read from the file once it exists, exactly as a vote's window is,
                    so there is one answer rather than one per caller. */
+                let nvBase = base;
                 const cleanNV = base.replace(/<!--[\s\S]*?-->/g, '');
-                const isoNV = (cleanNV.match(/^\*\*Closes:\*\*[^\n]*?`([^`]+)`/m) || [])[1];
+                let isoNV = (cleanNV.match(/^\*\*Closes:\*\*[^\n]*?`([^`]+)`/m) || [])[1];
                 if (!isoNV || isNaN(new Date(isoNV))) {
-                  return await brokenTooling(`\`${path}\` has no readable **Closes:** line, so I cannot tell ` +
-                    `whether the window is open. Nothing has been written.\n\n` + byHand(branch, n));
+                  /* The file can now exist WITHOUT a window, and that is not a
+                     defect. record-amendment.yml creates it as soon as a
+                     proposer fills in §1's amendment record, and a deliberation
+                     window is not that workflow's business to assert. Refusing
+                     here would mean no objection could be recorded on any
+                     proposal whose author had filled that section in — the
+                     mechanism lazy consensus depends on, switched off by an
+                     unrelated workflow writing an unrelated section.
+
+                     So fall back to the labels, which are where the window comes
+                     from in the first place, and write the lines into the file so
+                     every later reader finds them there as before. */
+                  const w = await noVoteWindow();
+                  if (w.err) {
+                    return await refuse(`\`${path}\` states no **Closes:** line, and I cannot work the window ` +
+                      `out from the proposal's labels either: ${w.err}.\n\nNothing has been written, and your ` +
+                      `objection is not lost by this — say it on the proposal and in the governance channel, ` +
+                      `and ask for the proposal's labels to be put right.`, branch, n);
+                  }
+                  isoNV = w.closes.toISOString();
+                  const hdr = [`**Carries if:** no member objects before it closes`,
+                               `**Opened:** ${stamp(w.opened)}`,
+                               `**Closes:** ${stamp(w.closes)}`];
+                  if (/^\*\*Procedure:\*\*/m.test(nvBase)) {
+                    nvBase = nvBase.replace(/^\*\*Procedure:\*\*[^\n]*$/m, h => h + '\n' + hdr.join('\n'));
+                  } else {
+                    nvBase = nvBase.replace(/^(#[^\n]*\n)/, h => h + '\n' + hdr.join('\n') + '\n');
+                  }
                 }
                 if (ACTED > new Date(isoNV)) {
                   return await refuse(`The deliberation period on #${n} closed at **${isoNV}**, and you submitted ` +
@@ -662,18 +710,21 @@ jobs:
                     `conversation.`, branch, n);
                 }
                 let next2;
-                try { next2 = writeBlock(base);
+                try { next2 = writeBlock(nvBase);
                       if (typeof globalThis.__TAMPER === 'function') next2 = globalThis.__TAMPER(next2, base); }
                 catch (e) {
                   return await brokenTooling(`I could not write your objection into \`${path}\`: ${e.message}.` +
                     `\n\n` + byHand(branch, n));
                 }
-                if (next2 === base && !creating) {
+                if (next2 === nvBase && nvBase === base && !creating) {
                   await say(`Your objection is already recorded on #${n}, word for word — nothing to change. ` +
                     `It stands as it is.`);
                   return await close('vote-recorded');
                 }
-                const bad2 = invariantsNoTable(base, next2);
+                /* Compared against nvBase, not base: where the window lines
+                   were just added, those ARE this write's business and the
+                   invariant would otherwise reject its own repair. */
+                const bad2 = invariantsNoTable(nvBase, next2);
                 if (bad2) {
                   return await brokenTooling(`I built a new version of \`${path}\` and then refused to write it, ` +
                     `because it failed an internal check: **${bad2}**.\n\n` +
@@ -843,7 +894,7 @@ jobs:
                 `The error was: \`${String((e && e.message) || e).slice(0, 300)}\``,
                 '',
                 `**Editing the vote file always works**, and that is the route to take now:`,
-                `https://github.com/${owner}/${repo}/pulls — open the proposal, then \`votes/pr-{number}.md\``,
+                `https://github.com/${owner}/${repo}/pulls — open the proposal, then \`amendment-record/pr-{number}.md\``,
                 `on its branch. A maintainer needs to look at this run.`,
               ].join('\n'));
             }

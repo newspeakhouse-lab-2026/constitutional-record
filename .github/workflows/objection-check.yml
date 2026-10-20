@@ -51,7 +51,7 @@ jobs:
               return;
             }
 
-            const path = `votes/pr-${pr.number}.md`;
+            const path = `amendment-record/pr-${pr.number}.md`;
             let text = null;
             try {
               const r = await github.rest.repos.getContent({

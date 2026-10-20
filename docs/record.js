@@ -284,10 +284,16 @@ function ukStamp(d){
   return `${words} (\`${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}:00${off}\`)`;
 }
 
-/* Builds the whole vote file and hands it to GitHub's new-file editor. Safe
-   here and nowhere else: the file does not exist yet, so there is nothing to
-   overwrite and no race with anyone recording a position. */
-function voteFileFor(pr,win,thr,names,sha){
+/* The vote scaffold: the five header lines, the roll, and the two sections a
+   closed vote is written into.
+
+   `existing` is the file's current text, or null when there is none. Since
+   record-amendment.yml began writing the §1 record as soon as a proposer fills
+   it in, a proposal that votes usually HAS a file by the time anyone opens the
+   vote — and building the whole file would write over that record. So when
+   there is one, the scaffold is spliced into it and everything else is carried
+   through untouched. */
+function voteFileFor(pr,win,thr,names,sha,existing){
   const key=win.layer==="4"?"layer-4":win.layer==="3"?"layer-3":win.tier==="c"?"tier-c":null;
   const spec=key&&thr[key];
   if(!spec||!win.opened||!win.closes||!names.length) return null;
@@ -296,26 +302,67 @@ function voteFileFor(pr,win,thr,names,sha){
   const carries=spec.over==="voting"
     ? `${spec.words} — quorum **${requiredFor(spec.quorum,names.length)} of ${names.length}**; the majority is counted over preference and objection only, once the window has closed`
     : `${spec.words} — **${requiredFor(spec,names.length)} of ${names.length}**`;
-  return [
-    `# Vote — PR #${pr.number}: ${pr.title}`, "",
+  const headers=[
     `**Procedure:** ${spec.name}`,
     `**Carries if:** ${carries}`,
     `**Opened:** ${ukStamp(win.opened)}`,
     `**Closes:** ${ukStamp(win.closes)}`,
-    `**Entitled to vote:** ${names.length} members, frozen when this vote opened — \`members.md\` blob \`${(sha||"").slice(0,7)}\``, "",
+    `**Entitled to vote:** ${names.length} members, frozen when this vote opened — \`members.md\` blob \`${(sha||"").slice(0,7)}\``,
+  ];
+  const roll=[
     "| Member | Position | Date |", "|---|---|---|",
     ...names.map(n=>`| ${n} | — | |`), "",
     "**Positions:** `preference` · `toleration` · `abstention` · `objection` · `—` not answered.", "",
     "> **Only `preference` counts as affirmative support.** Where a procedure needs",
     "> affirmative support from a fraction of all members — Layer 3, Layer 4 and",
     "> re-ratification all do — toleration, abstention and never answering are the",
-    "> same number. None of them is a yes.", "",
-    "## Result", "",
+    "> same number. None of them is a yes.",
+  ];
+  const result=["## Result", "",
     "*Written when the window closes, with the arithmetic shown. "
-    + "`python3 .github/scripts/tally.py` recomputes it and prints the working.*", "",
-    "## Objections", "",
-    "*Each objection's reason and route forward, in full. Section 2 requires both.*", "",
-  ].join("\n");
+    + "`python3 .github/scripts/tally.py` recomputes it and prints the working.*"];
+  const objections=["## Objections", "",
+    "*Each objection's reason and route forward, in full. Section 2 requires both.*"];
+
+  if(!existing){
+    return [
+      `# Amendment record — PR #${pr.number}: ${pr.title}`, "",
+      ...headers, "",
+      ...roll, "",
+      /* The heading with no body of its own, so record-amendment.yml can insert
+         its block here on the proposer's next description edit. Emitting the
+         five labels blank instead would read to that workflow as a record
+         somebody wrote by hand, and it would stand down rather than fill it. */
+      "## Amendment record", "",
+      "<!-- Copied from this proposal's pull request description by",
+      "     .github/workflows/record-amendment.yml. Fill the Amendment record",
+      "     section there and it appears here. -->", "",
+      ...result, "",
+      ...objections, "",
+    ].join("\n");
+  }
+
+  /* Splicing. Replace the single Procedure: line with the full five — opening a
+     vote is exactly when Tier A becomes Tier C — then put the roll above the
+     §1 record, and add the two sections only if they are not already there. */
+  let out=existing;
+  if(/^\*\*Procedure:\*\*/m.test(out)){
+    out=out.replace(/^\*\*Procedure:\*\*[^\n]*$/m,()=>headers.join("\n"));
+  }else{
+    out=out.replace(/^(#[^\n]*\n)/,(h)=>h+"\n"+headers.join("\n")+"\n");
+  }
+  /* Only if there is not one already. voteOf returns null for a file with no
+     table, which is the only state the page calls this from — but a second roll
+     would be read as THE roll by voteOf and tally.py alike, both of which scan
+     for the first table, so the guard is cheap next to what it prevents. */
+  if(!/^\|[^\n]*\|[^\S\n]*$/m.test(out)){
+    const anchor=/^##[^\S\n]+Amendment record[^\n]*$/m;
+    if(anchor.test(out)) out=out.replace(anchor,(h)=>roll.join("\n")+"\n\n"+h);
+    else out=out.replace(/\s*$/,()=>"\n\n"+roll.join("\n")+"\n");
+  }
+  if(!/^##[^\S\n]+Result[^\n]*$/m.test(out)) out=out.replace(/\s*$/,()=>"\n\n"+result.join("\n")+"\n");
+  if(!/^##[^\S\n]+Objections[^\n]*$/m.test(out)) out=out.replace(/\s*$/,()=>"\n\n"+objections.join("\n")+"\n");
+  return out.replace(/\s*$/,"\n");
 }
 
 /* Deliberation arithmetic comes from data.json, which cites the clause it came

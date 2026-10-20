@@ -512,6 +512,129 @@ for (const [name, fn] of NV_TAMPERS) {
   check(`  and fails loudly`, r.failed.length > 0, true);
 }
 
+/* ---- the other writer's output ------------------------------------------- */
+/* record-amendment.yml creates this file as soon as a proposer fills in the
+   description, so by the time anybody objects it usually exists and holds §1's
+   record. An objection must land in it without disturbing that — and without
+   disturbing it in a way that would make a LATER voter's write fail. */
+const FROM_WORKFLOW = [
+  '# Amendment record — PR #14: quiet hours', '',
+  '**Procedure:** Tier A', '',
+  '## Amendment record', '',
+  '<!-- amendment-record: copied from the pull request description -->',
+  '**How it was made:** Lazy consensus — no objection within 48 hours.',
+  '**Assumptions:** That the building keeps its fourteen residents.',
+  '**Status:** live',
+  '**Notes from the discussion:** Two members asked for a later start.',
+  '**Abstentions or objections:** None.',
+  '<!-- /amendment-record -->', '',
+].join('\n');
+
+r = await run({ pull: TIER('a'), file: FROM_WORKFLOW, body: OBJ('it starts too early', 'make it 23:00') });
+check('an objection lands in a file the other workflow wrote', r.writes.length, 1);
+/* That file states no window — a deliberation window is not the amendment
+   record workflow's business to assert. Refusing on that basis would have meant
+   no objection could be recorded on any proposal whose author had filled in the
+   §1 section, so the window is taken from the labels and written in. */
+check('the missing window is taken from the labels and written into the file',
+  /^\*\*Closes:\*\*[^\n]*`2026-06-02T11:00:00\+01:00`/m.test(r.writes[0].text), true);
+/* Tier A is 48 hours from the opened: label, stated twice — in words and as a
+   timestamp — exactly as objectionFile writes it on the create path. */
+check('and it states the instant twice, words and timestamp',
+  /^\*\*Closes:\*\* Tuesday, 2 June 2026, 11:00 UK \(`/m.test(r.writes[0].text), true);
+check('with its Opened: line too', /^\*\*Opened:\*\*/m.test(r.writes[0].text), true);
+check('and the Procedure line is still first of the five',
+  r.writes[0].text.split('\n').find(l => l.startsWith('**')), '**Procedure:** Tier A');
+check('the §1 record survives verbatim',
+  has(r.writes[0].text, '**How it was made:** Lazy consensus — no objection within 48 hours.'), true);
+check("and so do the other workflow's anchors, so it can still update it",
+  [has(r.writes[0].text, '<!-- amendment-record: copied from the pull request description -->'),
+   has(r.writes[0].text, '<!-- /amendment-record -->')], [true, true]);
+check('the objection is in the file', has(r.writes[0].text, '> Reason: it starts too early'), true);
+check('with its route forward', has(r.writes[0].text, '> Route forward: make it 23:00'), true);
+/* The file had no ## Objections heading, so writeBlock appended one. It must be
+   at the top level, or objection-check.yml will not count the objector and the
+   merge block stops firing. */
+check('an Objections heading was added at exactly ##',
+  /^## Objections$/m.test(r.writes[0].text), true);
+check('and objection-check.yml finds the objector in it',
+  (r.writes[0].text.replace(/<!--[\s\S]*?-->/g, '')
+    .split(/^## Objections[^\n]*$/m)[1] || '').includes('Reason: it starts too early'), true);
+/* The §1 fields are bold lines, and writeBlock's anchored-region lookahead
+   terminates on `\n## ` — so the record must not have been swallowed into the
+   objections section or vice versa. */
+check('the record section still holds exactly its five fields',
+  (r.writes[0].text.replace(/<!--[\s\S]*?-->/g, '')
+    .split(/^## Amendment record$/m)[1].split(/^## /m)[0]
+    .match(/^\*\*[^*]+:\*\*/gm) || []).length, 5);
+
+/* The invariant on that path is compared against the REPAIRED text, not the
+   original — otherwise it would reject the workflow's own repair. That is only
+   safe if it still catches tampering, so: same path, with the result tampered. */
+for (const [name, fn] of [
+  ['another block edited', s => s.replace('> Reason: theirs.', '> Reason: not theirs.')],
+  ['a table appearing',    s => s + '\n| Member | Position | Date |\n|---|---|---|\n| X | preference | |\n'],
+  ['the Procedure line changed', s => s.replace('**Procedure:** Tier A', '**Procedure:** Tier C')],
+]) {
+  const WITH_OTHER = FROM_WORKFLOW.replace('<!-- /amendment-record -->',
+    '<!-- /amendment-record -->\n\n## Objections\n\n<!-- objection: 222 -->\n**Blaise Pascal** — 2026-05-01\n\n> Reason: theirs.\n>\n> Route forward: theirs.\n');
+  r = await run({ pull: TIER('a'), file: WITH_OTHER, body: OBJ('mine', 'my route'), tamper: fn });
+  check(`the repair path still refuses: ${name}`, r.writes.length, 0);
+  check(`  and fails loudly`, r.failed.length > 0, true);
+}
+
+/* ---- the file objectionFile() creates ------------------------------------ */
+/* §1 wants a record of every amendment, including one nobody voted on, so the
+   file this creates on a first objection carries the heading for it — with an
+   empty body, so record-amendment.yml fills it rather than reading it as a
+   record somebody wrote by hand and standing down. */
+r = await run({ pull: TIER('a'), fileMissing: true, body: OBJ('the bins overflow', 'collect twice') });
+check('a created Tier A file is titled for the record, not "Objections"',
+  r.writes[0].text.startsWith('# Amendment record — PR #14:'), true);
+check('it carries an Amendment record heading', /^## Amendment record$/m.test(r.writes[0].text), true);
+check('whose body is empty, so the workflow will fill it',
+  r.writes[0].text.split(/^## Amendment record$/m)[1]
+    .replace(/<!--[\s\S]*?-->/g, '').split(/^## /m)[0].trim(), '');
+check('and it still keeps its Procedure line, which tally.py needs',
+  /^\*\*Procedure:\*\* Tier A$/m.test(r.writes[0].text), true);
+check('and the objection is in it', has(r.writes[0].text, '> Reason: the bins overflow'), true);
+
+/* ---- the path, and a file copied from the template ----------------------- */
+
+/* The getContent stub matches members.md and docs/data.json by name and lets
+   everything else fall through, so the vote file's own path was never asserted
+   by any test and a rename of the directory was invisible to this suite. */
+r = await run();
+check('the file is written to amendment-record/, not votes/',
+  r.writes[0].path, 'amendment-record/pr-14.md');
+
+/* A file hand-copied from .github/instrument-templates/vote.md keeps the
+   template's comment block, and that block shows the Tier A short form with an
+   indented `## Objections` inside it. The heading match in writeBlock must be
+   ANCHORED: a substring match finds the one in the comment first, splices the
+   member's objection in there where nobody will see it, and leaves the real
+   heading empty — so objection-check.yml, which anchors its own regex, counts
+   no objector and the merge goes through. */
+const COPIED = [
+  '# Amendment record — PR #14: a proposal', '',
+  '**Procedure:** Tier A',
+  '**Carries if:** no member objects before it closes',
+  '**Opened:** Sunday 31 May 2026, 10:00 UK (`2026-05-31T10:00:00+01:00`)',
+  '**Closes:** Friday 1 January 2099, 12:00 UK (`2099-01-01T12:00:00+00:00`)', '',
+  '<!--', 'TIER A AND TIER B USE A SHORTER FORM. All of it is:', '',
+  '    ## Amendment record', '',
+  '    ## Objections', '',
+  '    **<member>** — <date>', '-->', '',
+  '## Objections', '',
+].join('\n');
+r = await run({ pull: TIER('a'), file: COPIED, body: OBJ('mine', 'my route') });
+check('a file copied from the template is written once', r.writes.length, 1);
+check('the objection lands after the real heading, not inside the comment',
+  r.writes[0].text.indexOf('Reason: mine') > r.writes[0].text.lastIndexOf('-->'), true);
+check('and objection-check can still see it',
+  (r.writes[0].text.replace(/<!--[\s\S]*?-->/g, '').split(/^## Objections[^\n]*$/m)[1] || '')
+    .includes('Reason: mine'), true);
+
 const passed = results.filter(Boolean).length;
 console.log(`\n${passed}/${results.length} passed`);
 process.exit(results.every(Boolean) ? 0 : 1);
