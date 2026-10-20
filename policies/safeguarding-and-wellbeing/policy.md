@@ -337,7 +337,7 @@ The Safety Lead keeps this list current, pinned in the Laboratory channel and po
 
 - Any Member can propose a change at any time. Changes go through the Laboratory’s ordinary policy process in the Constitution. The policy cannot change the Constitution’s rights, procedures or thresholds.
 
-## **Appendix B: Safety Concern Form**
+## **Appendix A: Safety Concern Form**
 
 Use this form to raise a safety concern with the Laboratory. If someone is in danger right now, call 999 first. Answer only what you want to answer. It goes to the Safety Lead and the Deputy only, or to the Dean if you choose that in question 1.
 
