@@ -6,8 +6,8 @@ In an emergency, call 999. For everything else, these are the people to ask. Thi
 
 | Role | Name | Phone | Email |
 | --- | --- | --- | --- |
-| Safety Lead | [name] | [phone] | [email] |
-| Deputy Safety Lead | [name] | [phone] | [email] |
+| Safety Lead | [see here](https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/roles.md) |
+| Deputy Safety Lead | [see here](https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/roles.md) |
 | Dean of Newspeak House | Edward Saperia | [phone] | [email] |
 
 Two forms, for two different jobs:
