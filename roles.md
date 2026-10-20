@@ -18,6 +18,9 @@ All interim, appointed under §6 by Borda count on 23 September 2026.
 | Treasurer, deputy | *vacant* | — |
 | Record Keeper | Anchit Som | 23:59, 2 November 2026 |
 | Record Keeper | Yiannis Ravanis | 23:59, 2 November 2026 |
+| Safety Lead | *vacant* |  |
+| Deputy Safety Lead | *vacant* |  |
+
 
 Terms were extended to 23:59 UK time on Monday 2 November 2026 by pull request #2, adopted under §6, or until holders are elected under §3.2, whichever is earlier.
 
