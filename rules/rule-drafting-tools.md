@@ -69,30 +69,34 @@ If the Laboratory later issues the Policy Section 2 anticipates, it supersedes t
 
 ## Amendment
 
-Any part of this rule may be amended by Ordinary resolution, and so may **what** the
-tooling it adopts does: what a page claims, what a template asks for, what a workflow
-records, and what any of them refuses. Those are what the Laboratory agreed to.
+Any part of this rule may be amended by Ordinary resolution.
 
-**How those things are done is operational.** A Record Keeper may merge it directly, as
-Section 1 allows for reversible action within existing rules. That covers rebuilding,
-refactoring, restyling, fixing a defect, changing where data is read from, and building
-an additional way to read the Record — another interface, another host, another tool —
-provided it only reads.
+**Changes to the tooling it adopts are operational, and a Record Keeper may merge them** —
+rebuilding, refactoring, restyling, fixing a defect, changing where data is read from, or
+building another way to read the Record. Section 1 allows this as reversible action within
+existing rules, and the inventory above is brought up to date with whatever is added.
 
-Three limits, and they are what make the rest safe:
+**Except in three files, named rather than described:** `record-vote.yml`,
+`objection-check.yml` and `record-amendment.yml`. A member's position passes through the
+first; the second decides whether an objection blocks a merge; the third writes into the
+same file as the first. A change to any of them is an Ordinary resolution, however small
+it looks. A Record Keeper may not alter the path a position travels, alone and unremarked.
+**A new tool that writes to the Record, or that decides whether a merge may proceed, is
+adopted by Ordinary resolution and named here as it is.** What a tool does decides this,
+not whether it is new.
 
-- **Nothing that writes.** A tool that commits to the Record, or that a member's vote,
-  objection or proposal passes through, is not operational — whatever it is written in,
-  and however small the change looks.
-- **Nothing that changes a claim.** A figure, a threshold, an outcome, or a sentence a
-  member relies on in order to act is part of what was adopted. How it is drawn is not.
-- **No view is the Record.** Section 1 puts the Record in this repository. Anything built
-  to read it is a view of it, wherever it is hosted and however good it is. Moving the
-  Record itself would be a Layer 4 amendment.
+**No page may state a threshold, a count, a deadline or an outcome that disagrees with the
+Constitution or with the Record.** Where one does, that is a defect in the page and
+correcting it is operational. Changing what a page claims, what a template asks for, or
+what a workflow records or refuses — where the Record does not settle the answer — is an
+Ordinary resolution.
 
-**If any member thinks a change crossed from *how* into *what*, saying so makes it an
-Ordinary proposal and it waits.** The distinction is a judgement, and this is who judges
-it: not the person who made the change.
+**The Record is this repository.** Anything built to read it is a view, wherever it is
+hosted. Moving the Record itself would be a Layer 4 amendment.
+
+**Any member may say a change should have been a proposal, and saying so makes it one.** It
+waits; anything already merged is open to reversal by the same route. The judgement is not
+the mover's.
 
 ## Ends
 
