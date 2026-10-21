@@ -21,6 +21,20 @@ All interim, appointed under §6 by Borda count on 23 September 2026.
 
 Terms were extended to 23:59 UK time on Monday 2 November 2026 by pull request #2, adopted under §6, or until holders are elected under §3.2, whichever is earlier.
 
+## Roles established by Policy
+
+Not constitutional offices, so §3.2's ballot does not apply to them. Each is established by
+the instrument named beside it and filled by the procedure that instrument states. A role
+here is held only once somebody has been appointed through that procedure; listing it
+records that the office exists, not that anybody holds it.
+
+| Role | Holder | Established by | Filled by |
+|---|---|---|---|
+| Signatory | *vacant* | Financial Policy | a majority of all members |
+| Signatory | *vacant* | Financial Policy | a majority of all members |
+| Infrastructure Lead | *vacant* | Financial Policy | a majority of all members |
+| Ration Club Lead, weekly | *vacant* | Financial Policy | rotates weekly; the Policy does not state how the lead is chosen |
+
 ## Changes
 
 | Date | Change |
