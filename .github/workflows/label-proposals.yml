@@ -87,7 +87,16 @@ jobs:
             }
 
             // ---- layer, tier, period, from what the proposer wrote -------------
-            const body = pr.body || '';
+            /* HTML comments are stripped FIRST. They are not stripped from a
+               pull request body by GitHub — only hidden when it renders one —
+               and this template puts its guidance inline, beside each field. A
+               proposer who wrote "**Layer:** <!-- write just the number --> 3",
+               exactly as the template invited, got "I could not read a Layer":
+               the parser reached "<" where it wanted a digit and gave up. Every
+               other reader in this repository already strips them;
+               record-vote.yml in two places, objection-check.yml in one,
+               check-record.py in two. This was the only one that did not. */
+            const body = (pr.body || '').replace(/<!--[\s\S]*?-->/g, '');
             // Anchored to one line, and \s would span newlines: a field left blank
             // followed by prose that happens to start with a digit would otherwise
             // be read as the answer. "**Layer:**" above "2 Ordinary · 3 Policy" is
