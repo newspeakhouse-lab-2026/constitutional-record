@@ -5,7 +5,9 @@ complete on its own.
 
 Layer, Tier and Deliberation period are read automatically and turned into
 labels the dashboard uses. Write bare values — "2", "A", "5". Fill this in
-rather than replacing it: comments in <!-- --> never appear in the posted body.
+rather than replacing it: comments in <!-- --> are hidden when GitHub renders
+this description, though they do remain in it, so the workflow that reads these
+fields strips them before looking. Either side of a comment works.
 -->
 
 ## Proposal

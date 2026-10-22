@@ -118,6 +118,39 @@ r = await run({ pr: { ...base,
 check('fields still parse when they are filled in',
   r.added.filter(x => !x.startsWith('opened')).sort(), ['days-10', 'layer-4', 'tier-c']);
 
+/* ---- inline guidance comments ------------------------------------------
+ *
+ * The pull request template puts its guidance in an HTML comment beside each
+ * field. GitHub hides those when it RENDERS a description; it does not remove
+ * them from the body, and this is the only reader in the repository that was
+ * not stripping them. #21 was filed exactly as the template invited and got
+ * "I could not read a Layer" — the parser reached "<" where it wanted a digit.
+ */
+r = await run({ pr: { ...base, body:
+  '**Layer:** <!-- write just the number: 2, 3, 4 --> 3 \n' +
+  '**Tier:** <!-- Layer 2 only. Write just the letter: A, B or C -->\n' } });
+check('a value written AFTER the inline comment is read (this is #21)',
+  r.added.filter(x => !x.startsWith('opened')).sort(), ['layer-3']);
+check('and no "could not read a Layer" comment is posted', r.posted, 0);
+
+r = await run({ pr: { ...base, body:
+  '**Layer:** 2 <!-- write just the number --> \n**Tier:** A <!-- A, B or C -->\n' } });
+check('a value written BEFORE the comment still works',
+  r.added.filter(x => !x.startsWith('opened')).sort(), ['layer-2', 'tier-a']);
+
+/* The one-line anchor must survive the stripping. Removing a comment must not
+   let a field absorb the guidance that followed it on the NEXT line — the bug
+   that once labelled a blank-Layer proposal layer-2 from "2 Ordinary · 3 Policy". */
+r = await run({ pr: { ...base, body:
+  '**Layer:**\n<!-- 2 Ordinary · 3 Policy · 4 Constitutional -->\n\n**Tier:** A\n' } });
+check('a blank Layer still does not absorb its guidance after stripping',
+  r.added.filter(x => x.startsWith('layer-')), []);
+
+/* A field whose only content is the comment is blank, not readable. */
+r = await run({ pr: { ...base, body: '**Layer:** <!-- 3 --> \n' } });
+check('a digit inside the comment is not the answer',
+  r.added.filter(x => x.startsWith('layer-')), []);
+
 const passed = results.filter(Boolean).length;
 console.log(`\n${passed}/${results.length} passed`);
 process.exit(results.every(Boolean) ? 0 : 1);

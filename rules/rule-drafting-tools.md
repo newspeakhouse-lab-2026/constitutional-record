@@ -84,6 +84,18 @@ Three limits, and they are what make the rest safe:
 - **Nothing that writes.** A tool that commits to the Record, or that a member's vote,
   objection or proposal passes through, is not operational — whatever it is written in,
   and however small the change looks.
+
+  **One exception, for reading only.** Where a tool records nothing but metadata a
+  proposer stated about their own proposal — its layer, its tier, its stated period,
+  when it opened — a change that corrects *how it reads what the member wrote*, without
+  changing what it records or what it refuses, is operational. The member's words are
+  already in the Record; the tool is only failing to read them. This covers
+  `label-proposals.yml` and nothing else adopted here.
+
+  **It does not reach a position.** A vote, an objection or an endorsement is not
+  metadata about a proposal, and the tools that carry one stay outside this exception
+  however the change is described. That is the whole point of the limit: a Record Keeper
+  may not alter the path a member's position travels, alone and unremarked.
 - **Nothing that changes a claim.** A figure, a threshold, an outcome, or a sentence a
   member relies on in order to act is part of what was adopted. How it is drawn is not.
 - **No view is the Record.** Section 1 puts the Record in this repository. Anything built
