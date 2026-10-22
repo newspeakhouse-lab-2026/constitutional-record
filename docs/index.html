@@ -225,8 +225,20 @@ async function collect(){
       && (p.labels||[]).some(l=>String(l.name||"")==="objection");
   }).map(async p=>{
     const k=`vote:${p.number}:${p.updated_at}`;
+    /* Asymmetric on purpose. A vote's own text, keyed on updated_at, cannot go
+       stale while that key holds — the branch moving changes the key. But "no
+       vote here" is the TRANSIENT answer, and the minutes right after somebody
+       opens one are both when it goes wrong and when the page gets looked at.
+       So a remembered absence expires; a remembered vote does not. */
+    const nk=`novote:${p.number}:${p.updated_at}`, NOVOTE_TTL=6e4;
     let t=null;
-    try{ t=localStorage.getItem(k) }catch{}
+    try{
+      t=localStorage.getItem(k);
+      if(t===null){
+        const n=localStorage.getItem(nk);
+        if(n!==null&&Date.now()-Number(n)<NOVOTE_TTL) t="";
+      }
+    }catch{}
     if(t===null){
       let keep=true;
       try{
@@ -244,7 +256,7 @@ async function collect(){
         t="";
         if(e.status!==404){ keep=false; voteUnread++; }
       }
-      if(keep){ try{ localStorage.setItem(k,t) }catch{} }
+      if(keep){ try{ t ? localStorage.setItem(k,t) : localStorage.setItem(nk,String(Date.now())) }catch{} }
     }
     if(t){ voteText[p.number]=t; try{ const v=voteOf(t); if(v) votes[p.number]=v; }catch{} }
   }));
@@ -734,7 +746,7 @@ function render(d){
              URL. The alternative was a prefilled link that could overwrite an
              adopted record, which is not a trade worth making for one click. */
           voteAct=`<div class="acts">`
-            +modal(id=>`<button type="button" class="act" data-sheet="${id}">Start a vote</button>`,
+            +modal(id=>`<button type="button" class="act" data-sheet="${id}" data-votereset="${pr.number}">Start a vote</button>`,
               "Open the vote in this proposal's record",
               `<p>This proposal already has <code>${esc(path)}</code> — the record of how it is`
               +` being decided. Opening a vote adds the roll to that same file rather than`
@@ -744,7 +756,7 @@ function render(d){
               +`<pre class="paste">${esc(f)}</pre>`)
             +`</div>`;
         }else{
-          voteAct=`<div class="acts"><a class="act" href="${newVoteURL(pr.head.ref,path,f)}">Start a vote</a></div>`;
+          voteAct=`<div class="acts"><a class="act" data-votereset="${pr.number}" href="${newVoteURL(pr.head.ref,path,f)}">Start a vote</a></div>`;
         }
       }
     }
@@ -1073,8 +1085,21 @@ function renderHistory(d){
              thing from one that passed first time, and §1's amendment record asks
              how a decision was made. The detail is in the file. */
           if(mv.rounds>1) bits.push(`after ${mv.rounds} rounds`);
+        } else if(mv&&mv.holdsVote===false){
+          /* §2 holds NO VOTE at Tier A or Tier B: the proposal passes absent a
+             stated objection. Since the rename this file is the §1 amendment
+             record and usually carries no vote at all, and this line used to
+             read "vote recorded, with no result written into it" — telling a
+             reader a vote had been held and left unfinished, which is the
+             opposite of what happened. The page names the procedure and stops;
+             whether the window elapsed unobjected is a Record Keeper's
+             judgement, made where the deliberation was. */
+          bits.push(`<strong>no vote held</strong> — §2 passes a `
+            +`${esc(mv.procedure||"proposal at this tier")} proposal absent a stated objection`);
+          if((mv.objections||[]).length)
+            bits.push(`<strong>${mv.objections.length} objection${mv.objections.length>1?"s":""}</strong> recorded`);
         } else bits.push(`<strong>vote recorded</strong>, with no result written into it`);
-        bits.push(`<a href="https://github.com/${REPO}/blob/main/${vpath}">the vote</a>`);
+        bits.push(`<a href="https://github.com/${REPO}/blob/main/${vpath}">the record</a>`);
         voteLine=bits.join(" · ");
       }
       return row("",`<span class="num">#${e.m.number}</span><a href="${e.m.html_url}">${esc(e.m.title)}</a>`,
@@ -1127,6 +1152,22 @@ function showTab(name,push){
   }
 }
 
+/* Opening a vote means "I am about to change this file", so forget what we
+   remembered about it. Without this the page could keep saying "no vote" for up
+   to ten minutes after one was opened: the vote cache is keyed on the pull
+   request's updated_at, and updated_at itself arrives in a PR list that is
+   cached for TTL — so the key stays stale even though the branch moved seconds
+   ago. The staleness compounds, and it lands at exactly the moment somebody is
+   looking. Runs before navigation, which is safe: localStorage is synchronous. */
+document.addEventListener("click",e=>{
+  const r=e.target.closest("[data-votereset]");
+  if(!r) return;
+  const n=r.getAttribute("data-votereset");
+  try{
+    for(const k of Object.keys(localStorage))
+      if(k.startsWith(`vote:${n}:`)||k.startsWith(`novote:${n}:`)) localStorage.removeItem(k);
+  }catch{}
+});
 document.addEventListener("click",e=>{
   const tab=e.target.closest('[role="tab"]');
   if(tab){ showTab(tab.id==="tab-history"?"history":"now",true); return; }
