@@ -15,10 +15,10 @@ Captured from the Constitutional Convention record, founded by Edward Saperia at
 | Joel Naoki CHRISTOPH | joel-christoph | 65862220 | |
 | Madison Karas | madisonkaras | 160418945 | |
 | Mario Morvan | mrmvn | 34740576 | |
-| Nathaniel Cooke | | | |
+| Nathaniel Cooke | pendingsurvival | 154325001 | |
 | Niba | | | |
 | Noam Herberg | Noam-Herberg | 211015403 | Interim Agent |
-| Rhianwen Rowlands | | | |
+| Rhianwen Rowlands | cayocayocayo | 293953596 | |
 | Tess Buckley | tesssbuckley | 106262105 | |
 | William Wong | WWStoryMode | 157838602 | |
 | Yiannis Ravanis | emergentvibe | 25332209 | Interim Record Keeper |
@@ -39,3 +39,4 @@ Nobody proposed for removal.
 
 - 2026-09-20 — Initial membership list captured at Constitution founding. 14 members, no invitees, no removals proposed.
 - 2026-10-06 — Added `GitHub` and `ID` columns. No membership change.
+- 2026-10-25 — Recorded GitHub accounts for Nathaniel Cooke and Rhianwen Rowlands, each confirmed by the member. No membership change.
