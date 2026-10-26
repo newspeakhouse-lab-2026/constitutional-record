@@ -850,7 +850,7 @@ function render(d){
       + (age!==null?`last touched ${age}d ago · `:"")
       + b.files.slice(0,3).map(f=>`<code>${esc(f)}</code>`).join(" "),
       "","","idle",
-      `drafted but never proposed — nothing here can be adopted until someone opens a <a href="https://github.com/${REPO}/blob/main/CONTRIBUTING.md#deciding-whether-you-need-an-issue">pull request</a>`));
+      `drafted but never proposed — nothing on a branch can be adopted. <a href="https://github.com/${REPO}/compare/main...${encodeURIComponent(b.name)}?quick_pull=1">Open it as a proposal</a>, or see <a href="https://github.com/${REPO}/blob/main/CONTRIBUTING.md#deciding-whether-you-need-an-issue">how proposing works</a>.`));
   }
   /* Said, rather than silently dropped. Each one costs a request to look at, so
      the rest are fetched when somebody asks for them. */
