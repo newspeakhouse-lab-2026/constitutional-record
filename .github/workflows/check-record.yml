@@ -40,7 +40,21 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
+      # fetch-depth: 0 so the base commit is present for the diff below.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      # The per-file checks warn only about files this pull request changed, so a
+      # run does not shout about the rest of the Record. Whole-Record checks (the
+      # data.json quotes and times) ignore this and always run. On anything that
+      # is not a pull request, CHANGED_FILES is unset and the script scans
+      # everything, as before.
+      - name: Collect the files this pull request changed
+        if: github.event_name == 'pull_request'
+        run: |
+          base='${{ github.event.pull_request.base.sha }}'
+          head='${{ github.event.pull_request.head.sha }}'
+          echo "CHANGED_FILES=$(git diff --name-only "$base" "$head" | tr '\n' ' ')" >> "$GITHUB_ENV"
       - run: python3 .github/scripts/check-record.py
 
       # The labelling workflow runs on pull_request_target, which GitHub always

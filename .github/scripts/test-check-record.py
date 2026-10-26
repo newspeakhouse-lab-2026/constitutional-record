@@ -136,13 +136,31 @@ case("a missing section is distinguishable from a complete one",
      "None and [] are different defects: no section at all, versus a section with a gap. "
      "Returning [] for both would report a file with no record as fully compliant.")
 
-case("every blank field is reported",
-     len(cr.amendment_record_gaps(COMPLETE.replace(" Lazy consensus — no objection within 48 hours.", "")
-                                  .replace(" That the house still has fourteen members.", "")
-                                  .replace(" live", "").replace(" Nobody argued against it.", "")
-                                  .replace(" None.", ""))), 5,
-     "A Tier A rule adopted by lazy consensus has no result line and no objection. Check 6 "
-     "was gated on an outcome, so this — the commonest case in the Record — passed in silence.")
+# A blank record with NO result line: only the two always-required fields fire.
+# "How it was made" waits for a result; Notes and Abstentions are §1-conditional
+# ("Any ...") so blank is compliant and never warned.
+BLANK = (COMPLETE.replace(" Lazy consensus — no objection within 48 hours.", "")
+                 .replace(" That the house still has fourteen members.", "")
+                 .replace(" live", "").replace(" Nobody argued against it.", "")
+                 .replace(" None.", ""))
+case("an open record warns only about Assumptions and Status",
+     sorted(cr.amendment_record_gaps(BLANK, result_present=False)),
+     ["Assumptions", "Status"],
+     "§1 makes Notes and Abstentions conditional, so blank is compliant; How it was made is "
+     "not knowable until the vote closes. Warning on all five made the tooling stricter than "
+     "the Constitution and buried the real signal in noise.")
+
+case("once a result is written, How it was made is required too",
+     sorted(cr.amendment_record_gaps(BLANK, result_present=True)),
+     ["Assumptions", "How it was made", "Status"],
+     "After the outcome exists, a blank narrative of how the amendment was made is a genuine "
+     "gap — the same point at which check 4 begins to care.")
+
+case("Notes and Abstentions blank are never a gap",
+     cr.amendment_record_gaps(COMPLETE.replace(" Nobody argued against it.", "")
+                                       .replace(" None.", ""), result_present=True), [],
+     "Both begin with \"Any\" in §1 — where there are none, blank is the honest, compliant "
+     "answer, and the checker must not demand invented content.")
 
 case("a field left as the template's placeholder is not an answer",
      cr.amendment_record_gaps(COMPLETE.replace("**Status:** live", "**Status:** <live, experimental, or archived>")),
@@ -171,6 +189,26 @@ case("a later ## heading ends the section",
      cr.amendment_record_gaps(COMPLETE + "\n## Objections\n\n**Status:** not this one\n"), [],
      "The section terminates at the next `^## `. A field named below an unrelated heading must "
      "not be read as answering this one.")
+
+# ---- scope: per-file checks warn only about files the PR changed ------------
+#
+# check-record globs the whole Record. A pull request touches a handful of files;
+# warning about the rest on every run trained people to ignore the annotations.
+# in_scope() gates the per-file checks on the CHANGED_FILES the workflow passes.
+case("an empty changed-set means scan everything (manual run / push)",
+     [cr.in_scope("amendment-record/pr-9.md", set()),
+      cr.in_scope("rules/rule-x.md", set())], [True, True],
+     "With no list given the script must behave as it always did, or a manual run "
+     "or a push would silently check nothing.")
+
+case("a file the PR did not change is out of scope",
+     cr.in_scope("amendment-record/pr-9.md", {"docs/index.html"}), False,
+     "The noise this fixes: a docs-only PR warning about an unrelated half-finished vote record.")
+
+case("a file the PR did change is in scope",
+     cr.in_scope("amendment-record/pr-9.md", {"amendment-record/pr-9.md", "docs/index.html"}), True,
+     "The file actually under review must still be checked.")
+
 
 # ---- the five labels exist in exactly one form, in all three places ---------
 #

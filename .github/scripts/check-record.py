@@ -14,7 +14,7 @@ Six checks:
   5. Every vote that restarted records what the earlier round decided.
   6. Every recorded outcome carries the amendment record §1 requires.
 """
-import json, re, sys, glob
+import json, os, re, sys, glob
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
@@ -74,30 +74,58 @@ def human_disagrees(words, dt):
     return out
 
 
+# All five §1 fields, kept here because the template and vote.md carry all five
+# and a test pins the three copies together. Which of them this checker REQUIRES
+# is narrower, and deliberately so -- see below.
 AMENDMENT_FIELDS = ["How it was made", "Assumptions", "Status",
                     "Notes from the discussion", "Abstentions or objections"]
 
+# §1 lists six things an amendment "shall be recorded with". Two begin with
+# "Any" -- explanatory notes, abstentions or objections -- and are conditional:
+# where there are none, blank is already compliant, so this checker does not ask
+# for them. Of the unconditional three (date is the commit timestamp), Assumptions
+# and Status can be set the moment a proposal is written; "How it was made" cannot,
+# because the fact -- by lazy consensus, or by a vote of N -- does not exist until
+# the outcome does. So it is required only once a result has been written, the
+# same way check 4 waits for a stated result rather than warning on an open vote.
+AMENDMENT_REQUIRED_ALWAYS = ["Assumptions", "Status"]
+AMENDMENT_REQUIRED_AT_RESULT = ["How it was made"]
 
-def amendment_record_gaps(text):
-    """Which of \u00a71's five fields a record file leaves unanswered.
 
-    Returns None when there is no `## Amendment record` section at all, which is
-    a different defect from a section with a field missing, and [] when every
-    field is answered.
+def amendment_record_gaps(text, result_present=False):
+    """Which REQUIRED §1 fields a record file leaves unanswered.
 
-    The section heading must be exactly `## Amendment record`. It is matched
-    anchored and terminates at the next `^## `, so the section may sit anywhere
-    among the file's headings but may not be demoted to `###` or renamed.
+    Returns None when there is no `## Amendment record` section at all (a
+    different defect from a gap within one), and [] when every required field is
+    answered. `result_present` adds "How it was made" to the required set, since
+    it is only knowable once the vote has closed.
+
+    The heading must be exactly `## Amendment record`, matched anchored and
+    terminating at the next `^## `, so the section may sit anywhere among the
+    file's headings but may not be demoted to `###` or renamed.
     """
     clean = re.sub(r"<!--.*?-->", "", text, flags=re.S)
     sec = re.search(r"^## Amendment record\s*$(.*?)(?=^## |\Z)", clean, re.M | re.S)
     if not sec:
         return None
     body = sec.group(1)
+    required = AMENDMENT_REQUIRED_ALWAYS + (AMENDMENT_REQUIRED_AT_RESULT if result_present else [])
     # Blank, or still carrying the template's <angle-bracket> placeholder.
-    return [f for f in AMENDMENT_FIELDS
+    return [f for f in required
             if not re.search(r"^\*\*" + re.escape(f) + r":\*\*[^\S\n]*(\S.*)$", body, re.M)
             or re.search(r"^\*\*" + re.escape(f) + r":\*\*[^\S\n]*<", body, re.M)]
+
+
+# A pull request touches a handful of files; warning about the rest of the Record
+# on every run trained people to ignore the annotations. The workflow passes the
+# PR's changed files in CHANGED_FILES; the per-file checks (3, 4, 5, 6) warn only
+# about those. The whole-Record checks (1, 2) ignore this and always run. An empty
+# set -- a manual run, or a push -- means scan everything, as before.
+CHANGED = set(filter(None, (os.environ.get("CHANGED_FILES") or "").split()))
+
+
+def in_scope(path, changed=CHANGED):
+    return (not changed) or (path in changed)
 
 
 def read(path):
@@ -158,7 +186,7 @@ def main():
                  f"Check the UTC offset: the UK is on BST from late March to late October.")
 
     # 3 — instruments that expire should say so in a form the page can read
-    for path in sorted(glob.glob("rules/*.md") + glob.glob("policies/*/*.md")):
+    for path in sorted(p for p in glob.glob("rules/*.md") + glob.glob("policies/*/*.md") if in_scope(p)):
         if path.endswith("rationale.md"):
             continue
         text = open(path).read()
@@ -209,7 +237,7 @@ def main():
     # only makes a disagreement visible, because the likeliest failure here is
     # two people counting Tier C differently in good faith, not an attack.
     import tally
-    for path in sorted(glob.glob("amendment-record/*.md")):
+    for path in sorted(p for p in glob.glob("amendment-record/*.md") if in_scope(p)):
         text = read(path)
         if text is None:
             continue
@@ -233,12 +261,12 @@ def main():
         # ties the record's date to the commit timestamp. Warns, like everything
         # here: the tooling creates no duty, and §1 binds whether or not this
         # file notices.
-        missing = amendment_record_gaps(text)
+        result_present = bool(re.search(r"^\*\*(Carried|Did not carry)\b", clean, re.M))
+        missing = amendment_record_gaps(text, result_present)
         if missing is None:
-            warn(path, "this has no `## Amendment record` section. \u00a71 requires five things "
-                       "recorded for every amendment to the Constitution or a rule -- including "
-                       "one adopted by lazy consensus, which has no vote and may have no "
-                       "objection. `.github/instrument-templates/vote.md` has the section.")
+            warn(path, "this has no `## Amendment record` section. \u00a71 asks every amendment to "
+                       "record how it was made, its assumptions and its status. "
+                       "`.github/instrument-templates/vote.md` has the section.")
         elif missing:
             warn(path, "the `## Amendment record` is incomplete \u2014 " + ", ".join(missing)
                        + (" is" if len(missing) == 1 else " are") + " still blank or still the "
