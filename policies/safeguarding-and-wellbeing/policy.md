@@ -4,16 +4,16 @@
 
 In an emergency, call 999. For everything else, these are the people to ask. This table will be updated whenever roles rotate.
 
-| Role | Name | Phone | Email |
-| --- | --- | --- | --- |
-| Safety Lead | [see here](https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/roles.md) |
-| Deputy Safety Lead | [see here](https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/roles.md) |
-| Dean of Newspeak House | Edward Saperia | [phone] | [email] |
+| Role | Name | Email |
+| --- | --- | --- |
+| Safety Lead | [see here](https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/roles.md) 
+| Deputy Safety Lead | [see here](https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/roles.md) 
+| Dean of Newspeak House | Edward Saperia | ed@newspeak.house |
 
 Two forms, for two different jobs:
 
-- **Safety** **Concern Form** asks the Laboratory to act. It goes only to the Safety Lead and Deputy: [link to add].
-- **The House form** asks Newspeak House to act: newspeak.house/feedback. It goes to staff and faculty.
+- [**Safety** **Concern Form**](https://docs.google.com/forms/d/e/1FAIpQLSfZPXUZOCU3_qRaW08nJXE79pnfL4IWJLOZ2sGXhNpJWPfLUA/viewform?usp=header) asks the Laboratory to act. It goes only to the Safety Lead and Deputy. Alternatively, you can use the form template in Annex A and submit this directly via email. 
+- [**The House form**](newspeak.house/feedback) asks Newspeak House to act. It goes to the Dean and faculty.
 
 ### **Find what you need**
 
@@ -34,7 +34,7 @@ This policy says what to do when there is a Safety or Wellbeing concern in our s
 
 **1.2 What it covers.** Physical safety, harassment, threats, harm between people, mental health crises, and conduct in shared space.
 
-It does not cover disagreements about decisions or priorities. Those go through the Laboratory’s ordinary rule process. Guests, keys and quiet hours are in the house rules [link to add].
+It does not cover disagreements about decisions or priorities. Those go through the Laboratory’s ordinary rule process. Guests, keys and quiet hours can be viewed in our [Guest Package](https://docs.google.com/document/d/1oCSIJYU8UvKumsjibwssEA9LkhZfZuRNdGZMserlqLs/edit?usp=sharing).
 
 Not every uncomfortable moment needs a formal process. If something feels off, like a pushed boundary or someone being “*creepy*”, tell the Safety Lead. They will listen and can take light-touch steps. A formal outcome needs conduct that is specific, and patterned, repeated or physical.
 
@@ -88,7 +88,7 @@ Find your situation. Each one takes a minute to read.
 
 **3.3 You want to raise a concern**
 
-- Go to the Safety Lead, the Deputy or the Dean, or use the Safety Concern Form (Appendix B). If it is about the Safety Lead, go to the Deputy or the Dean.
+- Go to the Safety Lead, the Deputy or the Dean, or use the Safety Concern Form (Appendix A). If it is about the Safety Lead, go to the Deputy or the Dean.
 - You do not have to confront the person first.
 - You can ask for advice without starting a process. Any Member, guest or person affected by a Laboratory rule or decision can also complain that a rule was broken, authority was exceeded, a procedure was not followed, a rule was applied unfairly, or a protected right was violated.
 - You can raise it anonymously. Anonymous concerns can show patterns, but cannot on their own lead to action against a named person, and the House does not consider anonymous reports.
@@ -132,11 +132,8 @@ The Safety Lead coordinates our response but does not replace the House’s lega
 
 A concern follows one of two routes, depending on how serious it is. This section follows Section 4 of the Constitution (Adjudication). It adds practical detail and does not change it.
 
-how a concern moves · 2 routes, 1 decision
+<img width="816" height="584" alt="Screenshot 2026-10-26 at 13 09 58" src="https://github.com/user-attachments/assets/78e03b18-f1f6-427d-af4d-bdfb3588733d" />
 
-!how a concern moves · 2 routes, 1 decision
-
-how a concern moves · 2 routes, 1 decision
 
 Read the left side for conduct matters and the right side for harm matters. The Safety Lead picks the route using 5.2.
 
@@ -254,6 +251,7 @@ The person who raised the concern is told when this happens, as soon as it is sa
 - **Who it covers:** fellowship candidates, fellows, faculty, members and guests. People directly employed by the House have a separate process.
 - **How to start:** submit the House form at newspeak.house/feedback. It asks for your name, contact details, the time and date of the incident, and what happened.
 - **Anonymous reports are not considered.** Reports are confidential to staff and faculty unless you ask otherwise.
+- **Support with submission:** You may ask someone to submit the form on your behalf. This may be because in the first instance you don’t want your name recorded, or because there is a barrier for you to submit yourself. There must be a named contact on the form, which can be the Safety Lead, Deputy or another person. 
 - **Who decides:** only a faculty member can propose a sanction, in writing to the Dean. The faculty vote on the evidence in the form, and nothing else is considered. A majority decides, and the Dean has the casting vote on a tie.
 - **What can happen:** a written notice (not a sanction), then a formal warning, then a two-week suspension (residents keep their room and essential common areas), then expulsion (reviewed after a year; for residents, eviction proceedings begin).
 - **Support:** the House offers counselling and conflict resolution help to everyone involved.
@@ -300,7 +298,7 @@ Information about a concern goes only to the people who need it to act.
 
 - The Safety Lead keeps records in a restricted place. Only the Safety Lead, Deputy and faculty can see them.
 - The shared disputes/ record holds the outcome of a case only. For harm matters it holds no names or details.
-- Records are deleted 12 months after the end of the cohort, unless faculty or the law require otherwise [period to agree].
+- Records are deleted 12 months after the end of the cohort, unless faculty or the law require otherwise.
 - Confidentiality has limits. It gives way where someone is at serious risk, or where the law or House policy requires disclosure. The person who raised the concern is told when this happens.
 - Reports to the House are subject to the House’s data protection policy.
 
@@ -331,7 +329,7 @@ The Safety Lead keeps this list current, pinned in the Laboratory channel and po
 | Domestic abuse | National Domestic Abuse Helpline (women) | 0808 2000 247 |
 | LGBT+ abuse and hate crime | Galop | 0800 999 5428 |
 | Victims of crime | Victim Support | 0808 168 9111 |
-| Newspeak House | Dean contact | [to add] |
+| Newspeak House | Dean contact | ed@newspeak.house|
 
 ## **11. Review**
 
@@ -370,14 +368,13 @@ Anonymous concerns can show patterns but cannot on their own lead to action agai
 - [ ]  A group decision by the Laboratory
 - [ ]  Help asking Newspeak House to act
 - [ ]  Just put it on record
-- [ ]  Support only
 - [ ]  Not sure, I would like advice first
 
 **9. May we tell the Dean?** (tick one)
 
 - [ ]  Yes
 - [ ]  No
-- [ ]  Ask me first
+- [ ]  Decide after we have an initial discussion
 
 Section 7.3 lists the cases where we must tell the Dean, whatever you tick. If that applies, you will be told.
 
