@@ -93,15 +93,41 @@ const WITH_VOTE = [
   '> Route forward: theirs.', '',
 ].join('\n');
 
+// A realistic 14-member roster and the live threshold/period shape, so the
+// roll-builder's arithmetic is pinned against the same numbers the dashboard uses.
+const MEMBERS = ['# Members', '', '## Current members', '',
+  '| Name | GitHub | ID |', '|---|---|---|',
+  ...['Anchit Som','Clara Yeo','Disha Shanbhag','Fernanda Munhoz','Joel Naoki CHRISTOPH',
+      'Madison Karas','Mario Morvan','Nathaniel Cooke','Niba','Noam Herberg',
+      'Rhianwen Rowlands','Tess Buckley','William Wong','Yiannis Ravanis']
+      .map((nm, i) => `| ${nm} | gh${i} | ${1000 + i} |`), ''].join('\n');
+const DATA = JSON.stringify({
+  thresholds: {
+    'layer-3': { name: 'Layer 3 Policy', rule: 'majority', over: 'all',
+      words: 'affirmative support from a majority of all members' },
+    'layer-4': { name: 'Layer 4 Constitutional', rule: 'fraction', num: 2, den: 3, over: 'all',
+      words: 'affirmative support from two-thirds of all members' },
+    'tier-c': { name: 'Tier C', rule: 'majority', over: 'voting',
+      words: 'a simple majority of those who vote, with a quorum',
+      quorum: { rule: 'fraction', num: 1, den: 2, over: 'all', counts: 'responders' } },
+  },
+  procedures: { 'tier-c': { days: 7, name: 'Tier C' }, 'layer-3': { days: 7, name: 'Policy' },
+                'layer-4': { days: 7, name: 'Amendment' } },
+});
+
 async function run({
   body = BODY(),
   title = 'a proposal',
   state = 'open',
   merged = false,
+  draft = false,
+  labels = [],
   headRef = 'a-branch',
   headRepo = 'o/r',
   file = null,          // null => 404
   fileStatus = 404,
+  members = MEMBERS,
+  dataJson = DATA,
   putFails = [],
   fileAfterConflict = null,
   user = { login: 'ada', id: 111 },
@@ -114,6 +140,8 @@ async function run({
       issues: { createComment: async ({ body }) => { comments.push(body); } },
       repos: {
         getContent: async ({ path }) => {
+          if (path === 'members.md') return { data: { content: b64(members), sha: 'msha123456' } };
+          if (path === 'docs/data.json') return { data: { content: b64(dataJson), sha: 'dsha' } };
           if (current === null) throw err(fileStatus);
           return { data: { content: b64(current), sha: 'sha' + puts } };
         },
@@ -135,7 +163,7 @@ async function run({
     payload: {
       repository: { default_branch: 'main' },
       pull_request: {
-        number: 18, title, body, state, merged, user,
+        number: 18, title, body, state, merged, draft, labels, user,
         head: { ref: headRef, repo: { full_name: headRepo } },
       },
     },
@@ -180,12 +208,64 @@ check('and the message says the words are the author\'s',
    with no readable layer or tier gets no file rather than an unreadable one. */
 r = await run({ body: BODY(SECTION, 'no metadata here\n') });
 check('no readable layer or tier: no file is created', r.writes.length, 0);
-check('and it says why, without failing the run',
-  [has(r.notices.join(' '), 'Procedure'), r.failed.length], [true, 0]);
+check('and it says why (names the missing Layer/Tier), without failing the run',
+  [has(r.notices.join(' '), 'Layer'), r.failed.length], [true, 0]);
 
-r = await run({ body: BODY(SECTION, '**Layer:** 4\n') });
-check('a Layer 4 proposal gets the constitutional procedure',
-  has(r.writes[0].text, '**Procedure:** Layer 4 Constitutional'), true);
+/* ---- the roll-builder: a voting tier gets its roll built server-side -------
+ *
+ * The headline of G: no "Start a vote", no paste. When a voting-tier proposal is
+ * open (out of draft, with an opened: label), record-amendment builds the whole
+ * vote file — roll of all members, the threshold, the window — so a member's form
+ * submission has a table to go in. record-vote.yml is untouched. The threshold
+ * arithmetic is ported from docs/record.js voteFileFor; these cases pin it against
+ * the known numbers for 14 members: majority 8, two-thirds 10, Tier C quorum 7. */
+const VOTE = (meta, extra = {}) =>
+  run({ body: BODY(SECTION, meta), labels: [{ name: 'opened:2026-05-31T10:00:00Z' }], ...extra });
+
+r = await VOTE('**Layer:** 4\n');
+check('a Layer 4 proposal builds a vote file, not a §1-only record', r.writes.length, 1);
+check('with the constitutional procedure', has(r.writes[0].text, '**Procedure:** Layer 4 Constitutional'), true);
+check('two-thirds of 14 is written as 10 of 14 (ceil, not floor)',
+  /\*\*Carries if:\*\*[^\n]*\*\*10 of 14\*\*/.test(r.writes[0].text), true);
+check('and it carries a full 14-member roll', (r.writes[0].text.match(/^\| .+ \| — \| \|$/gm) || []).length, 14);
+
+r = await VOTE('**Layer:** 3\n');
+check('a majority of 14 is 8 of 14 (floor+1, so a 7–7 split fails)',
+  /\*\*Carries if:\*\*[^\n]*\*\*8 of 14\*\*/.test(r.writes[0].text), true);
+
+r = await VOTE('**Layer:** 2\n\n**Tier:** C\n');
+check('Tier C states a quorum of 7 of 14, counted at close, not an affirmative bar',
+  /quorum \*\*7 of 14\*\*/.test(r.writes[0].text), true);
+
+/* The built roll must be readable by the same parser record-vote.yml and the
+   dashboard use, or a position could never be recorded into it. */
+r = await VOTE('**Layer:** 3\n');
+const built = r.writes[0].text;
+const SB = { document: {}, window: {}, localStorage: { getItem: () => null, setItem: () => {} },
+  atob: x => Buffer.from(x, 'base64').toString('binary'), TextDecoder };
+const { voteOf } = new Function(...Object.keys(SB),
+  readFileSync(join(HERE, '..', '..', 'docs', 'record.js'), 'utf8') + '\nreturn {voteOf};')(...Object.values(SB));
+const parsed = voteOf(built);
+check('voteOf reads the built roll as a live vote', parsed && parsed.holdsVote, true);
+check('and finds all 14 members in it', (parsed.members || []).length, 14);
+check('exactly one table — the roll, nothing above it to be mistaken for it',
+  (built.match(/^\|---/gm) || []).length, 1);
+check('the §1 Assumptions the proposer wrote rode into the vote file',
+  has(built, '**Assumptions:** That the house still has fourteen members.'), true);
+
+/* Gating: a draft is not open, and no opened: label means no window. Either way
+   the roll waits — it is not built half-formed. */
+r = await run({ body: BODY(SECTION, '**Layer:** 4\n'), draft: true, labels: [{ name: 'opened:2026-05-31T10:00:00Z' }] });
+check('a draft voting proposal does not get a roll yet', (r.writes[0] && /^\|---/m.test(r.writes[0].text)) || false, false);
+
+r = await run({ body: BODY(SECTION, '**Layer:** 4\n') });   // ready, but no opened: label
+check('a voting proposal with no opened: label waits, builds nothing', r.writes.length, 0);
+check('and says the roll will build when the label lands', has(r.notices.join(' '), 'opened:'), true);
+
+/* A Tier A proposal is not a voting tier — unchanged: a §1-only record, no roll. */
+r = await run({ body: BODY(SECTION), labels: [{ name: 'opened:2026-05-31T10:00:00Z' }] });
+check('Tier A still gets a §1-only record, never a roll',
+  [r.writes.length, /^\|---/m.test(r.writes[0].text)], [1, false]);
 
 /* ---- injection through the title and the fields -------------------------- */
 /* A pull request title is single-line in GitHub's UI but arrives here as a
@@ -240,11 +320,33 @@ r = await run({ body: '## Proposal\n\nNo record section at all.\n' });
 check('a description with no Amendment record section writes nothing', r.writes.length, 0);
 check('and is not a failure — an operational merge needs no record', r.failed.length, 0);
 
+/* ---- §1 defaults: a proposer can write nothing and still be compliant ------
+ *
+ * §1 requires How-it-was-made, Assumptions and Status. Of those, Status is `live`
+ * (or `experimental` for an exp-) and Assumptions is `None` unless the proposer
+ * says otherwise — neither needs typing. So a Tier A proposal filed with a blank
+ * §1 section now yields a complete record rather than nothing. (How-it-was-made is
+ * added at close; Notes and abstentions are §1-conditional.) */
 r = await run({ body: BODY('## Amendment record\n\n**How it was made:**\n**Status:**\n') });
-check('a section with every field blank writes nothing', r.writes.length, 0);
+check('a blank section now yields a defaulted record, not nothing', r.writes.length, 1);
+check('Status defaults to live', has(r.writes[0].text, '**Status:** live'), true);
+check('Assumptions defaults to None', has(r.writes[0].text, '**Assumptions:** None'), true);
+
+r = await run({ body: BODY('## Amendment record\n\n') });
+check('even a wholly empty section yields Assumptions None + Status live',
+  [has(r.writes[0].text, '**Assumptions:** None'), has(r.writes[0].text, '**Status:** live')], [true, true]);
+
+r = await run({ body: BODY('## Amendment record\n\n**Assumptions:** That the grant renews.\n') });
+check('a real Assumption the proposer wrote overrides the None default',
+  has(r.writes[0].text, '**Assumptions:** That the grant renews.'), true);
+
+r = await run({ body: BODY('## Amendment record\n\n', '**Layer:** 2\n\n**Tier:** A\n\n**File(s):** `rules/exp-trial.md`\n') });
+check('an exp- instrument gets Status experimental, not live',
+  has(r.writes[0].text, '**Status:** experimental'), true);
 
 r = await run({ body: BODY('## Amendment record\n\n**Status:** <live, experimental, or archived>\n') });
-check('a field still holding the template placeholder is not an answer', r.writes.length, 0);
+check('a field still holding the template placeholder falls back to the default',
+  has(r.writes[0].text, '**Status:** live'), true);
 
 /* The template ships each field under an HTML comment of guidance. Copying the
    section wholesale would put the template's prose in the Record. */
