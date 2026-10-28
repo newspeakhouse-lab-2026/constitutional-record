@@ -1,6 +1,6 @@
 # **Safety & Wellbeing Policy: Newspeak House Cohort 2026**
 
-## **Quick reference**
+## **Quick reference** 
 
 In an emergency, call 999. For everything else, these are the people to ask. This table will be updated whenever roles rotate.
 
