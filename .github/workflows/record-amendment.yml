@@ -40,6 +40,11 @@ name: Record the amendment record
 on:
   pull_request:
     types: [opened, reopened, edited, ready_for_review]
+  # Also on reviews: an endorsement-gated tier (Layer 4) builds its roll only
+  # once its reviews are in, and a review is a human action, so it re-triggers
+  # this workflow (a bot's label-add would not).
+  pull_request_review:
+    types: [submitted, dismissed]
 
 permissions:
   contents: write
@@ -209,21 +214,6 @@ jobs:
                Computed identically, so the two cannot disagree. */
             let voteScaffold = null;
             if (votingReady) {
-              const openedLabel = (pr.labels || []).map(l => (l && l.name) || l).find(x => /^opened:/.test(String(x)));
-              let openedIso;
-              if (openedLabel) {
-                openedIso = String(openedLabel).slice(String(openedLabel).indexOf(':') + 1);
-              } else {
-                openedIso = pr.created_at;
-                try {
-                  const tl = await github.paginate(github.rest.issues.listEventsForTimeline,
-                    { owner, repo, issue_number: n });
-                  const ready = tl.filter(e => e.event === 'ready_for_review').pop();
-                  if (ready) openedIso = ready.created_at;
-                } catch (e) { /* fall back to created_at — the roll still builds */ }
-                openedIso = String(openedIso).replace(/\.\d+Z$/, 'Z');
-              }
-              const opened = new Date(openedIso);
               let members, mSha, cfg;
               try {
                 const r = await github.rest.repos.getContent({ owner, repo, path: 'members.md', ref: DEFAULT_BRANCH });
@@ -235,13 +225,65 @@ jobs:
                 return skip(`could not read members.md or docs/data.json to build the roll: ${e.message}. ` +
                   `A later edit will try again.`);
               }
+              const spec = (cfg.thresholds || {})[votingKey];
+              const proc = (cfg.procedures || {})[votingKey] || {};
+              const days = proc.days;
+              const needs = proc.needsApprovals || 0;
+
+              /* When the clock starts. For a tier that needs endorsements — Layer 4's
+                 two reviews, Section 2 — the deliberation clock starts AT the Nth
+                 endorsement, not when the proposal became ready; so the roll is not
+                 built, and its window not dated, until that many standing approvals
+                 exist. Reviews are read here directly, not from a label another
+                 workflow writes, so this does not hang on a bot event that would never
+                 re-trigger. For an ungated tier the moment is when it opened: the
+                 opened: label if present, else the ready_for_review timeline event,
+                 else created_at — computed as label-proposals does, so the two agree. */
+              let opened;
+              if (needs > 0) {
+                let reviews;
+                try {
+                  reviews = await github.paginate(github.rest.pulls.listReviews, { owner, repo, pull_number: n });
+                } catch (e) {
+                  return skip(`could not read the reviews on #${n} to check endorsements: ${e.message}. ` +
+                    `A later event will try again.`);
+                }
+                const latest = new Map();
+                for (const rv of reviews) {
+                  if (!rv.user || rv.state === 'COMMENTED') continue;
+                  latest.set(rv.user.login, { state: rv.state, at: rv.submitted_at });
+                }
+                const approvedAt = [...latest.values()].filter(v => v.state === 'APPROVED')
+                  .map(v => v.at).filter(Boolean).sort();
+                if (approvedAt.length < needs) {
+                  return skip(`#${n} is a ${spec ? spec.name : votingKey} proposal with ${approvedAt.length} ` +
+                    `of ${needs} endorsing reviews. Section 2 starts the clock at ${needs}, so the roll ` +
+                    `is built — and its window dated — only once ${needs} are in place.`);
+                }
+                opened = new Date(approvedAt[needs - 1]);   // the Nth standing endorsement started the clock
+              } else {
+                const openedLabel = (pr.labels || []).map(l => (l && l.name) || l).find(x => /^opened:/.test(String(x)));
+                let openedIso;
+                if (openedLabel) {
+                  openedIso = String(openedLabel).slice(String(openedLabel).indexOf(':') + 1);
+                } else {
+                  openedIso = pr.created_at;
+                  try {
+                    const tl = await github.paginate(github.rest.issues.listEventsForTimeline,
+                      { owner, repo, issue_number: n });
+                    const ready = tl.filter(e => e.event === 'ready_for_review').pop();
+                    if (ready) openedIso = ready.created_at;
+                  } catch (e) { /* fall back to created_at — the roll still builds */ }
+                  openedIso = String(openedIso).replace(/\.\d+Z$/, 'Z');
+                }
+                opened = new Date(openedIso);
+              }
+
               const section = (members.split(/^##\s+/m).find(x => /^Current members/i.test(x)) || '');
               const names = section.split('\n')
                 .filter(l => /^\|/.test(l) && !/^\|\s*:?-/.test(l)).slice(1)
                 .map(l => l.replace(/^\||\|$/g, '').split('|')[0].trim())
                 .filter(Boolean);
-              const spec = (cfg.thresholds || {})[votingKey];
-              const days = ((cfg.procedures || {})[votingKey] || {}).days;
               if (!spec || !names.length || isNaN(opened) || !days) {
                 return skip(`could not assemble the roll for #${n} (threshold, members or period missing). ` +
                   `A later edit will try again.`);
@@ -298,18 +340,33 @@ jobs:
               }
 
               let next;
+              let upgraded = false;
               if (got.text === null) {
-                /* A voting proposal that is open gets the full vote file (roll,
-                   threshold, window) built above; everything else gets the
-                   §1-record file. A proposal with no procedure is not created at
-                   all — a file without a Procedure: line disables check-record. */
+                /* A voting proposal that can build its roll gets the full vote file.
+                   One that cannot yet — a draft, or short of its endorsements — gets
+                   NO file: a voting proposal's record IS the vote file, written when
+                   the roll is buildable, on the event that makes it so. Anything non-
+                   voting gets the §1-record file. A proposal with no procedure is not
+                   created at all — a file without a Procedure: line disables check-record. */
                 if (voteScaffold !== null) {
                   next = voteScaffold;
+                } else if (votingKey) {
+                  return skip(`#${n} is a voting proposal whose roll cannot be built yet (not open, ` +
+                    `or short of its endorsements), so no record file is created now — the vote file ` +
+                    `is written when the roll becomes buildable.`);
                 } else {
                     next = [`# Amendment record — PR #${n}: ${safeTitle}`, '',
                     `**Procedure:** ${procedure}`, '',
                     '## Amendment record', '', block, ''].join('\n');
                 }
+              } else if (voteScaffold !== null && !/^\|\s*Member\s*\|/m.test(got.text)) {
+                /* Upgrade: a voting proposal whose file was created before its roll
+                   could be built (filed at a non-voting tier, then edited to a voting
+                   one) becomes the full vote file now. Safe — a file with no roll table
+                   holds no recorded position to lose. A file that already has a roll
+                   falls to the normal §1-block update below, which never touches it. */
+                upgraded = true;
+                next = voteScaffold;
               } else {
                 const base = got.text;
                 const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -359,20 +416,20 @@ jobs:
               const bad = (() => {
                 const before = got.text || '';
                 const tables = s => (s.match(/^\|.*\|[^\S\n]*$/gm) || []).length;
-                if (got.text !== null && tables(next) !== tables(before)) {
+                if (got.text !== null && !upgraded && tables(next) !== tables(before)) {
                   return 'the number of table rows changed';
                 }
                 for (const h of ['**Procedure:**', '**Carries if:**', '**Opened:**',
                                  '**Closes:**', '**Entitled to vote:**']) {
                   const first = s => (s.split('\n').find(l => l.startsWith(h)) || null);
-                  if (got.text !== null && first(before) !== first(next)) {
+                  if (got.text !== null && !upgraded && first(before) !== first(next)) {
                     return `the ${h} line changed, and this workflow never writes one into an existing file`;
                   }
                 }
                 const strip = s => s.replace(new RegExp(
                   OPEN.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '[\\s\\S]*?' +
                   CLOSE.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), '');
-                if (got.text !== null && strip(next).replace(/\n{2,}/g, '\n\n').trim()
+                if (got.text !== null && !upgraded && strip(next).replace(/\n{2,}/g, '\n\n').trim()
                                       !== strip(before).replace(/\n{2,}/g, '\n\n').trim()) {
                   return 'something outside the amendment record region changed';
                 }
