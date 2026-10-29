@@ -111,7 +111,7 @@ const DATA = JSON.stringify({
       words: 'a simple majority of those who vote, with a quorum',
       quorum: { rule: 'fraction', num: 1, den: 2, over: 'all', counts: 'responders' } },
   },
-  procedures: { 'tier-c': { days: 7, name: 'Tier C' }, 'layer-3': { days: 7, name: 'Policy' },
+  procedures: { 'tier-c': { days: 7, name: 'Tier C' }, 'layer-3': { days: 7, name: 'Policy', needsApprovals: 1 },
                 'layer-4': { days: 7, name: 'Amendment', needsApprovals: 2 } },
 });
 
@@ -231,6 +231,9 @@ check('and it says why (names the missing Layer/Tier), without failing the run',
  * the known numbers for 14 members: majority 8, two-thirds 10, Tier C quorum 7. */
 const VOTE = (meta, extra = {}) =>
   run({ body: BODY(SECTION, meta), labels: [{ name: 'opened:2026-05-31T10:00:00Z' }], ...extra });
+// Layer 3 now needs one endorsing review (data.json needsApprovals: 1), so its
+// VOTE cases supply one; the clock then dates from that review, not the label.
+const L3REV = [{ user: { login: 'e' }, state: 'APPROVED', submitted_at: '2026-05-30T00:00:00Z' }];
 
 r = await VOTE('**Layer:** 4\n', { reviews: [
   { user: { login: 'a' }, state: 'APPROVED', submitted_at: '2026-05-20T00:00:00Z' },
@@ -241,7 +244,7 @@ check('two-thirds of 14 is written as 10 of 14 (ceil, not floor)',
   /\*\*Carries if:\*\*[^\n]*\*\*10 of 14\*\*/.test(r.writes[0].text), true);
 check('and it carries a full 14-member roll', (r.writes[0].text.match(/^\| .+ \| — \| \|$/gm) || []).length, 14);
 
-r = await VOTE('**Layer:** 3\n');
+r = await VOTE('**Layer:** 3\n', { reviews: L3REV });
 check('a majority of 14 is 8 of 14 (floor+1, so a 7–7 split fails)',
   /\*\*Carries if:\*\*[^\n]*\*\*8 of 14\*\*/.test(r.writes[0].text), true);
 
@@ -251,7 +254,7 @@ check('Tier C states a quorum of 7 of 14, counted at close, not an affirmative b
 
 /* The built roll must be readable by the same parser record-vote.yml and the
    dashboard use, or a position could never be recorded into it. */
-r = await VOTE('**Layer:** 3\n');
+r = await VOTE('**Layer:** 3\n', { reviews: L3REV });
 const built = r.writes[0].text;
 const SB = { document: {}, window: {}, localStorage: { getItem: () => null, setItem: () => {} },
   atob: x => Buffer.from(x, 'base64').toString('binary'), TextDecoder };
@@ -268,24 +271,24 @@ check('the §1 Assumptions the proposer wrote rode into the vote file',
 /* P2 gating: a voting proposal opened as a draft is not open, so NO file is
    created — its record IS the roll, built when it is ready. A §1-only file created
    now would be exactly the roll-less file that later blocks the roll. */
-r = await run({ body: BODY(SECTION, '**Layer:** 3\n'), draft: true, labels: [{ name: 'opened:2026-05-31T10:00:00Z' }] });
+r = await run({ body: BODY(SECTION, '**Layer:** 2\n\n**Tier:** C\n'), draft: true, labels: [{ name: 'opened:2026-05-31T10:00:00Z' }] });
 check('a draft voting proposal writes no file at all', r.writes.length, 0);
 
-/* The opened: timestamp for an UNGATED tier (Tier C / Layer 3): the label if
-   present, else the ready_for_review timeline event, else created_at — derived here
-   so it does not hang on a bot label-add that would never re-trigger this workflow. */
-r = await run({ body: BODY(SECTION, '**Layer:** 3\n'),
+/* The opened: timestamp for an UNGATED tier (Tier C — Layer 3 is now gated): the
+   label if present, else the ready_for_review timeline event, else created_at —
+   derived here so it does not hang on a bot label-add that never re-triggers this. */
+r = await run({ body: BODY(SECTION, '**Layer:** 2\n\n**Tier:** C\n'),
   timeline: [{ event: 'ready_for_review', created_at: '2026-05-31T10:00:00Z' }] });
 check('no opened: label, but a ready_for_review event -> the roll still builds',
   /^\|---/m.test(r.writes[0]?.text || ''), true);
 check('and the window is anchored to the ready_for_review moment',
   has(r.writes[0].text, '2026-05-31'), true);
 
-r = await run({ body: BODY(SECTION, '**Layer:** 3\n'), createdAt: '2026-04-01T08:00:00Z', timeline: [] });
+r = await run({ body: BODY(SECTION, '**Layer:** 2\n\n**Tier:** C\n'), createdAt: '2026-04-01T08:00:00Z', timeline: [] });
 check('no label and no ready event -> falls back to created_at, still builds',
   [/^\|---/m.test(r.writes[0]?.text || ''), has(r.writes[0].text, '2026-04-01')], [true, true]);
 
-r = await run({ body: BODY(SECTION, '**Layer:** 3\n'),
+r = await run({ body: BODY(SECTION, '**Layer:** 2\n\n**Tier:** C\n'),
   labels: [{ name: 'opened:2026-05-31T10:00:00Z' }],
   createdAt: '2026-04-01T08:00:00Z',
   timeline: [{ event: 'ready_for_review', created_at: '2026-03-03T03:03:00Z' }] });
@@ -317,6 +320,16 @@ r = await run({ body: BODY(SECTION, '**Layer:** 4\n'),
   reviews: [APP('a', '2026-05-10T00:00:00Z'), APP('a', '2026-05-11T00:00:00Z'),
             { user: { login: 'b' }, state: 'COMMENTED', submitted_at: '2026-05-12T00:00:00Z' }] });
 check('one approver twice, plus a comment, is one endorsement -> still waits', r.writes.length, 0);
+
+/* Layer 3 is gated too, at one review (data.json needsApprovals: 1): the same
+   mechanism, N=1. No review waits; one review builds and dates the clock from it. */
+r = await run({ body: BODY(SECTION, '**Layer:** 3\n'), labels: [{ name: 'opened:2099-01-01T00:00:00Z' }], reviews: [] });
+check('Layer 3 with no endorsing review waits', r.writes.length, 0);
+r = await run({ body: BODY(SECTION, '**Layer:** 3\n'), labels: [{ name: 'opened:2099-01-01T00:00:00Z' }],
+  reviews: [APP('a', '2026-05-15T00:00:00Z')] });
+check('Layer 3 with one endorsing review builds, clock dated from it (not the label)',
+  [/^\|---/m.test(r.writes[0]?.text || ''), has(r.writes[0].text, '2026-05-15'), has(r.writes[0].text, '2099')],
+  [true, true, false]);
 
 /* ---- P2: a roll-less file for a now-voting proposal is upgraded ------------
  * A proposal filed at a non-voting tier (a §1-only file) then edited to a voting
