@@ -395,7 +395,7 @@ function windowOf(pr,proc){
     o.endorse={have,need:p.needsApprovals};
     if(have<p.needsApprovals){
       o.state="unstarted";
-      o.why.push(`a Constitutional amendment\u2019s clock starts at ${p.needsApprovals} <a href="https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/CONTRIBUTING.md#endorsing">endorsing reviews</a> (\u00a72) — this has ${have}`);
+      o.why.push(`this ${p.name||"proposal"} needs ${p.needsApprovals} <a href="https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/CONTRIBUTING.md#endorsing">endorsing review${p.needsApprovals>1?"s":""}</a> before its clock starts (\u00a72) — it has ${have}`);
       return o;
     }
   }
