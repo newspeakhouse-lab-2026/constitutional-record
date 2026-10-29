@@ -200,18 +200,30 @@ jobs:
               return `${words} (\`${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}:00${off}\`)`;
             }
 
-            /* Built only when everything a frozen roll needs is present: the
-               opened: timestamp (stamped on by label-proposals when the proposal
-               leaves draft — if it is not there yet, skip and let a later trigger
-               build it), the members, and the tier's deliberation period. */
+            /* The opened: timestamp a frozen roll needs. label-proposals stamps it
+               on, but as GITHUB_TOKEN — and a bot's label-add does not re-trigger this
+               workflow, so on the opening event the payload carries no label yet.
+               Rather than wait for a trigger that never comes, derive it here the same
+               way label-proposals does: prefer its label when present (a later edit),
+               otherwise the ready_for_review timeline event, otherwise created_at.
+               Computed identically, so the two cannot disagree. */
             let voteScaffold = null;
             if (votingReady) {
               const openedLabel = (pr.labels || []).map(l => (l && l.name) || l).find(x => /^opened:/.test(String(x)));
-              if (!openedLabel) {
-                return skip(`#${n} is a voting proposal with no \`opened:\` label yet, so the vote window ` +
-                  `cannot be computed. The roll will be built when that label is in place.`);
+              let openedIso;
+              if (openedLabel) {
+                openedIso = String(openedLabel).slice(String(openedLabel).indexOf(':') + 1);
+              } else {
+                openedIso = pr.created_at;
+                try {
+                  const tl = await github.paginate(github.rest.issues.listEventsForTimeline,
+                    { owner, repo, issue_number: n });
+                  const ready = tl.filter(e => e.event === 'ready_for_review').pop();
+                  if (ready) openedIso = ready.created_at;
+                } catch (e) { /* fall back to created_at — the roll still builds */ }
+                openedIso = String(openedIso).replace(/\.\d+Z$/, 'Z');
               }
-              const opened = new Date(String(openedLabel).slice(String(openedLabel).indexOf(':') + 1));
+              const opened = new Date(openedIso);
               let members, mSha, cfg;
               try {
                 const r = await github.rest.repos.getContent({ owner, repo, path: 'members.md', ref: DEFAULT_BRANCH });
@@ -244,7 +256,7 @@ jobs:
                 `**Carries if:** ${carries}`,
                 `**Opened:** ${ukStamp(opened)}`,
                 `**Closes:** ${ukStamp(closes)}`,
-                `**Entitled to vote:** ${names.length} members, frozen when this vote opened — \`members.md\` blob \`${(mSha || '').slice(0, 7)}\``,
+                `**Entitled to vote:** ${names.length} members, frozen when the roll was built — \`members.md\` blob \`${(mSha || '').slice(0, 7)}\``,
                 '',
                 '| Member | Position | Date |', '|---|---|---|',
                 ...names.map(nm => `| ${nm} | — | |`), '',

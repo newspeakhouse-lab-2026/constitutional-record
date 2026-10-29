@@ -128,6 +128,8 @@ async function run({
   fileStatus = 404,
   members = MEMBERS,
   dataJson = DATA,
+  createdAt = '2026-05-31T09:00:00Z',
+  timeline = [],
   putFails = [],
   fileAfterConflict = null,
   user = { login: 'ada', id: 111 },
@@ -136,8 +138,12 @@ async function run({
   let puts = 0, current = file;
 
   const github = {
+    paginate: async (fn, args) => fn(args),
     rest: {
-      issues: { createComment: async ({ body }) => { comments.push(body); } },
+      issues: {
+        createComment: async ({ body }) => { comments.push(body); },
+        listEventsForTimeline: async () => timeline,
+      },
       repos: {
         getContent: async ({ path }) => {
           if (path === 'members.md') return { data: { content: b64(members), sha: 'msha123456' } };
@@ -163,7 +169,7 @@ async function run({
     payload: {
       repository: { default_branch: 'main' },
       pull_request: {
-        number: 18, title, body, state, merged, draft, labels, user,
+        number: 18, title, body, state, merged, draft, labels, user, created_at: createdAt,
         head: { ref: headRef, repo: { full_name: headRepo } },
       },
     },
@@ -258,9 +264,28 @@ check('the §1 Assumptions the proposer wrote rode into the vote file',
 r = await run({ body: BODY(SECTION, '**Layer:** 4\n'), draft: true, labels: [{ name: 'opened:2026-05-31T10:00:00Z' }] });
 check('a draft voting proposal does not get a roll yet', (r.writes[0] && /^\|---/m.test(r.writes[0].text)) || false, false);
 
-r = await run({ body: BODY(SECTION, '**Layer:** 4\n') });   // ready, but no opened: label
-check('a voting proposal with no opened: label waits, builds nothing', r.writes.length, 0);
-check('and says the roll will build when the label lands', has(r.notices.join(' '), 'opened:'), true);
+/* No opened: label is no longer a blocker. The timestamp is derived here the same
+   way label-proposals derives it — the ready_for_review timeline event, else
+   created_at — so the roll builds on the opening event, without waiting for a label
+   that a bot's add would never re-trigger this workflow to see. */
+r = await run({ body: BODY(SECTION, '**Layer:** 4\n'),
+  timeline: [{ event: 'ready_for_review', created_at: '2026-05-31T10:00:00Z' }] });
+check('no opened: label, but a ready_for_review event -> the roll still builds',
+  /^\|---/m.test(r.writes[0]?.text || ''), true);
+check('and the window is anchored to the ready_for_review moment',
+  has(r.writes[0].text, '2026-05-31'), true);
+
+r = await run({ body: BODY(SECTION, '**Layer:** 4\n'), createdAt: '2026-04-01T08:00:00Z', timeline: [] });
+check('no label and no ready event -> falls back to created_at, still builds',
+  [/^\|---/m.test(r.writes[0]?.text || ''), has(r.writes[0].text, '2026-04-01')], [true, true]);
+
+r = await run({ body: BODY(SECTION, '**Layer:** 4\n'),
+  labels: [{ name: 'opened:2026-05-31T10:00:00Z' }],
+  createdAt: '2026-04-01T08:00:00Z',
+  timeline: [{ event: 'ready_for_review', created_at: '2026-03-03T03:03:00Z' }] });
+check('the opened: label wins over created_at and the timeline when present',
+  [has(r.writes[0].text, '2026-05-31'), has(r.writes[0].text, '2026-04-01'), has(r.writes[0].text, '2026-03-03')],
+  [true, false, false]);
 
 /* A Tier A proposal is not a voting tier — unchanged: a §1-only record, no roll. */
 r = await run({ body: BODY(SECTION), labels: [{ name: 'opened:2026-05-31T10:00:00Z' }] });
