@@ -1002,6 +1002,11 @@ document.addEventListener("click",async e=>{
    vote outcome lives in a file, not in the pull request. */
 let histLoaded=false, histData=null, histShown=10;
 const HIST_PAGE=10;
+/* Filter/sort state for the history tab. Operational (layer 0) is off by
+   default: the history answers 'how did the governance get here', and the
+   tooling/dashboard commits are machinery, not decisions — present, counted,
+   and one toggle away, but not the first thing a reader wades through. */
+let histLayers=new Set([2,3,4]), histOutcome="all", histSort="new";
 
 async function collectHistory(){
   const [closedF, treeF] = await Promise.all([
@@ -1040,7 +1045,7 @@ async function collectHistory(){
 
   // Read from raw, so the vote each adopted proposal carried costs nothing.
   const mergedVotes={};
-  await Promise.all(merged.slice(0,10).map(async p=>{
+  await Promise.all(merged.map(async p=>{
     const path=`amendment-record/pr-${p.number}.md`;
     if(!at[path]) return;
     try{ const v=voteOf(await file(path,"main",at[path])); if(v) mergedVotes[p.number]=v; }catch{}
@@ -1048,25 +1053,99 @@ async function collectHistory(){
   return {merged, amendments, mergedVotes, shas:at};
 }
 
+function layerOf(e){
+  if(e.a) return 4;                                  // the founding / direct commit
+  if(e.amends&&e.amends.length) return 4;            // it amended the Constitution
+  const m=e.m;
+  // 1) the §1 record's own Procedure line — most authoritative, when there is one.
+  const mv=(histData.mergedVotes||{})[m.number];
+  if(mv&&mv.procedure){
+    const pr=mv.procedure.toLowerCase();
+    if(pr.includes("layer 4")) return 4;
+    if(pr.includes("layer 3")||pr.includes("policy")) return 3;
+    if(pr.indexOf("tier")===0) return 2;
+  }
+  // 2) the labels label-proposals applied. layer-0/1 are explicitly operational.
+  const labs=(m.labels||[]).map(l=>String((l&&l.name)||l).toLowerCase());
+  if(labs.includes("layer-4")) return 4;
+  if(labs.includes("layer-3")) return 3;
+  if(labs.includes("layer-2")) return 2;
+  if(labs.includes("layer-0")||labs.includes("layer-1")) return 0;
+  // 3) the title convention, for proposals that predate labelling and records —
+  //    the early Ordinary rules carry no label and no §1 file, only their title.
+  const t=(m.title||"").toLowerCase();
+  if(/^operational\b|^record:/.test(t)) return 0;
+  if(/constitution(al)?\s+amendment|\blayer\s*4\b/.test(t)) return 4;
+  if(/\bpolicy\b|\blayer\s*3\b/.test(t)) return 3;
+  if(/\bordinary rule\b|\blayer\s*2\b|\btier\s*[abc]\b|^rule:/.test(t)) return 2;
+  // 4) a §1 record exists but we could not read its layer → it is governance.
+  if((histData.shas||{})[`amendment-record/pr-${m.number}.md`]) return 2;
+  // 5) nothing points to a governance decision → operational.
+  return 0;
+}
+const HLAYER={4:{k:"l4",t:"Constitutional"},3:{k:"l3",t:"Policy"},2:{k:"l2",t:"Ordinary"},0:{k:"op",t:"Operational"}};
+function matchOutcome(e,sel){
+  if(sel==="all") return true;
+  if(!e.m) return false;
+  const mv=(histData.mergedVotes||{})[e.m.number];
+  if(!mv) return false;
+  if(sel==="carried")    return !!(mv.result&&mv.result.carried);
+  if(sel==="novote")     return mv.holdsVote===false&&!(mv.result&&mv.result.carried);
+  if(sel==="objections") return (mv.objections||[]).length>0;
+  return true;
+}
+
 function renderHistory(d){
   histData=d;
-  const o=[];
-  // One history. A change to the Constitution that arrived through a pull request
-  // is an annotation on that pull request, not a second entry for the same event.
+  // One history. A Constitution change that arrived through a pull request is an
+  // annotation on that pull request, not a second entry for the same event.
   const am=d.amendments||[], byPR={};
   for(const a of am) for(const n of (a.prs||[])) (byPR[n]=byPR[n]||[]).push(a);
   const founding=am.length?am[am.length-1]:null;
   const events=[
     ...(d.merged||[]).map(m=>({at:new Date(m.merged_at),m,amends:byPR[m.number]||[]})),
     ...am.filter(a=>!a.prs||!a.prs.length).map(a=>({at:new Date(a.at),a}))
-  ].sort((x,y)=>y.at-x.at);
+  ];
 
+  // Count every layer over the whole history, so the chips can show what each holds
+  // even when it is filtered out — nothing is hidden without saying how much.
+  const count={4:0,3:0,2:0,0:0};
+  for(const e of events) count[layerOf(e)]++;
+
+  let view=events.filter(e=>histLayers.has(layerOf(e))&&matchOutcome(e,histOutcome));
+  view.sort((x,y)=>histSort==="old"?x.at-y.at:y.at-x.at);
+
+  const o=[];
   o.push(`<h2>Changes to the Record <em>${events.length}</em></h2>`);
-  o.push(`<p class="note">Every change that has entered <code>main</code>, newest first; changes to
-    the Constitution are marked. Whether the deliberation each one records actually happened is for a
-    Record Keeper to verify — most of it runs in the governance channel, which this page cannot see.</p>`);
+  o.push(`<p class="note">How each change was decided, not what needs attention now. Whether the
+    deliberation each one records actually happened is for a Record Keeper to verify — most of it runs
+    in the governance channel, which this page cannot see.</p>`);
 
-  o.push(events.length?events.slice(0,histShown).map(e=>{
+  // ---- controls: layer chips (weight, descending), outcome, sort ----
+  const chip=L=>`<button type="button" class="hchip ${HLAYER[L].k}" data-layer="${L}" `
+    +`aria-pressed="${histLayers.has(L)}">${HLAYER[L].t} <em>${count[L]}</em></button>`;
+  o.push(`<div class="hbar">
+    <div class="hchips" role="group" aria-label="Filter by layer">${[4,3,2,0].map(chip).join("")}</div>
+    <label class="hsel">Outcome
+      <select id="houtcome">
+        <option value="all"${histOutcome==="all"?" selected":""}>All</option>
+        <option value="carried"${histOutcome==="carried"?" selected":""}>Carried by vote</option>
+        <option value="novote"${histOutcome==="novote"?" selected":""}>Passed without a vote</option>
+        <option value="objections"${histOutcome==="objections"?" selected":""}>Had objections</option>
+      </select>
+    </label>
+    <button type="button" id="hsort" class="hsort" aria-label="Change sort order">${
+      histSort==="old"?"Oldest first":"Newest first"}</button>
+  </div>`);
+
+  if(!histLayers.has(0)&&count[0]>0)
+    o.push(`<p class="note hhidden">${count[0]} operational change${count[0]>1?"s":""} hidden — the
+      tooling and dashboard commits that carry no governance decision.
+      <button type="button" class="linkish" data-layer="0">Show them</button></p>`);
+
+  o.push(view.length?view.slice(0,histShown).map(e=>{
+    const lm=HLAYER[layerOf(e)];
+    const badge=`<span class="tag lyr ${lm.k}">${lm.t}</span> `;
     if(e.m){
       const parts=[`@${esc(e.m.user?e.m.user.login:"unknown")}`];
       if(e.amends.length) parts.push(`<span class="warnish">amended the Constitution</span> `
@@ -1081,19 +1160,8 @@ function renderHistory(d){
             +(mv.result.affirmative!=null
               ? ` — ${mv.result.affirmative} of ${mv.result.of} affirmative, needed ${mv.result.needed}`
               : ``));
-          /* A proposal that failed once and passed after amendment is a different
-             thing from one that passed first time, and §1's amendment record asks
-             how a decision was made. The detail is in the file. */
           if(mv.rounds>1) bits.push(`after ${mv.rounds} rounds`);
         } else if(mv&&mv.holdsVote===false){
-          /* §2 holds NO VOTE at Tier A or Tier B: the proposal passes absent a
-             stated objection. Since the rename this file is the §1 amendment
-             record and usually carries no vote at all, and this line used to
-             read "vote recorded, with no result written into it" — telling a
-             reader a vote had been held and left unfinished, which is the
-             opposite of what happened. The page names the procedure and stops;
-             whether the window elapsed unobjected is a Record Keeper's
-             judgement, made where the deliberation was. */
           bits.push(`<strong>no vote held</strong> — §2 passes a `
             +`${esc(mv.procedure||"proposal at this tier")} proposal absent a stated objection`);
           if((mv.objections||[]).length)
@@ -1102,23 +1170,21 @@ function renderHistory(d){
         bits.push(`<a href="https://github.com/${REPO}/blob/main/${vpath}">the record</a>`);
         voteLine=bits.join(" · ");
       }
-      return row("",`<span class="num">#${e.m.number}</span><a href="${e.m.html_url}">${esc(e.m.title)}</a>`,
+      return row("",badge+`<span class="num">#${e.m.number}</span><a href="${e.m.html_url}">${esc(e.m.title)}</a>`,
         parts.join(" &middot; "),"",fmt(e.at),"idle",voteLine);
     }
     const a=e.a;
-    return row("",esc(a.msg),
+    return row("",badge+esc(a.msg),
       `@${esc(a.who)} &middot; <a href="${a.url}">${a.sha}</a> &middot; `
       + (a===founding?`the commit that founded the Record`:`<span class="warnish">no pull request</span>`),
       "",fmt(e.at),"idle");
-  }).join(""):`<p class="note">Nothing has entered the Record yet.</p>`);
+  }).join(""):`<p class="note">Nothing matches these filters.</p>`);
 
-  /* Show more, rather than a silent cap. Everything is already in hand, so this
-     costs no request at all. */
-  if(events.length>histShown)
+  if(view.length>histShown)
     o.push(`<div class="acts"><button type="button" class="act" id="histmore">`
-      + `Show ${Math.min(HIST_PAGE,events.length-histShown)} more</button></div>`);
-  else if(events.length>HIST_PAGE)
-    o.push(`<p class="note">All ${events.length} shown.</p>`);
+      + `Show ${Math.min(HIST_PAGE,view.length-histShown)} more</button></div>`);
+  else if(view.length>HIST_PAGE)
+    o.push(`<p class="note">All ${view.length} shown.</p>`);
 
   $("#panel-history").innerHTML=o.join("");
   $("#panel-history").setAttribute("aria-busy","false");
@@ -1171,7 +1237,15 @@ document.addEventListener("click",e=>{
 document.addEventListener("click",e=>{
   const tab=e.target.closest('[role="tab"]');
   if(tab){ showTab(tab.id==="tab-history"?"history":"now",true); return; }
-  if(e.target.closest("#histmore")){ histShown+=HIST_PAGE; renderHistory(histData); }
+  if(e.target.closest("#histmore")){ histShown+=HIST_PAGE; renderHistory(histData); return; }
+  const chip=e.target.closest("[data-layer]");
+  if(chip){ const L=+chip.dataset.layer;
+    if(histLayers.has(L)) histLayers.delete(L); else histLayers.add(L);
+    histShown=HIST_PAGE; renderHistory(histData); return; }
+  if(e.target.closest("#hsort")){ histSort=histSort==="new"?"old":"new"; renderHistory(histData); return; }
+});
+document.addEventListener("change",e=>{
+  if(e.target.id==="houtcome"){ histOutcome=e.target.value; histShown=HIST_PAGE; renderHistory(histData); }
 });
 /* Arrow keys move between tabs, which is what a tablist is expected to do. */
 document.addEventListener("keydown",e=>{

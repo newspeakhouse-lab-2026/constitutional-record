@@ -631,3 +631,33 @@
   @media (prefers-reduced-motion:no-preference){
     a,summary{transition:color .12s ease,background-color .12s ease,border-color .12s ease}
   }
+
+  /* ---- history filter bar -------------------------------------------------
+     Layer read as weight: Constitutional carries the accent, Policy the ink
+     rule, Ordinary a muted line, Operational a faint dashed one — the eye
+     reads importance before it reads the word. Chips are toggles (aria-pressed),
+     operational off by default. */
+  .hbar{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem .8rem;margin:.3rem 0 1.1rem}
+  .hchips{display:flex;flex-wrap:wrap;gap:.4rem}
+  .hchip,.hsort{font:600 var(--t0)/1 var(--ui);letter-spacing:.04em;cursor:pointer;
+    display:inline-flex;align-items:center;gap:.35rem;min-height:2.1rem;padding:0 .75rem;
+    border:1px solid var(--line);border-radius:999px;background:transparent;color:var(--muted)}
+  .hchip em{font-style:normal;color:var(--faint);font-variant-numeric:tabular-nums}
+  .hchip[aria-pressed="true"]{color:var(--accent);border-color:var(--accent)}
+  .hchip[aria-pressed="true"] em{color:var(--accent)}
+  .hchip:hover,.hsort:hover{border-color:var(--rule);color:var(--ink)}
+  .hchip:focus-visible,.hsort:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .hsel{font:400 var(--t0)/1 var(--ui);color:var(--muted);text-transform:uppercase;
+    letter-spacing:.06em;display:inline-flex;align-items:center;gap:.4rem}
+  .hsel select{font:400 var(--t1)/1 var(--ui);color:var(--ink);background:var(--bg);
+    border:1px solid var(--line);border-radius:4px;padding:.35rem .5rem;min-height:2.1rem;
+    text-transform:none;letter-spacing:0}
+  .hsel select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .linkish{background:none;border:0;padding:0;cursor:pointer;color:var(--accent);
+    font:inherit;text-decoration:underline;text-underline-offset:3px}
+  .note.hhidden{color:var(--faint)}
+  .tag.lyr{border:1px solid var(--line);border-radius:2px;padding:.08rem .38rem;letter-spacing:.07em}
+  .tag.lyr.l4{color:var(--accent);border-color:var(--accent)}
+  .tag.lyr.l3{color:var(--ink);border-color:var(--rule)}
+  .tag.lyr.l2{color:var(--muted)}
+  .tag.lyr.op{color:var(--faint);border-style:dashed}
