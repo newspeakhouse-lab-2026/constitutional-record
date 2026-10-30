@@ -13,6 +13,7 @@ them is wrong and nobody would notice from reading the rule.
 """
 
 import importlib.util
+import re
 import os
 import sys
 from datetime import datetime
@@ -210,19 +211,39 @@ case("a file the PR did change is in scope",
      "The file actually under review must still be checked.")
 
 
-# ---- the five labels exist in exactly one form, in all three places ---------
+# ---- the labels agree across every place that writes or reads a record -------
 #
-# There were three independent copies and nothing pinning them. Two of five had
-# already drifted: the template said "Assumptions it rests on" and "Explanatory
-# notes from the discussion", so a body copied into the file was reported
-# incomplete on precisely those two.
-for _f in [os.path.join(HERE, "..", "pull_request_template.md"),
-           os.path.join(HERE, "..", "instrument-templates", "vote.md")]:
-    _text = open(_f, encoding="utf-8").read()
-    _absent = [f for f in cr.AMENDMENT_FIELDS if f"**{f}:**" not in _text]
-    case(f"{os.path.basename(_f)} uses the checker's own five labels", _absent, [],
-         "Three copies of the field list and no test holding them together. A label that drifts "
-         "here makes every copied record read as incomplete, and the warning blames the author.")
+# There were independent copies of the field list and nothing pinning them. Two
+# of five had already drifted: the template said "Assumptions it rests on" and
+# "Explanatory notes from the discussion", so a body copied into the file was
+# reported incomplete on precisely those two.
+#
+# Since G the proposer no longer types the fields: `record-amendment.yml`
+# GENERATES them and `check-record.py` reads them back, so the coupling that
+# matters is generator-labels == checker-labels. vote.md still carries the full
+# set (it is the manual vote instrument), so it is pinned in full too. The PR
+# template now carries only the one field a human fills — Assumptions — so it is
+# pinned as a subset: every label it does carry must be one the checker knows.
+_amd = open(os.path.join(HERE, "..", "workflows", "record-amendment.yml"), encoding="utf-8").read()
+_absent = [f for f in cr.AMENDMENT_FIELDS if f"'{f}'" not in _amd]
+case("record-amendment.yml generates the checker's own five labels", _absent, [],
+     "The workflow writes the record and the checker reads it. If a label drifts between them, "
+     "every generated record reads as incomplete and the warning blames nobody who can fix it.")
+
+_vote = open(os.path.join(HERE, "..", "instrument-templates", "vote.md"), encoding="utf-8").read()
+_absent = [f for f in cr.AMENDMENT_FIELDS if f"**{f}:**" not in _vote]
+case("vote.md uses the checker's own five labels", _absent, [],
+     "The manual vote instrument carries the full field list; a label that drifts here makes a "
+     "record built from it read as incomplete.")
+
+_tmpl = open(os.path.join(HERE, "..", "pull_request_template.md"), encoding="utf-8").read()
+_tmpl_labels = re.findall(r"\*\*([^*]+?):\*\*", _tmpl)
+_unknown = [l for l in _tmpl_labels if l in {"How it was made", "Status",
+            "Notes from the discussion", "Abstentions or objections", "Assumptions"}
+            and l not in cr.AMENDMENT_FIELDS]
+case("every §1 label the PR template still carries is one the checker knows", _unknown, [],
+     "Since G the template carries only Assumptions; whatever §1 labels it does keep must match "
+     "the checker, or a value a proposer types lands under a label the checker ignores.")
 
 
 failed = [n for n, bad, _ in results if bad]

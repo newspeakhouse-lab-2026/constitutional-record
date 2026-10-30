@@ -40,6 +40,11 @@ name: Record the amendment record
 on:
   pull_request:
     types: [opened, reopened, edited, ready_for_review]
+  # Also on reviews: an endorsement-gated tier (Layer 4) builds its roll only
+  # once its reviews are in, and a review is a human action, so it re-triggers
+  # this workflow (a bot's label-add would not).
+  pull_request_review:
+    types: [submitted, dismissed]
 
 permissions:
   contents: write
@@ -97,6 +102,21 @@ jobs:
             const FIELDS = ['How it was made', 'Assumptions', 'Status',
                             'Notes from the discussion', 'Abstentions or objections'];
 
+            // Layer and tier decide the procedure, whether this tier votes, and
+            // therefore whether a roll must be built. Computed up here because the
+            // skip gates below depend on it.
+            const layer = field('Layer', '\\d');
+            const tier = field('Tier', '[ABC]\\b');
+            const procedure = tier ? `Tier ${tier.toUpperCase()}`
+              : layer === '3' ? 'Layer 3 Policy'
+              : layer === '4' ? 'Layer 4 Constitutional'
+              : null;
+            const votingKey = layer === '4' ? 'layer-4'
+              : layer === '3' ? 'layer-3'
+              : (tier && tier.toUpperCase() === 'C') ? 'tier-c' : null;
+            const ready = !pr.draft;
+            const votingReady = !!votingKey && ready;
+
             /* The section, from the description. The heading is matched anchored
                and the section ends at the next heading of the same level or
                below, or at a horizontal rule — the pull request template puts
@@ -110,8 +130,14 @@ jobs:
                heading after the section, so all of them passed; the first real
                description written against this template did not. */
             const secMatch = body.match(/^##[^\S\n]+Amendment record[^\n]*$([\s\S]*?)(?=^##[^\S\n]|^---[^\n]*$|(?![\s\S]))/m);
-            if (!secMatch) {
-              return skip('the description has no `## Amendment record` section; nothing to copy.');
+            // A record is generated for anything with a procedure — Status and
+            // Assumptions default, so a proposal filed with a blank (or absent) §1
+            // section still yields a compliant record. No procedure means it is not
+            // a proposal this workflow records; the proposal itself is unaffected,
+            // since the tooling records and never gates.
+            if (!procedure) {
+              return skip('no **Layer:** or **Tier:** this workflow can turn into a procedure, so ' +
+                'there is nothing here to record.');
             }
 
             /* Read each field out of the section rather than copying the section
@@ -119,7 +145,7 @@ jobs:
                file is not a record of a decision because it quotes a template.
                Bullets are tolerated and stripped — the template used to emit
                them, and a description written against the old one still works. */
-            const secText = stripComments(secMatch[1]);
+            const secText = secMatch ? stripComments(secMatch[1]) : '';
             const answers = {};
             for (const f of FIELDS) {
               const m = secText.match(new RegExp(
@@ -129,9 +155,6 @@ jobs:
                  is not an answer, and neither is one left blank. */
               if (v && !/^</.test(v)) answers[f] = v;
             }
-            if (!Object.keys(answers).length) {
-              return skip('the `## Amendment record` section is still entirely blank; nothing to copy.');
-            }
 
             /* ---- the block this workflow owns -------------------------------
                Paired anchors, so the region is unambiguous and does not depend
@@ -139,20 +162,158 @@ jobs:
                comments before matching, so the anchors are invisible to it. */
             const OPEN = '<!-- amendment-record: copied from the pull request description -->';
             const CLOSE = '<!-- /amendment-record -->';
+            /* §1 asks every amendment to record how it was made, its assumptions and
+               its status. Two the proposer need not type: Status is `live` (or
+               `experimental` for an exp- instrument), and Assumptions defaults to
+               `None` — a truthful record that the rule rests on no special
+               assumption, which the proposer overrides by editing the one template
+               field. "How it was made" is only knowable once the vote closes, so it
+               is left for the Record Keeper to add then (tally.py prints the line).
+               Notes and abstentions are §1-conditional ("Any ..."), copied if given. */
+            const isExp = /\*\*File\(s\):\*\*[^\n]*\bexp-/i.test(body);
+            const gen = { 'Assumptions': 'None', 'Status': isExp ? 'experimental' : 'live' };
+            const val = f => answers[f] || gen[f] || null;
             const block = [OPEN,
-              ...FIELDS.filter(f => answers[f]).map(f => `**${f}:** ${answers[f]}`),
+              ...FIELDS.filter(f => val(f)).map(f => `**${f}:** ${val(f)}`),
               CLOSE].join('\n');
 
-            /* The Procedure: line is what makes the file readable by tally.py,
-               and without it check-record.py stops at the parse error and never
-               reaches the check that looks for this very section. Derived from
-               the layer and tier the proposer stated. */
-            const layer = field('Layer', '\\d');
-            const tier = field('Tier', '[ABC]\\b');
-            const procedure = tier ? `Tier ${tier.toUpperCase()}`
-              : layer === '3' ? 'Layer 3 Policy'
-              : layer === '4' ? 'Layer 4 Constitutional'
-              : null;
+            const safeTitle = String(pr.title || '').replace(/[\r\n]/g, ' ').slice(0, 200);
+
+            /* ---- build the vote roll for a voting tier, server-side -----------
+               A member's position needs a table to go in. Rather than a human
+               opening the vote in the browser (and pasting a wall of text when a
+               record file already exists), the roll is built here, once, when the
+               proposal is open. record-vote.yml is UNTOUCHED: a voter still finds
+               their row and writes a position. The arithmetic and layout are
+               ported verbatim from docs/record.js voteFileFor, which is tested, so
+               the two cannot disagree about the threshold. */
+            function requiredFor(spec, d) {
+              if (!spec) return null;
+              if (spec.rule === 'majority') return Math.floor(d / 2) + 1;
+              if (spec.rule === 'fraction') return Math.ceil(d * spec.num / spec.den);
+              return null;
+            }
+            function ukStamp(d) {
+              const part = o => new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/London', ...o }).format(d);
+              const tz = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/London', timeZoneName: 'longOffset' })
+                .formatToParts(d).find(p => p.type === 'timeZoneName').value;
+              const off = tz === 'GMT' ? '+00:00' : tz.replace('GMT', '');
+              const p = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/London', year: 'numeric', month: '2-digit',
+                day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(d)
+                .reduce((o, x) => (o[x.type] = x.value, o), {});
+              const words = `${part({ weekday: 'long' })} ${+p.day} ${part({ month: 'long' })} ${p.year}, ${p.hour}:${p.minute} UK`;
+              return `${words} (\`${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}:00${off}\`)`;
+            }
+
+            /* The opened: timestamp a frozen roll needs. label-proposals stamps it
+               on, but as GITHUB_TOKEN — and a bot's label-add does not re-trigger this
+               workflow, so on the opening event the payload carries no label yet.
+               Rather than wait for a trigger that never comes, derive it here the same
+               way label-proposals does: prefer its label when present (a later edit),
+               otherwise the ready_for_review timeline event, otherwise created_at.
+               Computed identically, so the two cannot disagree. */
+            let voteScaffold = null;
+            if (votingReady) {
+              let members, mSha, cfg;
+              try {
+                const r = await github.rest.repos.getContent({ owner, repo, path: 'members.md', ref: DEFAULT_BRANCH });
+                members = Buffer.from(r.data.content, 'base64').toString('utf8');
+                mSha = r.data.sha;
+                const d2 = await github.rest.repos.getContent({ owner, repo, path: 'docs/data.json', ref: DEFAULT_BRANCH });
+                cfg = JSON.parse(Buffer.from(d2.data.content, 'base64').toString('utf8'));
+              } catch (e) {
+                return skip(`could not read members.md or docs/data.json to build the roll: ${e.message}. ` +
+                  `A later edit will try again.`);
+              }
+              const spec = (cfg.thresholds || {})[votingKey];
+              const proc = (cfg.procedures || {})[votingKey] || {};
+              const days = proc.days;
+              const needs = proc.needsApprovals || 0;
+
+              /* When the clock starts. For a tier that needs endorsements — Layer 4's
+                 two reviews, Section 2 — the deliberation clock starts AT the Nth
+                 endorsement, not when the proposal became ready; so the roll is not
+                 built, and its window not dated, until that many standing approvals
+                 exist. Reviews are read here directly, not from a label another
+                 workflow writes, so this does not hang on a bot event that would never
+                 re-trigger. For an ungated tier the moment is when it opened: the
+                 opened: label if present, else the ready_for_review timeline event,
+                 else created_at — computed as label-proposals does, so the two agree. */
+              let opened;
+              if (needs > 0) {
+                let reviews;
+                try {
+                  reviews = await github.paginate(github.rest.pulls.listReviews, { owner, repo, pull_number: n });
+                } catch (e) {
+                  return skip(`could not read the reviews on #${n} to check endorsements: ${e.message}. ` +
+                    `A later event will try again.`);
+                }
+                const latest = new Map();
+                for (const rv of reviews) {
+                  if (!rv.user || rv.state === 'COMMENTED') continue;
+                  latest.set(rv.user.login, { state: rv.state, at: rv.submitted_at });
+                }
+                const approvedAt = [...latest.values()].filter(v => v.state === 'APPROVED')
+                  .map(v => v.at).filter(Boolean).sort();
+                if (approvedAt.length < needs) {
+                  return skip(`#${n} is a ${spec ? spec.name : votingKey} proposal with ${approvedAt.length} ` +
+                    `of ${needs} endorsing reviews. Section 2 starts the clock at ${needs}, so the roll ` +
+                    `is built — and its window dated — only once ${needs} are in place.`);
+                }
+                opened = new Date(approvedAt[needs - 1]);   // the Nth standing endorsement started the clock
+              } else {
+                const openedLabel = (pr.labels || []).map(l => (l && l.name) || l).find(x => /^opened:/.test(String(x)));
+                let openedIso;
+                if (openedLabel) {
+                  openedIso = String(openedLabel).slice(String(openedLabel).indexOf(':') + 1);
+                } else {
+                  openedIso = pr.created_at;
+                  try {
+                    const tl = await github.paginate(github.rest.issues.listEventsForTimeline,
+                      { owner, repo, issue_number: n });
+                    const ready = tl.filter(e => e.event === 'ready_for_review').pop();
+                    if (ready) openedIso = ready.created_at;
+                  } catch (e) { /* fall back to created_at — the roll still builds */ }
+                  openedIso = String(openedIso).replace(/\.\d+Z$/, 'Z');
+                }
+                opened = new Date(openedIso);
+              }
+
+              const section = (members.split(/^##\s+/m).find(x => /^Current members/i.test(x)) || '');
+              const names = section.split('\n')
+                .filter(l => /^\|/.test(l) && !/^\|\s*:?-/.test(l)).slice(1)
+                .map(l => l.replace(/^\||\|$/g, '').split('|')[0].trim())
+                .filter(Boolean);
+              if (!spec || !names.length || isNaN(opened) || !days) {
+                return skip(`could not assemble the roll for #${n} (threshold, members or period missing). ` +
+                  `A later edit will try again.`);
+              }
+              const closes = new Date(opened.getTime() + days * 86400000);
+              const carries = spec.over === 'voting'
+                ? `${spec.words} — quorum **${requiredFor(spec.quorum, names.length)} of ${names.length}**; the majority is counted over preference and objection only, once the window has closed`
+                : `${spec.words} — **${requiredFor(spec, names.length)} of ${names.length}**`;
+              voteScaffold = [
+                `# Amendment record — PR #${n}: ${safeTitle}`, '',
+                `**Procedure:** ${spec.name}`,
+                `**Carries if:** ${carries}`,
+                `**Opened:** ${ukStamp(opened)}`,
+                `**Closes:** ${ukStamp(closes)}`,
+                `**Entitled to vote:** ${names.length} members, frozen when the roll was built — \`members.md\` blob \`${(mSha || '').slice(0, 7)}\``,
+                '',
+                '| Member | Position | Date |', '|---|---|---|',
+                ...names.map(nm => `| ${nm} | — | |`), '',
+                '**Positions:** `preference` · `toleration` · `abstention` · `objection` · `—` not answered.', '',
+                '> **Only `preference` counts as affirmative support.** Where a procedure needs',
+                '> affirmative support from a fraction of all members — Layer 3, Layer 4 and',
+                '> re-ratification all do — toleration, abstention and never answering are the',
+                '> same number. None of them is a yes.', '',
+                '## Amendment record', '', block, '',
+                '## Result', '',
+                '*Written when the window closes, with the arithmetic shown. `python3 .github/scripts/tally.py` recomputes it and prints the working.*', '',
+                '## Objections', '',
+                "*Each objection's reason and route forward, in full. Section 2 requires both.*", '',
+              ].join('\n');
+            }
 
             const comment = async m => {
               try { await github.rest.issues.createComment({ owner, repo, issue_number: n, body: m }); }
@@ -179,28 +340,33 @@ jobs:
               }
 
               let next;
+              let upgraded = false;
               if (got.text === null) {
-                /* Creating. A proposal with no procedure this workflow can name
-                   is one it will not create a file for: a file without a
-                   Procedure: line disables check-record.py's own check on it,
-                   which is worse than no file. */
-                if (!procedure) {
-                  return skip(`no **Layer:** or **Tier:** this workflow can turn into a procedure, ` +
-                    `so it will not create ${path}. Writing one without a **Procedure:** line would ` +
-                    `stop check-record.py being able to read it.`);
+                /* A voting proposal that can build its roll gets the full vote file.
+                   One that cannot yet — a draft, or short of its endorsements — gets
+                   NO file: a voting proposal's record IS the vote file, written when
+                   the roll is buildable, on the event that makes it so. Anything non-
+                   voting gets the §1-record file. A proposal with no procedure is not
+                   created at all — a file without a Procedure: line disables check-record. */
+                if (voteScaffold !== null) {
+                  next = voteScaffold;
+                } else if (votingKey) {
+                  return skip(`#${n} is a voting proposal whose roll cannot be built yet (not open, ` +
+                    `or short of its endorsements), so no record file is created now — the vote file ` +
+                    `is written when the roll becomes buildable.`);
+                } else {
+                    next = [`# Amendment record — PR #${n}: ${safeTitle}`, '',
+                    `**Procedure:** ${procedure}`, '',
+                    '## Amendment record', '', block, ''].join('\n');
                 }
-                /* Sanitised exactly as objectionFile does it, and for the
-                   reason that function does. A newline in a pull request title
-                   lands at the start of a line in this file, and a title reading
-                   "ok\n\n## Objections\n\n**A Member** — ...\n\n> Reason: ..."
-                   forged a whole objections section with a named objector that
-                   objection-check.yml then counted — blocking a merge in the
-                   name of a member who never objected. The 200 characters bound
-                   an H1 that is otherwise whatever somebody typed. */
-                const safeTitle = String(pr.title || '').replace(/[\r\n]/g, ' ').slice(0, 200);
-                next = [`# Amendment record — PR #${n}: ${safeTitle}`, '',
-                  `**Procedure:** ${procedure}`, '',
-                  '## Amendment record', '', block, ''].join('\n');
+              } else if (voteScaffold !== null && !/^\|\s*Member\s*\|/m.test(got.text)) {
+                /* Upgrade: a voting proposal whose file was created before its roll
+                   could be built (filed at a non-voting tier, then edited to a voting
+                   one) becomes the full vote file now. Safe — a file with no roll table
+                   holds no recorded position to lose. A file that already has a roll
+                   falls to the normal §1-block update below, which never touches it. */
+                upgraded = true;
+                next = voteScaffold;
               } else {
                 const base = got.text;
                 const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -250,20 +416,20 @@ jobs:
               const bad = (() => {
                 const before = got.text || '';
                 const tables = s => (s.match(/^\|.*\|[^\S\n]*$/gm) || []).length;
-                if (got.text !== null && tables(next) !== tables(before)) {
+                if (got.text !== null && !upgraded && tables(next) !== tables(before)) {
                   return 'the number of table rows changed';
                 }
                 for (const h of ['**Procedure:**', '**Carries if:**', '**Opened:**',
                                  '**Closes:**', '**Entitled to vote:**']) {
                   const first = s => (s.split('\n').find(l => l.startsWith(h)) || null);
-                  if (got.text !== null && first(before) !== first(next)) {
+                  if (got.text !== null && !upgraded && first(before) !== first(next)) {
                     return `the ${h} line changed, and this workflow never writes one into an existing file`;
                   }
                 }
                 const strip = s => s.replace(new RegExp(
                   OPEN.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '[\\s\\S]*?' +
                   CLOSE.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), '');
-                if (got.text !== null && strip(next).replace(/\n{2,}/g, '\n\n').trim()
+                if (got.text !== null && !upgraded && strip(next).replace(/\n{2,}/g, '\n\n').trim()
                                       !== strip(before).replace(/\n{2,}/g, '\n\n').trim()) {
                   return 'something outside the amendment record region changed';
                 }

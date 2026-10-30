@@ -20,8 +20,13 @@ const lines = m[1].split('\n');
 const indent = Math.min(...lines.filter(l => l.trim()).map(l => l.length - l.trimStart().length));
 const SCRIPT = lines.map(l => (l.trim() ? l.slice(indent) : '')).join('\n');
 
+const DEFAULT_DATA = JSON.stringify({ procedures: {
+  'tier-a': { days: 2 }, 'tier-b': { daysFromLabel: true }, 'tier-c': { days: 7 },
+  'layer-3': { days: 7, needsApprovals: 1 }, 'layer-4': { days: 7, needsApprovals: 2 },
+} });
+
 async function run({ labels = [], pr, eventName = 'pull_request_target', action = 'opened',
-                     timeline = [], reviews = [], comments = [] }) {
+                     timeline = [], reviews = [], comments = [], dataJson = DEFAULT_DATA }) {
   const added = [], dropped = [], posted = [], warnings = [];
   const exists = n => { if (!labels.includes(n)) throw new Error('404'); return { data: { name: n } }; };
   const github = {
@@ -37,10 +42,16 @@ async function run({ labels = [], pr, eventName = 'pull_request_target', action 
         listEventsForTimeline: 'TIMELINE',
       },
       pulls: { listReviews: 'REVIEWS' },
+      repos: {
+        getContent: async ({ path }) => {
+          if (path === 'docs/data.json') return { data: { content: Buffer.from(dataJson, 'utf8').toString('base64') } };
+          throw Object.assign(new Error('404'), { status: 404 });
+        },
+      },
     },
     paginate: async fn => (fn === 'TIMELINE' ? timeline : fn === 'REVIEWS' ? reviews : []),
   };
-  const context = { payload: { pull_request: pr, action }, repo: { owner: 'o', repo: 'r' }, eventName };
+  const context = { payload: { pull_request: pr, action, repository: { default_branch: 'main' } }, repo: { owner: 'o', repo: 'r' }, eventName };
   const core = { warning: msg => warnings.push(msg) };
   await new Function('github', 'context', 'core',
     'return (async()=>{' + SCRIPT + '})()')(github, context, core);
@@ -150,6 +161,35 @@ check('a blank Layer still does not absorb its guidance after stripping',
 r = await run({ pr: { ...base, body: '**Layer:** <!-- 3 --> \n' } });
 check('a digit inside the comment is not the answer',
   r.added.filter(x => x.startsWith('layer-')), []);
+
+/* ---- gated tiers: opened: is the Nth endorsing review, not leaving draft ----
+ * Section 2 starts a Layer 4 clock at two endorsing reviews and a Layer 3 clock at
+ * one. The opened: label carries that clock-start, so the label, the dashboard and
+ * the vote file all state the same instant. needs is read from data.json. */
+r = await run({ eventName: 'pull_request_review', labels: ['endorsed:1'],
+  pr: { ...base, body: '**Layer:** 4' },
+  reviews: [{ user: { login: 'a' }, state: 'APPROVED', submitted_at: '2026-10-10T00:00:00Z' },
+            { user: { login: 'b' }, state: 'APPROVED', submitted_at: '2026-10-12T00:00:00Z' }] });
+check('Layer 4: the second endorsing review stamps opened: at its own moment',
+  { endorsed: r.added.filter(x => x.startsWith('endorsed')), opened: r.added.filter(x => x.startsWith('opened:')) },
+  { endorsed: ['endorsed:2'], opened: ['opened:2026-10-12T00:00:00Z'] });
+
+r = await run({ eventName: 'pull_request_review', labels: ['endorsed:0'],
+  pr: { ...base, body: '**Layer:** 3' },
+  reviews: [{ user: { login: 'a' }, state: 'APPROVED', submitted_at: '2026-10-09T08:30:00Z' }] });
+check('Layer 3: one endorsing review starts its clock; opened: dated from it',
+  r.added.filter(x => x.startsWith('opened:')), ['opened:2026-10-09T08:30:00Z']);
+
+r = await run({ pr: { ...base, body: '**Layer:** 4' }, action: 'ready_for_review',
+  timeline: [{ event: 'ready_for_review', created_at: '2026-10-05T00:00:00Z' }], reviews: [] });
+check('a gated tier marked ready with no endorsements gets NO opened: (clock not started)',
+  r.added.filter(x => x.startsWith('opened:')), []);
+
+r = await run({ pr: { ...base, body: '**Layer:** 4' }, action: 'edited',
+  reviews: [{ user: { login: 'a' }, state: 'APPROVED', submitted_at: '2026-10-10T00:00:00Z' },
+            { user: { login: 'b' }, state: 'APPROVED', submitted_at: '2026-10-12T00:00:00Z' }] });
+check('a gated tier edited after its endorsements stamps opened: from the second',
+  r.added.filter(x => x.startsWith('opened:')), ['opened:2026-10-12T00:00:00Z']);
 
 const passed = results.filter(Boolean).length;
 console.log(`\n${passed}/${results.length} passed`);
