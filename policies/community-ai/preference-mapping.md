@@ -27,18 +27,19 @@ Short, single-idea, and deliberately spread across the real tensions — includi
 10. Tools like this get built and then nobody uses them.
 
 **Privacy and trust**
-11. I'm comfortable with an AI reading our shared channels.
-12. An AI that remembers our channels would make me more guarded about what I post.
-13. Keeping opinions and complaints out of the shared memory is enough to protect privacy.
-14. I trust two named administrators not to read members' private messages.
-15. Matchmaking people by their work should stay switched off until the privacy filtering is proven.
+11. I'm comfortable with Emys reading our shared channels, given it runs on our own compute and sends nothing to an outside company.
+12. Knowing Emys stores facts from our channels would make me more guarded about what I post.
+13. Leaving opinions and complaints out of the shared memory would be enough to protect my privacy.
+14. It reassures me that my private messages and workspace can never enter the shared community memory.
+15. I'm willing to trust two named administrators not to look at my private messages, even though they could technically access them.
+16. Matchmaking people by their work should stay off until the privacy filtering is proven.
 
 **Openness and control**
-16. It's fine for the engine to stay closed-source, as long as the prompts and configuration are open.
-17. The Laboratory should only run AI tools that are fully open-source.
-18. Running Emys on our own compute, rather than an external API, matters to me.
-19. Emys should never gain write access to our tools without another vote.
+17. It's enough that Emys's model is open-weights and its prompts are open, even if the orchestration engine stays the proposer's closed code.
+18. The Laboratory should only run AI whose every part is open-source, even if that rules Emys out.
+19. Running Emys on our own compute, rather than an external API, matters to me.
+20. Emys should never gain write access to our tools without another vote.
 
 **Is it worth it**
-20. A time-limited experiment is a sensible way to find out whether this is worth it.
-21. I'd rather we spent the effort organising our Discord than building an AI for it.
+21. A time-limited experiment is a sensible way to find out whether this is worth it.
+22. I'd rather we spent the effort organising our Discord than building an AI for it.

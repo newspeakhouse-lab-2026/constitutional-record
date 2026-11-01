@@ -73,6 +73,13 @@ The intended **Phase 2** builds on that. As members work with Emys, their privat
 - **No deployment beyond members and Faculty on the server**, and no write access to any instrument, in Phase 1.
 - **The engine stays closed, and that is permitted.** Constitution §1 requires a member's computational tool to be documented, communicated to the membership, and identified as AI — not open-sourced. (Open-weights binds only a system that augments the *Agent role*, which Emys is not.) Transparency here is carried by the open prompts and configuration and by the privacy declaration; a full disclosure of the engine's architecture is not required, and the proposer retains the engine as their own work.
 
+## Anticipated objections, answered
+
+- **"The Lab should only run fully open-source AI."** Emys's model is open-weights, it runs on the Lab's own compute with nothing sent to an outside company, and its prompts and configuration are open and Layer-2-changeable. Only the orchestration engine is closed, which §1 permits for a tool that does not augment the Agent role. The open-source value is largely met; what is withheld is one member's own code.
+- **"I don't want an AI reading our channels."** Emys reads only shared channels — any channel is excludable on request — and stores only attributed facts, never opinions, complaints, or anything personal. Private messages and workspaces never enter the shared memory, and nothing leaves the Lab's own compute.
+- **"I'd have to trust the admins not to snoop."** Partly: private messages and workspaces can never *enter* the shared memory (enforced), but two named administrators could technically read stored files, and undertake not to except to investigate a specific bug or incident. This is the design's softest point — a stronger guarantee (an access log, or not storing private content in readable form) is available if the cohort wants it.
+- **"The real problem is our Discord is disorganised."** Partly true, and a separate job — better channel names — that this proposal neither does nor replaces. But findability should not wait on a reorganisation nobody currently owns, and Emys covers far more: who-knows-what, the house systems, and a private workspace.
+
 ## Risks we are watching
 
 - **Better search can worsen the "which channel?" problem** — if finding is easy, members may stop caring where they post, fragmenting the channels further. Search treats the symptom; channel discipline is a norms problem (better channel names), handled separately.
