@@ -53,6 +53,10 @@
 
 7.3 A member's personal memory may be corrected or deleted on request. The administrators do not access a member's workspace, messages, or personal memory except to investigate a specific bug or incident.
 
+7.4 Emys records, and the administrators may use, figures for **how much and how often Emys is used** — counts of queries and of the distinct members who use it, and similar aggregate usage figures — because the experiment is judged on them (clause 8.2). This covers usage figures, not the content of what members ask or write.
+
+7.5 Any analysis of an individual member's use beyond clause 7.4 — to improve Emys or for any other purpose — is done only with that member's prior agreement, asked for by an administrator and freely given, and may be withdrawn at any time.
+
 ## 8. The experiment
 
 8.1 **Hypothesis.** Given a private AI workspace and a searchable memory of the Laboratory's own channels, members find what is already there — and learn who knows and is working on what — at lower cost than they can today.

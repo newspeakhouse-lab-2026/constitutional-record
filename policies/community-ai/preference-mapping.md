@@ -33,7 +33,7 @@ Short, single-idea, and deliberately spread across the real tensions — includi
 14. It reassures me that my private messages and workspace can never enter the shared community memory.
 15. I'm willing to trust two named administrators not to look at my private messages, even though they could technically access them.
 16. If Emys later connects people by what they're working on, I'd want to approve each thing about me before it's shared.
-17. I'm happy for how I use Emys to be analysed, by AI, to improve the tool — during or after the experiment.
+17. If an administrator asked, I'd be happy for how I use Emys to be analysed to improve the tool.
 
 **Openness and control**
 18. It's enough that Emys's model is open-weights and its prompts are open, even if the orchestration engine stays the proposer's closed code.

@@ -28,6 +28,7 @@
 - Emys is run by two administrators, @emergentvibe and @anchitsom. Neither acts alone, and neither reads your private workspace, messages, or memory **except to investigate a specific bug or incident**.
 - Emys runs on the Laboratory's **own compute**, in the house, with **open-weights models** and **no external logging** of your content — from the day it is deployed. No member content is sent to an external model service.
 - Processing is the **minimum** each function needs, and nothing more.
+- Emys records **how often and how much it is used** — counts of queries and of who uses it, not the content of what you ask — to measure the experiment. Any deeper look at *how you personally* use Emys, to improve it, happens **only if you opt in** when an administrator asks, and you can withdraw at any time.
 
 ## What this does not change
 
