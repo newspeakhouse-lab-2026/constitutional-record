@@ -1,0 +1,44 @@
+# Preference mapping — the Emys Polis
+
+*The Layer 3 process (Constitution §2) asks the proposer to run a preference-mapping step before the vote. This is the plan for it: an open [Polis](https://pol.is) conversation to map where the cohort agrees and disagrees about Emys, before anyone is asked to prefer, tolerate, or object. It is not operative.*
+
+## Framing — for the top of the Polis
+
+> **Emys — mapping where we stand.** Emys is a proposed community AI for the Lab. For a two-month experiment it would read our shared channels into a searchable memory, give each of us a private AI workspace, and connect read-only to the house's tools (booking, library, calendar, the Record). The full proposal — policy, rationale, privacy declaration — is in `policies/community-ai/`.
+>
+> This Polis is not the vote. It is here to surface what we actually agree and disagree on, so the proposal can be shaped before it is put to the cohort. Vote **agree / disagree / pass** on each statement, and **add your own**. The aim is to find the real clusters of opinion, not to win an argument.
+
+## Seed statements
+
+Short, single-idea, and deliberately spread across the real tensions — including the ones against. Polis shows them one at a time, in random order; members add more.
+
+**Finding things today**
+1. I often struggle to find things I know are somewhere in our Discord.
+2. I frequently miss things posted in our channels that were relevant to me.
+3. I usually don't know who in the cohort could help with what I'm working on.
+4. The real problem is that our channels are badly organised, not that search is hard.
+
+**Whether Emys would help**
+5. I'd use an AI assistant that could find things across our channels and house systems.
+6. Knowing what others are working on would help me find collaborators.
+7. A daily digest of what I care about would be useful to me.
+8. I would actually do my own project work inside a shared AI workspace.
+9. I'm not convinced Emys solves a problem I actually have.
+10. Tools like this get built and then nobody uses them.
+
+**Privacy and trust**
+11. I'm comfortable with an AI reading our shared channels.
+12. An AI that remembers our channels would make me more guarded about what I post.
+13. Keeping opinions and complaints out of the shared memory is enough to protect privacy.
+14. I trust two named administrators not to read members' private messages.
+15. Matchmaking people by their work should stay switched off until the privacy filtering is proven.
+
+**Openness and control**
+16. It's fine for the engine to stay closed-source, as long as the prompts and configuration are open.
+17. The Laboratory should only run AI tools that are fully open-source.
+18. Running Emys on our own compute, rather than an external API, matters to me.
+19. Emys should never gain write access to our tools without another vote.
+
+**Is it worth it**
+20. A time-limited experiment is a sensible way to find out whether this is worth it.
+21. I'd rather we spent the effort organising our Discord than building an AI for it.

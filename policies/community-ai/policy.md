@@ -49,7 +49,7 @@
 
 7.1 Emys processes only what the functions in this policy require, and for no other purpose.
 
-7.2 Emys shall process and store members' content on the Laboratory's own infrastructure, and run model inference on open-weights models on the Laboratory's own compute, with no external logging of members' content. Where, during set-up, any processing is carried out by an external service, the privacy declaration shall disclose it.
+7.2 Emys shall process and store members' content on the Laboratory's own infrastructure, and run model inference on open-weights models on the Laboratory's own compute, with no external logging of members' content. This holds from the day Emys is deployed; no member content is sent to an external model service.
 
 7.3 A member's personal memory may be corrected or deleted on request. The administrators do not access a member's workspace, messages, or personal memory except to investigate a specific bug or incident.
 

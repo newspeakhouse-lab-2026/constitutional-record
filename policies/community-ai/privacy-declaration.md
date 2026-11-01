@@ -26,7 +26,7 @@
 ## Where your data is processed
 
 - Emys is run by two administrators, @emergentvibe and @anchitsom. Neither acts alone, and neither reads your private workspace, messages, or memory **except to investigate a specific bug or incident**.
-- Emys will run on the Laboratory's **own compute** with **open-weights models** and **no external logging** of your content. _During set-up, some processing may still use an external model service; where it does, it is stated here:_ **[current state — to be filled in as built].**
+- Emys runs on the Laboratory's **own compute**, in the house, with **open-weights models** and **no external logging** of your content — from the day it is deployed. No member content is sent to an external model service.
 - Processing is the **minimum** each function needs, and nothing more.
 
 ## What this does not change

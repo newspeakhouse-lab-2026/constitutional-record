@@ -12,7 +12,7 @@ You may have encountered [Emys](https://en.wikipedia.org/wiki/Emys) in the wild,
 
 Emys will read shared channels, build searchable community knowledge, connect to house systems (booking, library, calendar, topic.forum, the constitutional record), and give every member a personal AI agent that knows the house.
 
-CommClaw is a fork of NanoClaw, an open-source personal agent framework. The engine is my project and will remain closed source for now while I'm pursuing commercial deployments. To remain transparent, I will submit an accurate model of the architecture as part of this proposal. The prompts, configuration, and community knowledge that shape how CommClaw behaves in our community will be open, hosted in our constitutional record repo under our org, and changeable by our ordinary procedures.
+CommClaw is a fork of NanoClaw, an open-source personal agent framework. The engine is my project and will remain closed source for now while I'm pursuing commercial deployments. The prompts, configuration, and community knowledge that shape how CommClaw behaves in our community will be open, hosted in our constitutional record repo under our org, and changeable by our ordinary procedures.
 
 ### What it's like to use
 
