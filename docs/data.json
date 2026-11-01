@@ -30,7 +30,8 @@
       "name": "Policy",
       "days": 7,
       "source": "§2",
-      "quote": "Seven-day deliberation."
+      "quote": "Seven-day deliberation.",
+      "needsApprovals": 1
     },
     "layer-4": {
       "name": "Amendment",

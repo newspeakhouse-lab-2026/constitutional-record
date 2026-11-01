@@ -198,6 +198,33 @@ def parse(text):
             "earlier": earlier}, None
 
 
+def how_it_was_made(r):
+    """The §1 "How it was made" line, composed from the procedure and the tallied
+    outcome — a fact, not a position (§1), so a Record Keeper can paste it at close
+    instead of wording it by hand. Returns None when there is no fact yet to state.
+
+    It asserts only what this script can see. For a vote that is the arithmetic.
+    For lazy consensus it cannot read the governance channel, so it states the
+    objections on GitHub and leaves the window-elapsed attestation to the Keeper."""
+    if r.get("verdict") == "no-vote":
+        obj = r.get("objections") or []
+        made = ("Lazy consensus. " + (f"{len(obj)} objection(s) recorded on GitHub"
+                if obj else "No objection recorded on GitHub within the window")
+                + (": " + "; ".join(f"{n} ({d})" for n, d in obj) if obj else "") + ".")
+        return made + (" Record Keeper: confirm the window elapsed without objection "
+                       "in the governance channel before recording.")
+    if r.get("verdict") == "none" or r.get("required") is None:
+        return None  # no threshold resolved → no outcome to state
+    c = r["counts"]
+    over = "preference and objection only" if r["over"] in ("voting", "others-voting") else "all members"
+    parts = [f"By vote ({r['procedure']}): {c['preference']} of {r['denominator']} "
+             f"preferred ({over}), needed {r['required']}"]
+    if "quorumRequired" in r:
+        parts.append(f"quorum {r['responders']} of {r['electorate']}, needed {r['quorumRequired']}"
+                     f" — {'met' if r['quorumMet'] else 'not met'}")
+    return "; ".join(parts) + ". " + ("Carried." if r["carried"] else "Did not carry.")
+
+
 def fmt(r, restarted=None, earlier=()):
     if r.get("verdict") == "no-vote":
         obj = r.get("objections") or []
@@ -206,6 +233,7 @@ def fmt(r, restarted=None, earlier=()):
                      + (": " + "; ".join(f"{n} ({d})" for n, d in obj) if obj else ""))
         lines.append("  NO VERDICT HERE — whether the window elapsed without objection is visible in "
                      "the governance channel, which this script cannot read.")
+        lines.append("  How it was made: " + how_it_was_made(r))
         lines.append("  Advisory. \u00a73 gives the outcome to a Record Keeper.")
         return "\n".join(lines)
     rnd = f", round {len(earlier) + 1}" if earlier else ""
@@ -233,6 +261,9 @@ def fmt(r, restarted=None, earlier=()):
         over = "preference and objection only" if r["over"] in ("voting", "others-voting") else "all members"
         lines.append(f"  majority {c['preference']} of {r['denominator']} ({over}), needed {r['required']}")
     lines.append("  " + ("CARRIED" if r["carried"] else "DID NOT CARRY"))
+    _hm = how_it_was_made(r)
+    if _hm:
+        lines.append("  How it was made: " + _hm)
     lines.append("  Advisory. §3 gives the outcome to a Record Keeper.")
     return "\n".join(lines)
 

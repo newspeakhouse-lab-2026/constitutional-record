@@ -114,53 +114,23 @@ box is ticked; delete them otherwise. -->
 
 ## Amendment record
 
-<!-- Constitution §1 requires six things recorded for an amendment to the
-Constitution or to a rule. The date and time is the commit timestamp, so five
-are left for you. Write what actually happened, not what was proposed.
+<!-- You can leave this entire section alone. §1 requires a record of how every
+amendment was made, its assumptions and its status; the tooling now writes all of
+that for you and keeps it in `amendment-record/pr-{number}.md` on this branch:
 
-WRITE THEM HERE. A workflow copies this section into
-`amendment-record/pr-{number}.md` on this branch, so it merges along with the
-text it records. Fill them in once, in this description, and the file appears.
-Edit the description later and the file follows within seconds.
+  - Status is set for you — `live`, or `experimental` for an `exp-` instrument.
+  - "How it was made" is filled when the vote closes (or, for a Tier A rule, when
+    it is merged) — it is not knowable until then, so do not write it here.
+  - Abstentions and objections are read from the roll.
 
-WHY BOTH. Nothing typed here is lost — GitHub keeps this description, and keeps
-an edit history for it. But `git clone` retrieves no descriptions, and a clone
-is the only copy of the Record that outlives GitHub; a description can be edited
-in place, where the file's history may not be rewritten; and §1 ties the
-record's date to a commit timestamp. So this is where you write it, and the file
-is where it is kept.
+The ONE thing worth your judgement is Assumptions, below. It is pre-filled `None`,
+which is a truthful record that the rule rests on no special assumption. If it
+rests on one — a price, a headcount, a role being filled, a platform still
+existing — replace `None` with it. That is the line a later reader checks to see
+whether the rule still fits the world it was written for. Keep the answer on the
+same line as the label. -->
 
-TWO THINGS THE TOOLING NEEDS. Put each answer on the SAME LINE as its label —
-`check-record.py` looks for text after the colon and reads an answer on the next
-line as a blank one. And leave the five labels exactly as they are: they are
-matched literally, here, in the file, and in
-`.github/instrument-templates/vote.md`, and a test pins all three together. -->
-
-**How it was made:**
-<!-- §1 wants a "brief narrative description of how the amendment was made
-(e.g. by consent, by consensus, by majority / supermajority vote)" — those
-examples are the Constitution's own. One sentence, on the line above. For a
-Tier A rule nobody objected to: "Lazy consensus — posted to the governance
-channel on 4 October, no objection within 48 hours." Where there was a vote,
-put the numbers here. -->
-
-**Assumptions:**
-<!-- What has to stay true for this to keep making sense: a price, a headcount,
-somebody holding a role, a platform still existing. This is what tells a later
-reader whether the rule still fits the world it was written for, and it is the
-one of the five that earns its keep — the others say what happened. -->
-
-**Status:**
-<!-- live, experimental, or archived — §1's own three words. -->
-
-**Notes from the discussion:**
-<!-- What was argued, and what changed because of it. Anything a reader would
-otherwise have to reconstruct from scattered comments. -->
-
-**Abstentions or objections:**
-<!-- §1: recorded "in aggregate where the applicable procedure uses an anonymous
-or secret ballot". Name nobody who did not object openly. "None" if there were
-none. -->
+**Assumptions:** None
 
 ---
 

@@ -51,28 +51,79 @@ jobs:
             const current = await names();
             const managed = /^(layer-\d|tier-[abc]|days-\d+|opened:|endorsed:)/;
 
-            // ---- endorsements -------------------------------------------------
-            // "Two endorsing reviews start the 7-day deliberation clock" (§2).
-            // An endorsing review is read as an approving review. Only a member's
-            // most recent review counts, so a dismissal or a change of mind is
-            // reflected rather than accumulated.
-            if (context.eventName === 'pull_request_review') {
+            // ---- layer, tier, period, from what the proposer wrote -------------
+            /* HTML comments are stripped FIRST. They are not stripped from a
+               pull request body by GitHub — only hidden when it renders one —
+               and this template puts its guidance inline, beside each field. A
+               proposer who wrote "**Layer:** <!-- write just the number --> 3",
+               exactly as the template invited, got "I could not read a Layer":
+               the parser reached "<" where it wanted a digit and gave up. Every
+               other reader in this repository already strips them;
+               record-vote.yml in two places, objection-check.yml in one,
+               check-record.py in two. This was the only one that did not. */
+            const body = (pr.body || '').replace(/<!--[\s\S]*?-->/g, '');
+            const H = '[^\\S\\n]*';
+            const field = (label, capture) =>
+              (body.match(new RegExp(`^${H}\\*\\*${label}:\\*\\*${H}\\**${H}(${capture})`, 'im')) || [])[1];
+            const layer = field('Layer', '\\d');
+            const tier  = field('Tier', '[ABC]\\b');
+            const days  = field('Deliberation period', '\\d+');
+
+            // How many endorsing reviews this proposal needs before its clock starts,
+            // read from data.json — the one source the dashboard and record-amendment
+            // also read, so the count cannot drift between a label, a page and a file.
+            const key = tier ? `tier-${tier.toLowerCase()}`
+              : layer === '3' ? 'layer-3' : layer === '4' ? 'layer-4' : null;
+            let needs = 0;
+            if (key) {
+              try {
+                const dref = (context.payload.repository && context.payload.repository.default_branch) || 'main';
+                const d = await github.rest.repos.getContent({ owner, repo, path: 'docs/data.json', ref: dref });
+                const cfg = JSON.parse(Buffer.from(d.data.content, 'base64').toString('utf8'));
+                needs = ((cfg.procedures || {})[key] || {}).needsApprovals || 0;
+              } catch (e) { core.warning(`could not read data.json for needsApprovals: ${e.message}`); }
+            }
+
+            // The clock-start for a gated tier (§2: endorsing reviews start the clock)
+            // is the moment the Nth standing approval was given. Only a member's most
+            // recent review counts, so a dismissal or change of mind is reflected.
+            const nthApproval = async () => {
               const rv = await github.paginate(github.rest.pulls.listReviews, { owner, repo, pull_number: n });
               const latest = new Map();
-              for (const r of rv) if (r.state !== 'COMMENTED') latest.set(r.user.login, r.state);
-              const count = [...latest.values()].filter(s => s === 'APPROVED').length;
+              for (const r of rv) if (r.user && r.state !== 'COMMENTED') latest.set(r.user.login, { state: r.state, at: r.submitted_at });
+              const approved = [...latest.values()].filter(v => v.state === 'APPROVED');
+              const times = approved.map(v => v.at).filter(Boolean).sort();
+              // count is by state (endorsed:N needs no timestamp); the clock-start needs one.
+              return { count: approved.length, at: needs > 0 && times.length >= needs ? times[needs - 1] : null };
+            };
+            // opened: is set once and never moved — a snapshot of when the clock began.
+            const stampOpened = iso => current.some(x => x.startsWith('opened:'))
+              ? Promise.resolve()
+              : add(`opened:${String(iso).replace(/\.\d+Z$/, 'Z')}`);
+
+            // ---- endorsements (review events) ---------------------------------
+            // Record the count, and for a gated tier stamp opened: when the Nth
+            // approval lands — that review is when the clock starts, and opened:
+            // carries the clock-start so label, dashboard and record all agree.
+            if (context.eventName === 'pull_request_review') {
+              const { count, at } = await nthApproval();
               for (const name of current.filter(x => x.startsWith('endorsed:'))) {
                 if (name !== `endorsed:${count}`) await drop(name);
               }
               if (!current.includes(`endorsed:${count}`)) await add(`endorsed:${count}`);
+              if (needs > 0 && !pr.draft && at) await stampOpened(at);
               return;
             }
 
-            // ---- opening ------------------------------------------------------
-            // A proposal is open for deliberation when it is not a draft.
-            // Converting back to draft withdraws it, so the clock stops.
+            // ---- opening (non-review events) ----------------------------------
+            // Converting back to draft withdraws the proposal, so the clock stops. A
+            // gated tier's clock starts at its Nth endorsing review, never at ready;
+            // an ungated tier's starts when it leaves draft.
             if (action === 'converted_to_draft' || pr.draft) {
               for (const name of current.filter(x => x.startsWith('opened:'))) await drop(name);
+            } else if (needs > 0) {
+              const { at } = await nthApproval();
+              if (at) await stampOpened(at);
             } else if (!current.some(x => x.startsWith('opened:'))) {
               // Prefer GitHub's own record of the moment it left draft, so the
               // label can be checked against the timeline rather than trusted.
@@ -86,28 +137,7 @@ jobs:
               await add(`opened:${at.replace(/\.\d+Z$/, 'Z')}`);
             }
 
-            // ---- layer, tier, period, from what the proposer wrote -------------
-            /* HTML comments are stripped FIRST. They are not stripped from a
-               pull request body by GitHub — only hidden when it renders one —
-               and this template puts its guidance inline, beside each field. A
-               proposer who wrote "**Layer:** <!-- write just the number --> 3",
-               exactly as the template invited, got "I could not read a Layer":
-               the parser reached "<" where it wanted a digit and gave up. Every
-               other reader in this repository already strips them;
-               record-vote.yml in two places, objection-check.yml in one,
-               check-record.py in two. This was the only one that did not. */
-            const body = (pr.body || '').replace(/<!--[\s\S]*?-->/g, '');
-            // Anchored to one line, and \s would span newlines: a field left blank
-            // followed by prose that happens to start with a digit would otherwise
-            // be read as the answer. "**Layer:**" above "2 Ordinary · 3 Policy" is
-            // the template's own wording, and it labelled that proposal layer-2.
-            const H = '[^\\S\\n]*';
-            const field = (label, capture) =>
-              (body.match(new RegExp(`^${H}\\*\\*${label}:\\*\\*${H}\\**${H}(${capture})`, 'im')) || [])[1];
-            const layer = field('Layer', '\\d');
-            const tier  = field('Tier', '[ABC]\\b');
-            const days  = field('Deliberation period', '\\d+');
-
+            // ---- apply the layer / tier / period labels ----------------------
             const wanted = new Set();
             if (layer) wanted.add(`layer-${layer}`);
             if (tier)  wanted.add(`tier-${tier.toLowerCase()}`);
