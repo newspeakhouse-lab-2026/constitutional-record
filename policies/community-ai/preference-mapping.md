@@ -32,14 +32,15 @@ Short, single-idea, and deliberately spread across the real tensions — includi
 13. Leaving opinions and complaints out of the shared memory would be enough to protect my privacy.
 14. It reassures me that my private messages and workspace can never enter the shared community memory.
 15. I'm willing to trust two named administrators not to look at my private messages, even though they could technically access them.
-16. Matchmaking people by their work should stay off until the privacy filtering is proven.
+16. If Emys later connects people by what they're working on, I'd want to approve each thing about me before it's shared.
+17. I'm happy for how I use Emys to be analysed, by AI, to improve the tool — during or after the experiment.
 
 **Openness and control**
-17. It's enough that Emys's model is open-weights and its prompts are open, even if the orchestration engine stays the proposer's closed code.
-18. The Laboratory should only run AI whose every part is open-source, even if that rules Emys out.
-19. Running Emys on our own compute, rather than an external API, matters to me.
-20. Emys should never gain write access to our tools without another vote.
+18. It's enough that Emys's model is open-weights and its prompts are open, even if the orchestration engine stays the proposer's closed code.
+19. The Laboratory should only run AI whose every part is open-source, even if that rules Emys out.
+20. Running Emys on our own compute, rather than an external API, matters to me.
+21. Emys should never gain write access to our tools without another vote.
 
 **Is it worth it**
-21. A time-limited experiment is a sensible way to find out whether this is worth it.
-22. I'd rather we spent the effort organising our Discord than building an AI for it.
+22. A time-limited experiment is a sensible way to find out whether this is worth it.
+23. I'd rather we spent the effort organising our Discord than building an AI for it.
