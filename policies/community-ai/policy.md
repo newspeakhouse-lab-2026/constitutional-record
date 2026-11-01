@@ -1,7 +1,7 @@
 # Policy: Community AI (Emys)
 
 **Layer:** 3 · **Status:** experimental
-**Ends:** 23:59 UK time, Monday 30 November 2026 (`2026-11-30T23:59:00+00:00`) — with the Constitution, unless renewed by a further proposal.
+**Ends:** 23:59 UK time, Friday 29 January 2027 (`2027-01-29T23:59:00+00:00`) — a two-month experiment, **conditional on the Constitution continuing**: this Constitution expires on 30 November 2026 unless re-ratified or replaced (§5), and Emys's authorisation ends with it if it is not. Renewable by a further proposal.
 
 ## 1. Purpose and scope
 
@@ -59,7 +59,7 @@
 
 8.2 **Success — the renewal test.** The experiment has succeeded if, by its end: (a) members other than the administrators have used Emys repeatedly and of their own accord; and (b) at least one such member has noticed and reported when Emys was unavailable or wrong. A before-and-after questionnaire, published with this policy, and Emys's own record of how often it is queried, evidence (a); the governance channel evidences (b).
 
-8.3 **End and fallback.** The experiment ends at 23:59 on 30 November 2026 with the Constitution, unless renewed by a further proposal. Emys reads only and adds only, so its ending removes nothing in use: on expiry Emys ceases to read and to answer; the shared community memory is retained in frozen form unless the Laboratory directs its deletion; and members' private workspaces and memory are deleted on request as in clause 4.
+8.3 **End and fallback.** The experiment ends at 23:59 on 29 January 2027, unless renewed by a further proposal. This Constitution expires on 30 November 2026 unless re-ratified or replaced (§5); if it is not, Emys's authorisation under this policy ends with it, and any continuation is a matter for the successor. Emys reads only and adds only, so its ending removes nothing in use: on expiry Emys ceases to read and to answer; the shared community memory is retained in frozen form unless the Laboratory directs its deletion; and members' private workspaces and memory are deleted on request as in clause 4.
 
 ## 9. Review
 
