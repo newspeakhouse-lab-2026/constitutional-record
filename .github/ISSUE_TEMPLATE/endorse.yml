@@ -1,0 +1,37 @@
+name: "Endorse a proposal"
+description: Endorse a Policy or Constitutional proposal so its deliberation clock can start. A workflow records it for you.
+title: "Endorse: PR #"
+labels: ["endorse"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Endorsing is not supporting.** It says *this deserves to be deliberated*, not *I agree with it*. You can endorse a proposal onto the agenda and then vote against it — that is a perfectly coherent thing to do. (If people treat endorsement as agreement, then anyone who opposes a proposal could stop it being deliberated at all by declining to endorse — a veto the Constitution never granted. Opposition belongs in the vote, where it is counted.)
+
+        **It is the starting gun.** A Layer 3 Policy needs one endorsement and a Layer 4 Constitutional amendment needs two before its seven-day clock begins (Section 2). A proposal nobody endorses has no window running, however long it has been sitting there. Tier A, B and C proposals are not endorsed — this form is only for Layer 3 and Layer 4.
+
+        **You cannot endorse your own proposal** — Section 2 asks for *another* member — and endorsing twice does nothing the first did not.
+
+        A workflow records your endorsement, updates the count the Record dashboard shows, and — once the required number is in — starts the clock and builds the vote. If it cannot, it says why. It needs only read access, so it works whether or not you can push.
+
+  - type: input
+    id: pr
+    attributes:
+      label: Pull request number
+      description: Digits only. An endorsement belongs to the pull request carrying the proposal's text.
+      placeholder: "16"
+    validations:
+      required: true
+
+  - type: textarea
+    id: note
+    attributes:
+      label: Anything you want on the record
+      description: "Optional. An endorsement needs no reason — it is a procedural act, not a position. Anything here is for context only and does not change the count."
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        Endorsing is a public act: GitHub records that this account opened this issue, which is how the Record knows an endorsement is yours and cannot be attributed to anyone else.

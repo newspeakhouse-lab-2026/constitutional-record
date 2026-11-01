@@ -798,6 +798,16 @@ function render(d){
         +`<a class="actalt" href="${pr.html_url}">or say so on the proposal</a></div>`;
     }
 
+    /* An endorsement-gated proposal short of its endorsements: an endorsement, not
+       a vote, is what moves it forward, so that is the button. The form needs only
+       read access, and the proposer cannot use it on their own proposal. win.why
+       already carries the reason, so this does not also set voteWhy. */
+    if(win.endorse && win.endorse.have < win.endorse.need){
+      voteAct=`<div class="acts"><a class="act" href="https://github.com/${REPO}/issues/new`
+        +`?template=endorse.yml&title=${encodeURIComponent("Endorse: PR #"+pr.number)}&pr=${pr.number}">Endorse this proposal</a>`
+        +`<a class="actalt" href="${pr.html_url}">Read the proposal</a></div>`;
+    }
+
     /* Attached here, not where the label is built: the vote block is read after
        it, and that is where two of the three warnings are discovered. */
     if(warns.length) lbl=`<span class="warns">${warns.map(w=>warnIcon(w[0],w[1])).join("")}</span>`+lbl;

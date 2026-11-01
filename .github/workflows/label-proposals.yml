@@ -1,8 +1,11 @@
 # Turns what a proposer wrote into labels the Record dashboard reads, and records
-# two facts the Constitution cares about:
+# when an ungated proposal was submitted for deliberation:
 #
-#   opened:<timestamp>   when the proposal was submitted for deliberation
-#   endorsed:<n>         how many members have endorsed it
+#   opened:<timestamp>   when an UNGATED proposal (Tier A/B/C) left draft
+#
+# An endorsement-gated tier (Layer 3/4) has its opened: and endorsed:<n> labels
+# written by record-endorsement.yml instead — its clock starts at the Nth
+# endorsement, not when it leaves draft — so this workflow never stamps one.
 #
 # The opened: label is not a convenience: it is visible on the proposal itself,
 # with GitHub's own record of who added it and when, which is what showing that
@@ -19,8 +22,6 @@ name: Label proposals
 on:
   pull_request_target:
     types: [opened, edited, reopened, ready_for_review, converted_to_draft]
-  pull_request_review:
-    types: [submitted, dismissed, edited]
 
 permissions:
   pull-requests: write
@@ -84,47 +85,14 @@ jobs:
               } catch (e) { core.warning(`could not read data.json for needsApprovals: ${e.message}`); }
             }
 
-            // The clock-start for a gated tier (§2: endorsing reviews start the clock)
-            // is the moment the Nth standing approval was given. Only a member's most
-            // recent review counts, so a dismissal or change of mind is reflected.
-            const nthApproval = async () => {
-              const rv = await github.paginate(github.rest.pulls.listReviews, { owner, repo, pull_number: n });
-              const latest = new Map();
-              for (const r of rv) if (r.user && r.state !== 'COMMENTED') latest.set(r.user.login, { state: r.state, at: r.submitted_at });
-              const approved = [...latest.values()].filter(v => v.state === 'APPROVED');
-              const times = approved.map(v => v.at).filter(Boolean).sort();
-              // count is by state (endorsed:N needs no timestamp); the clock-start needs one.
-              return { count: approved.length, at: needs > 0 && times.length >= needs ? times[needs - 1] : null };
-            };
-            // opened: is set once and never moved — a snapshot of when the clock began.
-            const stampOpened = iso => current.some(x => x.startsWith('opened:'))
-              ? Promise.resolve()
-              : add(`opened:${String(iso).replace(/\.\d+Z$/, 'Z')}`);
-
-            // ---- endorsements (review events) ---------------------------------
-            // Record the count, and for a gated tier stamp opened: when the Nth
-            // approval lands — that review is when the clock starts, and opened:
-            // carries the clock-start so label, dashboard and record all agree.
-            if (context.eventName === 'pull_request_review') {
-              const { count, at } = await nthApproval();
-              for (const name of current.filter(x => x.startsWith('endorsed:'))) {
-                if (name !== `endorsed:${count}`) await drop(name);
-              }
-              if (!current.includes(`endorsed:${count}`)) await add(`endorsed:${count}`);
-              if (needs > 0 && !pr.draft && at) await stampOpened(at);
-              return;
-            }
-
-            // ---- opening (non-review events) ----------------------------------
-            // Converting back to draft withdraws the proposal, so the clock stops. A
-            // gated tier's clock starts at its Nth endorsing review, never at ready;
-            // an ungated tier's starts when it leaves draft.
+            // ---- opening ------------------------------------------------------
+            // Converting back to draft withdraws the proposal, so the clock stops.
+            // An ungated tier's clock starts when it leaves draft; a gated tier's
+            // starts at its Nth endorsement, and record-endorsement.yml stamps
+            // opened: then — so this never stamps one for a gated tier.
             if (action === 'converted_to_draft' || pr.draft) {
               for (const name of current.filter(x => x.startsWith('opened:'))) await drop(name);
-            } else if (needs > 0) {
-              const { at } = await nthApproval();
-              if (at) await stampOpened(at);
-            } else if (!current.some(x => x.startsWith('opened:'))) {
+            } else if (needs === 0 && !current.some(x => x.startsWith('opened:'))) {
               // Prefer GitHub's own record of the moment it left draft, so the
               // label can be checked against the timeline rather than trusted.
               let at = pr.created_at;

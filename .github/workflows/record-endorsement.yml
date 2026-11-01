@@ -1,0 +1,332 @@
+# Records an endorsement when a member submits the endorse form, and maintains the
+# labels the Record dashboard reads. The endorsement that starts a gated clock is
+# the act, not a position on the merits, so — unlike a vote — it is NOT written
+# into amendment-record/pr-{n}.md. It lives as two things:
+#
+#   the endorse ISSUE          unforgeable: GitHub stamps its author, and nobody
+#                              can open an issue as someone else. This is the
+#                              AUTHORITATIVE record of who endorsed and when —
+#                              record-amendment.yml recounts from it to decide
+#                              whether the gate is met, and never trusts a label.
+#   endorsed:<n> / endorsed-by:<login> / opened:<ts>   labels on the PR, a CACHE
+#                              for the dashboard. Forgeable by anyone with write,
+#                              so they never gate anything — they only display.
+#
+# WHY NO repository_dispatch to build the roll. A dispatch fired by GITHUB_TOKEN
+# does not trigger a workflow (the same loop-prevention that stops a bot's
+# label-add from cascading). record-amendment.yml instead triggers on this same
+# human `issues: opened` event and builds the roll itself, reading the issues.
+#
+# Rules inherited from record-vote.yml: no ${{ }} in the script (an issue body
+# with a backtick would become code); no concurrency: group (it cancels a pending
+# run rather than queueing it, so a burst would drop endorsements).
+
+name: Record an endorsement
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  endorse:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v8
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const { owner, repo } = context.repo;
+            const labels = (issue.labels || []).map(l => l.name);
+            const title = issue.title || '';
+            const isEndorse = labels.includes('endorse') || /^Endorse:\s*PR\s*#/i.test(title);
+            if (!isEndorse) return;                       // not ours; say nothing
+
+            const DEFAULT_BRANCH = context.payload.repository.default_branch;
+
+            async function say(text) {
+              await github.rest.issues.createComment({
+                owner, repo, issue_number: issue.number,
+                body: '<!-- record-endorsement -->\n' + text,
+              }).catch(() => {});
+            }
+            async function closeWith(label) {
+              await github.rest.issues.addLabels({
+                owner, repo, issue_number: issue.number, labels: [label],
+              }).catch(() => {});
+              await github.rest.issues.update({
+                owner, repo, issue_number: issue.number, state: 'closed',
+              }).catch(() => {});
+            }
+            async function refuse(text) {
+              await say(text + '\n\n**No endorsement has been recorded.** Nothing is blocked by this — ' +
+                'an endorsement stated in the governance channel is still an endorsement; this only records it ' +
+                'where the tooling can count it.');
+              await closeWith('endorse-refused');
+              core.notice('refused: ' + text.split('\n')[0]);
+            }
+            async function brokenTooling(text) {
+              await say(text);
+              await closeWith('endorse-failed');
+              core.setFailed(text.split('\n')[0]);
+            }
+
+            try {
+
+            // --- the form -----------------------------------------------------
+            const LABELS = { pr: 'Pull request number', note: 'Anything you want on the record' };
+            function fields(body) {
+              const out = {};
+              for (const chunk of (body || '').split(/^### /m).slice(1)) {
+                const nl = chunk.indexOf('\n');
+                if (nl < 0) continue;
+                const v = chunk.slice(nl).trim();
+                out[chunk.slice(0, nl).trim()] = (v === '_No response_') ? '' : v;
+              }
+              return out;
+            }
+            const f = fields(issue.body);
+            if (!(LABELS.pr in f)) {
+              const cameFromForm = labels.includes('endorse');
+              if (!cameFromForm) {
+                return await refuse(
+                  `This issue looks like an endorsement, but it was not filed through the form, so the ` +
+                  `pull request number is not here. Use **Endorse a proposal** from ` +
+                  `[New issue](https://github.com/${owner}/${repo}/issues/new/choose).`);
+              }
+              return await brokenTooling(
+                `This workflow could not find the **${LABELS.pr}** field the endorse form provides. The form ` +
+                `and the workflow have drifted — a defect in the tooling, not your submission. A maintainer ` +
+                `needs to look at this run.`);
+            }
+
+            // --- who (the same identity proof record-vote.yml uses) -----------
+            let membersText;
+            try {
+              const r = await github.rest.repos.getContent({
+                owner, repo, path: 'members.md', ref: DEFAULT_BRANCH });
+              membersText = Buffer.from(r.data.content, 'base64').toString('utf8');
+            } catch (e) {
+              return await brokenTooling('Could not read `members.md`, so no endorsement can be attributed. ' + e.message);
+            }
+            const section = (membersText.split(/^##\s+/m).find(s => /^Current members/i.test(s)) || '');
+            const roster = section.split('\n')
+              .filter(l => /^\|/.test(l) && !/^\|\s*:?-/.test(l)).slice(1)
+              .map(l => l.replace(/^\||\|$/g, '').split('|').map(c => c.trim()))
+              .filter(c => c[0])
+              .map(c => ({ name: c[0], login: c[1] || '', id: c[2] || '' }));
+
+            const actorId = String(issue.user.id);
+            const actorLogin = issue.user.login;
+            const byId = roster.find(m => m.id === actorId);
+            const byLogin = roster.find(m => m.login.toLowerCase() === actorLogin.toLowerCase());
+
+            if (!byId && byLogin && !byLogin.id) {
+              return await refuse([
+                `You are on the list — \`members.md\` has **${byLogin.name}** — but the \`ID\` column on your`,
+                `row is empty, so this workflow cannot prove the account that opened this issue is yours.`,
+                '',
+                `Your account id is **${actorId}**. Set your row to:`,
+                '',
+                '```',
+                `| ${byLogin.name} | ${actorLogin} | ${actorId} | |`,
+                '```',
+                '',
+                `https://github.com/${owner}/${repo}/edit/${DEFAULT_BRANCH}/members.md`,
+                '',
+                'Then endorse again.',
+              ].join('\n'));
+            }
+            if (!byId && byLogin && byLogin.id !== actorId) {
+              return await brokenTooling([
+                `\`members.md\` records account id \`${byLogin.id}\` for **${byLogin.name}**, but the account that`,
+                `opened this issue is @${actorLogin}, id \`${actorId}\`. A numeric id never changes, so either the`,
+                `recorded id is wrong or an account has been renamed to a member's login. A person needs to look.`,
+              ].join('\n'));
+            }
+            if (!byId) {
+              return await refuse([
+                `I cannot find @${actorLogin} (account id \`${actorId}\`) in \`members.md\`, so nothing has been`,
+                `recorded. Only members listed there endorse. If you are a member, add your row:`,
+                '',
+                '```',
+                `| Your Name | ${actorLogin} | ${actorId} | |`,
+                '```',
+                '',
+                `https://github.com/${owner}/${repo}/edit/${DEFAULT_BRANCH}/members.md`,
+              ].join('\n'));
+            }
+            const me = byId;
+
+            // --- which proposal -----------------------------------------------
+            const mm = String(f[LABELS.pr] || '').trim().match(/^#?(\d{1,6})$/);
+            if (!mm) {
+              return await refuse(`I could not read a pull request number from **${LABELS.pr}**. ` +
+                `Write just the digits, for example \`16\`.`);
+            }
+            const n = Number(mm[1]);
+
+            let pull;
+            try {
+              pull = (await github.rest.pulls.get({ owner, repo, pull_number: n })).data;
+            } catch (e) {
+              if (e.status !== 404) {
+                return await brokenTooling(`I could not read pull request #${n} — GitHub answered ` +
+                  `\`${e.status || 'with an error'}\`. This is not a statement that #${n} does not exist. ` +
+                  `Nothing has been recorded; endorse again in a few minutes.`);
+              }
+              return await refuse(`There is no pull request #${n} in this repository. An endorsement belongs to ` +
+                `the pull request carrying the proposal's text.`);
+            }
+            if (pull.state !== 'open') {
+              return await refuse(`Pull request #${n} is ${pull.merged ? 'merged' : 'closed'}. There is nothing ` +
+                `to endorse on a closed proposal.`);
+            }
+            if (pull.draft) {
+              return await refuse(`Pull request #${n} is a draft, so it is not yet proposed for deliberation. ` +
+                `Endorsing is the starting gun — mark the proposal **Ready for review** first, then endorse.`);
+            }
+
+            // --- is it endorsement-gated, and how many does it need? ----------
+            const body = (pull.body || '').replace(/<!--[\s\S]*?-->/g, '');
+            const H = '[^\\S\\n]*';
+            const field = (label, capture) =>
+              (body.match(new RegExp(`^${H}\\*\\*${label}:\\*\\*${H}\\**${H}(${capture})`, 'im')) || [])[1];
+            const layer = field('Layer', '\\d');
+            const votingKey = layer === '4' ? 'layer-4' : layer === '3' ? 'layer-3' : null;
+            let needs = 0, procName = votingKey;
+            if (votingKey) {
+              try {
+                const d = await github.rest.repos.getContent({ owner, repo, path: 'docs/data.json', ref: DEFAULT_BRANCH });
+                const cfg = JSON.parse(Buffer.from(d.data.content, 'base64').toString('utf8'));
+                needs = ((cfg.procedures || {})[votingKey] || {}).needsApprovals || 0;
+                procName = ((cfg.thresholds || {})[votingKey] || {}).name || votingKey;
+              } catch (e) {
+                return await brokenTooling(`Could not read \`docs/data.json\` to see how many endorsements #${n} ` +
+                  `needs. Nothing has been recorded. ` + e.message);
+              }
+            }
+            if (!votingKey || needs < 1) {
+              return await refuse(`Pull request #${n} is not an endorsement-gated proposal — only **Layer 3 ` +
+                `Policy** and **Layer 4 Constitutional** proposals are endorsed (Section 2). Tier A, B and C ` +
+                `proposals pass by their own procedure; there is nothing to endorse here.`);
+            }
+
+            // --- the proposer cannot endorse their own ------------------------
+            if (me.id === String(pull.user && pull.user.id)) {
+              return await refuse(`You opened pull request #${n}, and Section 2 asks for *another* member to ` +
+                `endorse it — a proposal cannot start its own clock. Someone other than you needs to endorse.`);
+            }
+
+            // --- recount, from the unforgeable endorse-issue trail ------------
+            // Identical shape to record-amendment.yml's gate recount, so the two
+            // cannot disagree about who has endorsed. This issue is already open,
+            // so it is included here.
+            let issues;
+            try {
+              issues = await github.paginate(github.rest.issues.listForRepo,
+                { owner, repo, state: 'all', per_page: 100 });
+            } catch (e) {
+              return await brokenTooling(`Could not read the existing endorsements on #${n}. ` + e.message);
+            }
+            const prField = b => {
+              for (const chunk of String(b || '').split(/^### /m).slice(1)) {
+                const nl = chunk.indexOf('\n'); if (nl < 0) continue;
+                if (chunk.slice(0, nl).trim() === LABELS.pr) {
+                  const mx = chunk.slice(nl).trim().match(/^#?(\d{1,6})$/);
+                  return mx ? Number(mx[1]) : null;
+                }
+              }
+              return null;
+            };
+            const isEndorseIssue = it => !it.pull_request &&
+              ((it.labels || []).some(l => (l.name || l) === 'endorse') || /^Endorse:\s*PR\s*#/i.test(it.title || ''));
+            const proposerId = String(pull.user && pull.user.id);
+            /* An edited endorse-issue is untrusted: its "Pull request number" body is
+               writable by any member with write, so an edit could retarget another's
+               endorsement. GitHub records a body/title edit as lastEditedAt; a form-
+               opened one has none (this very issue was just opened, so it has none).
+               Counted identically in record-amendment.yml's gate, so cache and gate
+               agree. Fail closed (do not count) if the edit state cannot be read. */
+            const edited = async num => {
+              try {
+                const q = await github.graphql(
+                  `query($o:String!,$r:String!,$n:Int!){repository(owner:$o,name:$r){issue(number:$n){lastEditedAt}}}`,
+                  { o: owner, r: repo, n: num });
+                return !!(q && q.repository && q.repository.issue && q.repository.issue.lastEditedAt);
+              } catch (e) { core.warning(`could not read edit state of #${num}; not counting it: ${e.message}`); return true; }
+            };
+            const endorsers = new Map();      // member id -> { login, at (earliest) }
+            let myPrior = false;
+            for (const it of issues) {
+              if (!isEndorseIssue(it)) continue;
+              if (prField(it.body) !== n) continue;
+              const aid = String(it.user && it.user.id);
+              const mem = roster.find(m => m.id && m.id === aid);   // id-verified members only
+              if (!mem) continue;                                   // non-member / unverifiable -> does not count
+              if (mem.id === proposerId) continue;                  // the proposer never counts
+              if (await edited(it.number)) continue;                // an edited endorse-issue is untrusted
+              if (mem.id === me.id && it.number !== issue.number) myPrior = true;
+              const at = it.created_at;
+              const prev = endorsers.get(mem.id);
+              if (!prev || new Date(at) < new Date(prev.at)) endorsers.set(mem.id, { login: mem.login, at });
+            }
+            const sorted = [...endorsers.values()].filter(v => v.at).sort((a, b) => new Date(a.at) - new Date(b.at));
+            const count = sorted.length;
+
+            // --- maintain the dashboard cache labels on the PR ----------------
+            const prLabels = (pull.labels || []).map(l => (l.name || l));
+            const add = name => github.rest.issues.getLabel({ owner, repo, name })
+              .catch(() => github.rest.issues.createLabel({ owner, repo, name, color: 'ededed',
+                description: 'Applied automatically from an endorsement' }).catch(() => {}))
+              .then(() => github.rest.issues.addLabels({ owner, repo, issue_number: n, labels: [name] }))
+              .catch(e => core.warning(`could not add ${name}: ${e.message}`));
+            const drop = name => github.rest.issues.removeLabel({ owner, repo, issue_number: n, name }).catch(() => {});
+
+            await add(`endorsed-by:${me.login}`);
+            for (const name of prLabels.filter(x => /^endorsed:\d+$/.test(x))) {
+              if (name !== `endorsed:${count}`) await drop(name);
+            }
+            if (!prLabels.includes(`endorsed:${count}`)) await add(`endorsed:${count}`);
+            // opened: is the clock-start — the Nth endorsement's moment — set once.
+            if (count >= needs && !prLabels.some(x => x.startsWith('opened:'))) {
+              const nthAt = sorted[needs - 1].at;
+              await add(`opened:${String(nthAt).replace(/\.\d+Z$/, 'Z')}`);
+            }
+
+            // --- tell the endorser what happened ------------------------------
+            // "shown of needs", never a numerator past the threshold (no "2 of 1"),
+            // with the true count noted when more than enough have endorsed.
+            const started = count >= needs;
+            const shown = Math.min(count, needs);
+            const extra = count > needs ? ` (${count} have endorsed; ${needs} needed)` : '';
+            const tally = `#${n} (${procName}) has **${shown} of ${needs}** ` +
+              `endorsement${needs === 1 ? '' : 's'}${extra}`;
+
+            if (myPrior) {
+              await say(`You have already endorsed pull request #${n}, so this changes nothing — endorsing ` +
+                `twice counts once. ${tally}.`);
+              await closeWith('endorsed');
+              return;
+            }
+            await say([
+              `Endorsement recorded. ${tally}.`,
+              '',
+              started
+                ? `That meets the threshold, so its seven-day deliberation clock has started, dated from this ` +
+                  `endorsement, and the vote is being opened on the proposal. (If the roll has not appeared on ` +
+                  `\`amendment-record/pr-${n}.md\` within a minute or two, any edit to the proposal rebuilds it.) ` +
+                  `Endorsing is not supporting — you may still vote however you like.`
+                : `${needs - count} more ${needs - count === 1 ? 'is' : 'are'} needed before its clock starts. ` +
+                  `Endorsing is not supporting — you may still vote against it.`,
+            ].join('\n'));
+            await closeWith('endorsed');
+
+            } catch (e) {
+              await brokenTooling(`Something went wrong recording this endorsement: ${e && e.message}. ` +
+                `A maintainer needs to look at this run. Nothing has been recorded.`);
+            }

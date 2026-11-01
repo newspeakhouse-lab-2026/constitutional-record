@@ -395,7 +395,7 @@ function windowOf(pr,proc){
     o.endorse={have,need:p.needsApprovals};
     if(have<p.needsApprovals){
       o.state="unstarted";
-      o.why.push(`this ${p.name||"proposal"} needs ${p.needsApprovals} <a href="https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/CONTRIBUTING.md#endorsing">endorsing review${p.needsApprovals>1?"s":""}</a> before its clock starts (\u00a72) — it has ${have}`);
+      o.why.push(`this ${p.name||"proposal"} needs ${p.needsApprovals} <a href="https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/CONTRIBUTING.md#endorsing">endorsement${p.needsApprovals>1?"s":""}</a> before its clock starts (\u00a72) — it has ${have}. Any member but the proposer can endorse with the button below; endorsing is not supporting`);
       return o;
     }
   }

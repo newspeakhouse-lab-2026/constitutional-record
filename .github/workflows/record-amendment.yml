@@ -40,15 +40,19 @@ name: Record the amendment record
 on:
   pull_request:
     types: [opened, reopened, edited, ready_for_review]
-  # Also on reviews: an endorsement-gated tier (Layer 4) builds its roll only
-  # once its reviews are in, and a review is a human action, so it re-triggers
-  # this workflow (a bot's label-add would not).
-  pull_request_review:
-    types: [submitted, dismissed]
+  # Also on an endorse ISSUE opening: an endorsement-gated tier (Layer 3/4) builds
+  # its roll only once its endorsements are in, and the endorse form is a human-
+  # opened issue, so it re-triggers this workflow. A GITHUB_TOKEN repository_dispatch
+  # would NOT (the same loop-prevention that stops a bot label-add cascading), so
+  # this listens for the human event directly. record-endorsement.yml handles the
+  # same event to record the endorsement and reply to the endorser.
+  issues:
+    types: [opened]
 
 permissions:
   contents: write
   pull-requests: write
+  issues: read        # the gate recount reads the endorse-ISSUE trail (issues.listForRepo)
 
 jobs:
   record:
@@ -57,13 +61,42 @@ jobs:
       - uses: actions/github-script@v8
         with:
           script: |
-            const pr = context.payload.pull_request;
             const owner = context.repo.owner, repo = context.repo.repo;
-            const n = pr.number;
             const DEFAULT_BRANCH = context.payload.repository.default_branch;
 
             const sleep = ms => new Promise(r => setTimeout(r, ms));
             const skip = m => { core.notice(m); return null; };
+
+            /* The pull request this run is about. On a pull_request event it is in
+               the payload. On an endorse-issue opening it is named in the form, so
+               it is resolved here — an endorsement can be the Nth that starts a
+               gated clock, and the roll must be built on that same human event
+               (a GITHUB_TOKEN dispatch would not re-trigger a workflow). */
+            let pr;
+            if (context.eventName === 'issues') {
+              const issue = context.payload.issue;
+              if (!issue || issue.pull_request) return skip('not an endorsement issue.');
+              const isEndorse = (issue.labels || []).map(l => (l && l.name) || l).includes('endorse')
+                || /^Endorse:\s*PR\s*#/i.test(issue.title || '');
+              if (!isEndorse) return skip('not an endorsement issue.');
+              const prOf = b => {
+                for (const chunk of String(b || '').split(/^### /m).slice(1)) {
+                  const nl = chunk.indexOf('\n'); if (nl < 0) continue;
+                  if (chunk.slice(0, nl).trim() === 'Pull request number') {
+                    const mx = chunk.slice(nl).trim().match(/^#?(\d{1,6})$/);
+                    return mx ? Number(mx[1]) : null;
+                  }
+                }
+                return null;
+              };
+              const num = prOf(issue.body);
+              if (!num) return skip('endorse issue carries no readable pull request number.');
+              try { pr = (await github.rest.pulls.get({ owner, repo, pull_number: num })).data; }
+              catch (e) { return skip(`could not read PR #${num} for the endorsement: ${e.message}. A later event will try again.`); }
+            } else {
+              pr = context.payload.pull_request;
+            }
+            const n = pr.number;
 
             /* ---- guards, before anything is built ---------------------------
                Each of these is a reason not to write, not a defect. They are
@@ -229,6 +262,14 @@ jobs:
               const proc = (cfg.procedures || {})[votingKey] || {};
               const days = proc.days;
               const needs = proc.needsApprovals || 0;
+              /* Fail CLOSED, not open: Layer 3 and Layer 4 are endorsement-gated by
+                 the Constitution, so if data.json carries no requirement for them the
+                 bug is a missing requirement — never a licence to open the vote with
+                 no endorsements. (An ungated tier legitimately has needs === 0.) */
+              if ((votingKey === 'layer-3' || votingKey === 'layer-4') && needs < 1) {
+                return skip(`#${n} is ${votingKey}, which the Constitution gates on endorsements, but ` +
+                  `data.json sets none for it. Refusing to open the vote ungated — fix needsApprovals in data.json.`);
+              }
 
               /* When the clock starts. For a tier that needs endorsements — Layer 4's
                  two reviews, Section 2 — the deliberation clock starts AT the Nth
@@ -241,26 +282,70 @@ jobs:
                  else created_at — computed as label-proposals does, so the two agree. */
               let opened;
               if (needs > 0) {
-                let reviews;
+                /* Endorsements are counted from the unforgeable endorse-ISSUE trail,
+                   never from the endorsed: label — a label is writable by hand and
+                   this is a constitutional gate. GitHub stamps each issue's author,
+                   so an endorsement cannot be faked as another member. record-
+                   endorsement.yml counts identically for its cache labels. */
+                let issues;
                 try {
-                  reviews = await github.paginate(github.rest.pulls.listReviews, { owner, repo, pull_number: n });
+                  issues = await github.paginate(github.rest.issues.listForRepo,
+                    { owner, repo, state: 'all', per_page: 100 });
                 } catch (e) {
-                  return skip(`could not read the reviews on #${n} to check endorsements: ${e.message}. ` +
-                    `A later event will try again.`);
+                  return skip(`could not read the endorsements on #${n}: ${e.message}. A later event will try again.`);
                 }
-                const latest = new Map();
-                for (const rv of reviews) {
-                  if (!rv.user || rv.state === 'COMMENTED') continue;
-                  latest.set(rv.user.login, { state: rv.state, at: rv.submitted_at });
+                const section0 = (members.split(/^##\s+/m).find(x => /^Current members/i.test(x)) || '');
+                const roster = section0.split('\n')
+                  .filter(l => /^\|/.test(l) && !/^\|\s*:?-/.test(l)).slice(1)
+                  .map(l => l.replace(/^\||\|$/g, '').split('|').map(c => c.trim()))
+                  .filter(c => c[0])
+                  .map(c => ({ login: (c[1] || '').toLowerCase(), id: c[2] || '' }));
+                const prField = b => {
+                  for (const chunk of String(b || '').split(/^### /m).slice(1)) {
+                    const nl = chunk.indexOf('\n'); if (nl < 0) continue;
+                    if (chunk.slice(0, nl).trim() === 'Pull request number') {
+                      const mx = chunk.slice(nl).trim().match(/^#?(\d{1,6})$/);
+                      return mx ? Number(mx[1]) : null;
+                    }
+                  }
+                  return null;
+                };
+                const isEndorseIssue = it => !it.pull_request &&
+                  ((it.labels || []).some(l => (l && l.name || l) === 'endorse') || /^Endorse:\s*PR\s*#/i.test(it.title || ''));
+                const proposerId = String(pr.user && pr.user.id);
+                /* An endorse-issue's body is editable by anyone with write (all members
+                   push branches, so all have it), and the "Pull request number" binding
+                   is read from that body. So an edited endorse-issue is untrusted: a
+                   member could retarget another's endorsement onto this PR by editing it.
+                   GitHub records a body/title edit as lastEditedAt; a form-opened, never-
+                   touched endorsement has none. Fail CLOSED (do not count) if the edit
+                   state cannot be read — a later event re-counts. */
+                const edited = async num => {
+                  try {
+                    const q = await github.graphql(
+                      `query($o:String!,$r:String!,$n:Int!){repository(owner:$o,name:$r){issue(number:$n){lastEditedAt}}}`,
+                      { o: owner, r: repo, n: num });
+                    return !!(q && q.repository && q.repository.issue && q.repository.issue.lastEditedAt);
+                  } catch (e) { core.warning(`could not read edit state of #${num}; not counting it: ${e.message}`); return true; }
+                };
+                const endorsers = new Map();   // member id -> earliest endorsement time
+                for (const it of issues) {
+                  if (!isEndorseIssue(it)) continue;
+                  if (prField(it.body) !== n) continue;
+                  const aid = String(it.user && it.user.id);
+                  const mem = roster.find(m => m.id && m.id === aid);   // id-verified members only
+                  if (!mem || mem.id === proposerId) continue;          // non-member or the proposer never counts
+                  if (await edited(it.number)) continue;                // an edited endorse-issue is untrusted
+                  const at = it.created_at;
+                  if (!endorsers.has(mem.id) || new Date(at) < new Date(endorsers.get(mem.id))) endorsers.set(mem.id, at);
                 }
-                const approvedAt = [...latest.values()].filter(v => v.state === 'APPROVED')
-                  .map(v => v.at).filter(Boolean).sort();
+                const approvedAt = [...endorsers.values()].filter(Boolean).sort();
                 if (approvedAt.length < needs) {
                   return skip(`#${n} is a ${spec ? spec.name : votingKey} proposal with ${approvedAt.length} ` +
-                    `of ${needs} endorsing reviews. Section 2 starts the clock at ${needs}, so the roll ` +
+                    `of ${needs} endorsements. Section 2 starts the clock at ${needs}, so the roll ` +
                     `is built — and its window dated — only once ${needs} are in place.`);
                 }
-                opened = new Date(approvedAt[needs - 1]);   // the Nth standing endorsement started the clock
+                opened = new Date(approvedAt[needs - 1]);   // the Nth endorsement started the clock
               } else {
                 const openedLabel = (pr.labels || []).map(l => (l && l.name) || l).find(x => /^opened:/.test(String(x)));
                 let openedIso;
