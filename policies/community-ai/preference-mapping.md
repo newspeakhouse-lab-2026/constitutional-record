@@ -2,6 +2,8 @@
 
 *The Layer 3 process (Constitution §2) asks the proposer to run a preference-mapping step before the vote. This is the plan for it: an open [Polis](https://pol.is) conversation to map where the cohort agrees and disagrees about Emys, before anyone is asked to prefer, tolerate, or object. It is not operative.*
 
+**Live conversation: <https://pol.is/3pcbaxnrvt>**
+
 ## Framing — for the top of the Polis
 
 > **Emys — mapping where we stand.** Emys is a proposed community AI for the Lab. For a two-month experiment it would read our shared channels into a searchable memory, give each of us a private AI workspace, and connect read-only to the house's tools (booking, library, calendar, the Record). The full proposal — policy, rationale, privacy declaration — is in `policies/community-ai/`.
