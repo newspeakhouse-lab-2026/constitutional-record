@@ -93,15 +93,44 @@ const WITH_VOTE = [
   '> Route forward: theirs.', '',
 ].join('\n');
 
+// A realistic 14-member roster and the live threshold/period shape, so the
+// roll-builder's arithmetic is pinned against the same numbers the dashboard uses.
+const MEMBERS = ['# Members', '', '## Current members', '',
+  '| Name | GitHub | ID |', '|---|---|---|',
+  ...['Anchit Som','Clara Yeo','Disha Shanbhag','Fernanda Munhoz','Joel Naoki CHRISTOPH',
+      'Madison Karas','Mario Morvan','Nathaniel Cooke','Niba','Noam Herberg',
+      'Rhianwen Rowlands','Tess Buckley','William Wong','Yiannis Ravanis']
+      .map((nm, i) => `| ${nm} | gh${i} | ${1000 + i} |`), ''].join('\n');
+const DATA = JSON.stringify({
+  thresholds: {
+    'layer-3': { name: 'Layer 3 Policy', rule: 'majority', over: 'all',
+      words: 'affirmative support from a majority of all members' },
+    'layer-4': { name: 'Layer 4 Constitutional', rule: 'fraction', num: 2, den: 3, over: 'all',
+      words: 'affirmative support from two-thirds of all members' },
+    'tier-c': { name: 'Tier C', rule: 'majority', over: 'voting',
+      words: 'a simple majority of those who vote, with a quorum',
+      quorum: { rule: 'fraction', num: 1, den: 2, over: 'all', counts: 'responders' } },
+  },
+  procedures: { 'tier-c': { days: 7, name: 'Tier C' }, 'layer-3': { days: 7, name: 'Policy', needsApprovals: 1 },
+                'layer-4': { days: 7, name: 'Amendment', needsApprovals: 2 } },
+});
+
 async function run({
   body = BODY(),
   title = 'a proposal',
   state = 'open',
   merged = false,
+  draft = false,
+  labels = [],
   headRef = 'a-branch',
   headRepo = 'o/r',
   file = null,          // null => 404
   fileStatus = 404,
+  members = MEMBERS,
+  dataJson = DATA,
+  createdAt = '2026-05-31T09:00:00Z',
+  timeline = [],
+  reviews = [],
   putFails = [],
   fileAfterConflict = null,
   user = { login: 'ada', id: 111 },
@@ -110,10 +139,19 @@ async function run({
   let puts = 0, current = file;
 
   const github = {
+    paginate: async (fn, args) => fn(args),
     rest: {
-      issues: { createComment: async ({ body }) => { comments.push(body); } },
+      issues: {
+        createComment: async ({ body }) => { comments.push(body); },
+        listEventsForTimeline: async () => timeline,
+      },
+      pulls: {
+        listReviews: async () => reviews,
+      },
       repos: {
         getContent: async ({ path }) => {
+          if (path === 'members.md') return { data: { content: b64(members), sha: 'msha123456' } };
+          if (path === 'docs/data.json') return { data: { content: b64(dataJson), sha: 'dsha' } };
           if (current === null) throw err(fileStatus);
           return { data: { content: b64(current), sha: 'sha' + puts } };
         },
@@ -135,7 +173,7 @@ async function run({
     payload: {
       repository: { default_branch: 'main' },
       pull_request: {
-        number: 18, title, body, state, merged, user,
+        number: 18, title, body, state, merged, draft, labels, user, created_at: createdAt,
         head: { ref: headRef, repo: { full_name: headRepo } },
       },
     },
@@ -180,12 +218,140 @@ check('and the message says the words are the author\'s',
    with no readable layer or tier gets no file rather than an unreadable one. */
 r = await run({ body: BODY(SECTION, 'no metadata here\n') });
 check('no readable layer or tier: no file is created', r.writes.length, 0);
-check('and it says why, without failing the run',
-  [has(r.notices.join(' '), 'Procedure'), r.failed.length], [true, 0]);
+check('and it says why (names the missing Layer/Tier), without failing the run',
+  [has(r.notices.join(' '), 'Layer'), r.failed.length], [true, 0]);
 
-r = await run({ body: BODY(SECTION, '**Layer:** 4\n') });
-check('a Layer 4 proposal gets the constitutional procedure',
-  has(r.writes[0].text, '**Procedure:** Layer 4 Constitutional'), true);
+/* ---- the roll-builder: a voting tier gets its roll built server-side -------
+ *
+ * The headline of G: no "Start a vote", no paste. When a voting-tier proposal is
+ * open (out of draft, with an opened: label), record-amendment builds the whole
+ * vote file — roll of all members, the threshold, the window — so a member's form
+ * submission has a table to go in. record-vote.yml is untouched. The threshold
+ * arithmetic is ported from docs/record.js voteFileFor; these cases pin it against
+ * the known numbers for 14 members: majority 8, two-thirds 10, Tier C quorum 7. */
+const VOTE = (meta, extra = {}) =>
+  run({ body: BODY(SECTION, meta), labels: [{ name: 'opened:2026-05-31T10:00:00Z' }], ...extra });
+// Layer 3 now needs one endorsing review (data.json needsApprovals: 1), so its
+// VOTE cases supply one; the clock then dates from that review, not the label.
+const L3REV = [{ user: { login: 'e' }, state: 'APPROVED', submitted_at: '2026-05-30T00:00:00Z' }];
+
+r = await VOTE('**Layer:** 4\n', { reviews: [
+  { user: { login: 'a' }, state: 'APPROVED', submitted_at: '2026-05-20T00:00:00Z' },
+  { user: { login: 'b' }, state: 'APPROVED', submitted_at: '2026-05-25T00:00:00Z' }] });
+check('a Layer 4 proposal (two endorsements in) builds a vote file, not a §1-only record', r.writes.length, 1);
+check('with the constitutional procedure', has(r.writes[0].text, '**Procedure:** Layer 4 Constitutional'), true);
+check('two-thirds of 14 is written as 10 of 14 (ceil, not floor)',
+  /\*\*Carries if:\*\*[^\n]*\*\*10 of 14\*\*/.test(r.writes[0].text), true);
+check('and it carries a full 14-member roll', (r.writes[0].text.match(/^\| .+ \| — \| \|$/gm) || []).length, 14);
+
+r = await VOTE('**Layer:** 3\n', { reviews: L3REV });
+check('a majority of 14 is 8 of 14 (floor+1, so a 7–7 split fails)',
+  /\*\*Carries if:\*\*[^\n]*\*\*8 of 14\*\*/.test(r.writes[0].text), true);
+
+r = await VOTE('**Layer:** 2\n\n**Tier:** C\n');
+check('Tier C states a quorum of 7 of 14, counted at close, not an affirmative bar',
+  /quorum \*\*7 of 14\*\*/.test(r.writes[0].text), true);
+
+/* The built roll must be readable by the same parser record-vote.yml and the
+   dashboard use, or a position could never be recorded into it. */
+r = await VOTE('**Layer:** 3\n', { reviews: L3REV });
+const built = r.writes[0].text;
+const SB = { document: {}, window: {}, localStorage: { getItem: () => null, setItem: () => {} },
+  atob: x => Buffer.from(x, 'base64').toString('binary'), TextDecoder };
+const { voteOf } = new Function(...Object.keys(SB),
+  readFileSync(join(HERE, '..', '..', 'docs', 'record.js'), 'utf8') + '\nreturn {voteOf};')(...Object.values(SB));
+const parsed = voteOf(built);
+check('voteOf reads the built roll as a live vote', parsed && parsed.holdsVote, true);
+check('and finds all 14 members in it', (parsed.members || []).length, 14);
+check('exactly one table — the roll, nothing above it to be mistaken for it',
+  (built.match(/^\|---/gm) || []).length, 1);
+check('the §1 Assumptions the proposer wrote rode into the vote file',
+  has(built, '**Assumptions:** That the house still has fourteen members.'), true);
+
+/* P2 gating: a voting proposal opened as a draft is not open, so NO file is
+   created — its record IS the roll, built when it is ready. A §1-only file created
+   now would be exactly the roll-less file that later blocks the roll. */
+r = await run({ body: BODY(SECTION, '**Layer:** 2\n\n**Tier:** C\n'), draft: true, labels: [{ name: 'opened:2026-05-31T10:00:00Z' }] });
+check('a draft voting proposal writes no file at all', r.writes.length, 0);
+
+/* The opened: timestamp for an UNGATED tier (Tier C — Layer 3 is now gated): the
+   label if present, else the ready_for_review timeline event, else created_at —
+   derived here so it does not hang on a bot label-add that never re-triggers this. */
+r = await run({ body: BODY(SECTION, '**Layer:** 2\n\n**Tier:** C\n'),
+  timeline: [{ event: 'ready_for_review', created_at: '2026-05-31T10:00:00Z' }] });
+check('no opened: label, but a ready_for_review event -> the roll still builds',
+  /^\|---/m.test(r.writes[0]?.text || ''), true);
+check('and the window is anchored to the ready_for_review moment',
+  has(r.writes[0].text, '2026-05-31'), true);
+
+r = await run({ body: BODY(SECTION, '**Layer:** 2\n\n**Tier:** C\n'), createdAt: '2026-04-01T08:00:00Z', timeline: [] });
+check('no label and no ready event -> falls back to created_at, still builds',
+  [/^\|---/m.test(r.writes[0]?.text || ''), has(r.writes[0].text, '2026-04-01')], [true, true]);
+
+r = await run({ body: BODY(SECTION, '**Layer:** 2\n\n**Tier:** C\n'),
+  labels: [{ name: 'opened:2026-05-31T10:00:00Z' }],
+  createdAt: '2026-04-01T08:00:00Z',
+  timeline: [{ event: 'ready_for_review', created_at: '2026-03-03T03:03:00Z' }] });
+check('the opened: label wins over created_at and the timeline when present',
+  [has(r.writes[0].text, '2026-05-31'), has(r.writes[0].text, '2026-04-01'), has(r.writes[0].text, '2026-03-03')],
+  [true, false, false]);
+
+/* ---- P1: an endorsement-gated tier waits for its reviews -------------------
+ * Section 2 starts Layer 4's clock at TWO endorsing reviews, not when the PR is
+ * ready. So the roll is not built, and its window not dated, until two standing
+ * approvals exist — and the window is dated from the SECOND, read from the reviews
+ * directly, never from a label another workflow writes. */
+const APP = (login, at) => ({ user: { login }, state: 'APPROVED', submitted_at: at });
+r = await run({ body: BODY(SECTION, '**Layer:** 4\n'), labels: [{ name: 'opened:2026-05-31T10:00:00Z' }], reviews: [] });
+check('Layer 4 with no endorsements builds no roll yet', r.writes.length, 0);
+check('and says it is waiting on the endorsing reviews', has(r.notices.join(' '), 'endorsing reviews'), true);
+
+r = await run({ body: BODY(SECTION, '**Layer:** 4\n'), reviews: [APP('a', '2026-05-10T00:00:00Z')] });
+check('Layer 4 with one endorsement still waits', r.writes.length, 0);
+
+r = await run({ body: BODY(SECTION, '**Layer:** 4\n'), labels: [{ name: 'opened:2099-01-01T00:00:00Z' }],
+  reviews: [APP('a', '2026-05-10T00:00:00Z'), APP('b', '2026-05-20T00:00:00Z')] });
+check('Layer 4 with two endorsements builds the roll', /^\|---/m.test(r.writes[0]?.text || ''), true);
+check('two-thirds of 14 is still 10 of 14', /\*\*Carries if:\*\*[^\n]*\*\*10 of 14\*\*/.test(r.writes[0].text), true);
+check('the clock is dated from the SECOND endorsement, not the opened: label',
+  [has(r.writes[0].text, '2026-05-20'), has(r.writes[0].text, '2099')], [true, false]);
+
+r = await run({ body: BODY(SECTION, '**Layer:** 4\n'),
+  reviews: [APP('a', '2026-05-10T00:00:00Z'), APP('a', '2026-05-11T00:00:00Z'),
+            { user: { login: 'b' }, state: 'COMMENTED', submitted_at: '2026-05-12T00:00:00Z' }] });
+check('one approver twice, plus a comment, is one endorsement -> still waits', r.writes.length, 0);
+
+/* Layer 3 is gated too, at one review (data.json needsApprovals: 1): the same
+   mechanism, N=1. No review waits; one review builds and dates the clock from it. */
+r = await run({ body: BODY(SECTION, '**Layer:** 3\n'), labels: [{ name: 'opened:2099-01-01T00:00:00Z' }], reviews: [] });
+check('Layer 3 with no endorsing review waits', r.writes.length, 0);
+r = await run({ body: BODY(SECTION, '**Layer:** 3\n'), labels: [{ name: 'opened:2099-01-01T00:00:00Z' }],
+  reviews: [APP('a', '2026-05-15T00:00:00Z')] });
+check('Layer 3 with one endorsing review builds, clock dated from it (not the label)',
+  [/^\|---/m.test(r.writes[0]?.text || ''), has(r.writes[0].text, '2026-05-15'), has(r.writes[0].text, '2099')],
+  [true, true, false]);
+
+/* ---- P2: a roll-less file for a now-voting proposal is upgraded ------------
+ * A proposal filed at a non-voting tier (a §1-only file) then edited to a voting
+ * one is upgraded to the full vote file. A file that already holds a roll is never
+ * re-scaffolded, so a recorded position cannot be lost. */
+const ONLY_S1 = ['# Amendment record — PR #18: a proposal', '', '**Procedure:** Tier A', '',
+  '## Amendment record', '', OPEN, '**Status:** live', CLOSE, ''].join('\n');
+r = await run({ body: BODY(SECTION, '**Layer:** 2\n\n**Tier:** C\n'), file: ONLY_S1,
+  labels: [{ name: 'opened:2026-05-31T10:00:00Z' }] });
+check('a roll-less file for a now-voting proposal is upgraded to a full 14-member roll',
+  (r.writes[0]?.text.match(/^\| .+ \| — \| \|$/gm) || []).length, 14);
+
+r = await run({ body: BODY(SECTION, '**Layer:** 2\n\n**Tier:** C\n'), file: WITH_VOTE,
+  labels: [{ name: 'opened:2026-05-31T10:00:00Z' }] });
+check('a file that already has a roll is not re-scaffolded; the recorded vote survives',
+  [has(r.writes[0]?.text || '', '| Ada Lovelace | preference |'), has(r.writes[0]?.text || '', '| Member | Position')],
+  [true, true]);
+
+/* A Tier A proposal is not a voting tier — unchanged: a §1-only record, no roll. */
+r = await run({ body: BODY(SECTION), labels: [{ name: 'opened:2026-05-31T10:00:00Z' }] });
+check('Tier A still gets a §1-only record, never a roll',
+  [r.writes.length, /^\|---/m.test(r.writes[0].text)], [1, false]);
 
 /* ---- injection through the title and the fields -------------------------- */
 /* A pull request title is single-line in GitHub's UI but arrives here as a
@@ -240,11 +406,33 @@ r = await run({ body: '## Proposal\n\nNo record section at all.\n' });
 check('a description with no Amendment record section writes nothing', r.writes.length, 0);
 check('and is not a failure — an operational merge needs no record', r.failed.length, 0);
 
+/* ---- §1 defaults: a proposer can write nothing and still be compliant ------
+ *
+ * §1 requires How-it-was-made, Assumptions and Status. Of those, Status is `live`
+ * (or `experimental` for an exp-) and Assumptions is `None` unless the proposer
+ * says otherwise — neither needs typing. So a Tier A proposal filed with a blank
+ * §1 section now yields a complete record rather than nothing. (How-it-was-made is
+ * added at close; Notes and abstentions are §1-conditional.) */
 r = await run({ body: BODY('## Amendment record\n\n**How it was made:**\n**Status:**\n') });
-check('a section with every field blank writes nothing', r.writes.length, 0);
+check('a blank section now yields a defaulted record, not nothing', r.writes.length, 1);
+check('Status defaults to live', has(r.writes[0].text, '**Status:** live'), true);
+check('Assumptions defaults to None', has(r.writes[0].text, '**Assumptions:** None'), true);
+
+r = await run({ body: BODY('## Amendment record\n\n') });
+check('even a wholly empty section yields Assumptions None + Status live',
+  [has(r.writes[0].text, '**Assumptions:** None'), has(r.writes[0].text, '**Status:** live')], [true, true]);
+
+r = await run({ body: BODY('## Amendment record\n\n**Assumptions:** That the grant renews.\n') });
+check('a real Assumption the proposer wrote overrides the None default',
+  has(r.writes[0].text, '**Assumptions:** That the grant renews.'), true);
+
+r = await run({ body: BODY('## Amendment record\n\n', '**Layer:** 2\n\n**Tier:** A\n\n**File(s):** `rules/exp-trial.md`\n') });
+check('an exp- instrument gets Status experimental, not live',
+  has(r.writes[0].text, '**Status:** experimental'), true);
 
 r = await run({ body: BODY('## Amendment record\n\n**Status:** <live, experimental, or archived>\n') });
-check('a field still holding the template placeholder is not an answer', r.writes.length, 0);
+check('a field still holding the template placeholder falls back to the default',
+  has(r.writes[0].text, '**Status:** live'), true);
 
 /* The template ships each field under an HTML comment of guidance. Copying the
    section wholesale would put the template's prose in the Record. */

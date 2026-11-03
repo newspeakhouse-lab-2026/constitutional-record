@@ -13,6 +13,7 @@ them is wrong and nobody would notice from reading the rule.
 """
 
 import importlib.util
+import re
 import os
 import sys
 from datetime import datetime
@@ -136,13 +137,31 @@ case("a missing section is distinguishable from a complete one",
      "None and [] are different defects: no section at all, versus a section with a gap. "
      "Returning [] for both would report a file with no record as fully compliant.")
 
-case("every blank field is reported",
-     len(cr.amendment_record_gaps(COMPLETE.replace(" Lazy consensus — no objection within 48 hours.", "")
-                                  .replace(" That the house still has fourteen members.", "")
-                                  .replace(" live", "").replace(" Nobody argued against it.", "")
-                                  .replace(" None.", ""))), 5,
-     "A Tier A rule adopted by lazy consensus has no result line and no objection. Check 6 "
-     "was gated on an outcome, so this — the commonest case in the Record — passed in silence.")
+# A blank record with NO result line: only the two always-required fields fire.
+# "How it was made" waits for a result; Notes and Abstentions are §1-conditional
+# ("Any ...") so blank is compliant and never warned.
+BLANK = (COMPLETE.replace(" Lazy consensus — no objection within 48 hours.", "")
+                 .replace(" That the house still has fourteen members.", "")
+                 .replace(" live", "").replace(" Nobody argued against it.", "")
+                 .replace(" None.", ""))
+case("an open record warns only about Assumptions and Status",
+     sorted(cr.amendment_record_gaps(BLANK, result_present=False)),
+     ["Assumptions", "Status"],
+     "§1 makes Notes and Abstentions conditional, so blank is compliant; How it was made is "
+     "not knowable until the vote closes. Warning on all five made the tooling stricter than "
+     "the Constitution and buried the real signal in noise.")
+
+case("once a result is written, How it was made is required too",
+     sorted(cr.amendment_record_gaps(BLANK, result_present=True)),
+     ["Assumptions", "How it was made", "Status"],
+     "After the outcome exists, a blank narrative of how the amendment was made is a genuine "
+     "gap — the same point at which check 4 begins to care.")
+
+case("Notes and Abstentions blank are never a gap",
+     cr.amendment_record_gaps(COMPLETE.replace(" Nobody argued against it.", "")
+                                       .replace(" None.", ""), result_present=True), [],
+     "Both begin with \"Any\" in §1 — where there are none, blank is the honest, compliant "
+     "answer, and the checker must not demand invented content.")
 
 case("a field left as the template's placeholder is not an answer",
      cr.amendment_record_gaps(COMPLETE.replace("**Status:** live", "**Status:** <live, experimental, or archived>")),
@@ -172,19 +191,59 @@ case("a later ## heading ends the section",
      "The section terminates at the next `^## `. A field named below an unrelated heading must "
      "not be read as answering this one.")
 
-# ---- the five labels exist in exactly one form, in all three places ---------
+# ---- scope: per-file checks warn only about files the PR changed ------------
 #
-# There were three independent copies and nothing pinning them. Two of five had
-# already drifted: the template said "Assumptions it rests on" and "Explanatory
-# notes from the discussion", so a body copied into the file was reported
-# incomplete on precisely those two.
-for _f in [os.path.join(HERE, "..", "pull_request_template.md"),
-           os.path.join(HERE, "..", "instrument-templates", "vote.md")]:
-    _text = open(_f, encoding="utf-8").read()
-    _absent = [f for f in cr.AMENDMENT_FIELDS if f"**{f}:**" not in _text]
-    case(f"{os.path.basename(_f)} uses the checker's own five labels", _absent, [],
-         "Three copies of the field list and no test holding them together. A label that drifts "
-         "here makes every copied record read as incomplete, and the warning blames the author.")
+# check-record globs the whole Record. A pull request touches a handful of files;
+# warning about the rest on every run trained people to ignore the annotations.
+# in_scope() gates the per-file checks on the CHANGED_FILES the workflow passes.
+case("an empty changed-set means scan everything (manual run / push)",
+     [cr.in_scope("amendment-record/pr-9.md", set()),
+      cr.in_scope("rules/rule-x.md", set())], [True, True],
+     "With no list given the script must behave as it always did, or a manual run "
+     "or a push would silently check nothing.")
+
+case("a file the PR did not change is out of scope",
+     cr.in_scope("amendment-record/pr-9.md", {"docs/index.html"}), False,
+     "The noise this fixes: a docs-only PR warning about an unrelated half-finished vote record.")
+
+case("a file the PR did change is in scope",
+     cr.in_scope("amendment-record/pr-9.md", {"amendment-record/pr-9.md", "docs/index.html"}), True,
+     "The file actually under review must still be checked.")
+
+
+# ---- the labels agree across every place that writes or reads a record -------
+#
+# There were independent copies of the field list and nothing pinning them. Two
+# of five had already drifted: the template said "Assumptions it rests on" and
+# "Explanatory notes from the discussion", so a body copied into the file was
+# reported incomplete on precisely those two.
+#
+# Since G the proposer no longer types the fields: `record-amendment.yml`
+# GENERATES them and `check-record.py` reads them back, so the coupling that
+# matters is generator-labels == checker-labels. vote.md still carries the full
+# set (it is the manual vote instrument), so it is pinned in full too. The PR
+# template now carries only the one field a human fills — Assumptions — so it is
+# pinned as a subset: every label it does carry must be one the checker knows.
+_amd = open(os.path.join(HERE, "..", "workflows", "record-amendment.yml"), encoding="utf-8").read()
+_absent = [f for f in cr.AMENDMENT_FIELDS if f"'{f}'" not in _amd]
+case("record-amendment.yml generates the checker's own five labels", _absent, [],
+     "The workflow writes the record and the checker reads it. If a label drifts between them, "
+     "every generated record reads as incomplete and the warning blames nobody who can fix it.")
+
+_vote = open(os.path.join(HERE, "..", "instrument-templates", "vote.md"), encoding="utf-8").read()
+_absent = [f for f in cr.AMENDMENT_FIELDS if f"**{f}:**" not in _vote]
+case("vote.md uses the checker's own five labels", _absent, [],
+     "The manual vote instrument carries the full field list; a label that drifts here makes a "
+     "record built from it read as incomplete.")
+
+_tmpl = open(os.path.join(HERE, "..", "pull_request_template.md"), encoding="utf-8").read()
+_tmpl_labels = re.findall(r"\*\*([^*]+?):\*\*", _tmpl)
+_unknown = [l for l in _tmpl_labels if l in {"How it was made", "Status",
+            "Notes from the discussion", "Abstentions or objections", "Assumptions"}
+            and l not in cr.AMENDMENT_FIELDS]
+case("every §1 label the PR template still carries is one the checker knows", _unknown, [],
+     "Since G the template carries only Assumptions; whatever §1 labels it does keep must match "
+     "the checker, or a value a proposer types lands under a label the checker ignores.")
 
 
 failed = [n for n, bad, _ in results if bad]

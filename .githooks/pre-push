@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# A pre-push belt for the Constitutional Record: refuse any push to main from this
+# clone — direct push, force-push, or deletion. main changes only through a pull
+# request a Record Keeper merges (Constitution §3).
+#
+# Why this exists alongside the .claude/.codex hooks and the GitHub ruleset:
+#   - the server ruleset already refuses main to everyone who is not an org admin,
+#     but admins (the Record Keepers) bypass it "always";
+#   - the .claude and .codex hooks catch an AGENT's command, but only inside those
+#     tools, and not a plain shell;
+#   - this fires for ANY git client — Claude, Codex, a bare shell — so it covers a
+#     Record Keeper's own agent, which is the one case the ruleset waves through.
+# It does NOT catch `gh pr merge` (that is the GitHub API, not git) — the per-tool
+# command hooks catch that. Install once per clone: git config core.hooksPath .githooks
+# Bypassable with --no-verify, by design: a human who means it can still act.
+
+origin=$(git config --get remote.origin.url 2>/dev/null)
+case "$origin" in
+  *constitutional-record*) ;;                                   # the Record
+  *) { [ -f constitution.md ] && [ -f members.md ]; } || exit 0 ;;  # a sandbox copy, else step aside
+esac
+
+while read -r _localref _localsha remoteref _remotesha; do
+  case "$remoteref" in
+    refs/heads/main)
+      echo "BLOCKED: a push to main." >&2
+      echo "main changes only through a pull request a Record Keeper merges (Constitution §3)." >&2
+      echo "A Record Keeper acting deliberately: merge in the GitHub interface, or re-run with --no-verify." >&2
+      exit 1 ;;
+  esac
+done
+exit 0
