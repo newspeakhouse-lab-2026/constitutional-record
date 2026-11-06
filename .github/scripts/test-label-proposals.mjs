@@ -95,12 +95,11 @@ r = await run({ labels: ['opened:2026-10-03T20:15:30Z', 'layer-2'],
   pr: { ...base, body: FILLED, draft: true }, action: 'converted_to_draft' });
 check('returning to draft removes opened:', r.dropped, ['opened:2026-10-03T20:15:30Z']);
 
-r = await run({ eventName: 'pull_request_review', labels: ['endorsed:0'],
-  pr: { ...base, body: '**Layer:** 4' },
-  reviews: [{ user: { login: 'a' }, state: 'APPROVED' }, { user: { login: 'b' }, state: 'APPROVED' },
-            { user: { login: 'a' }, state: 'DISMISSED' }, { user: { login: 'c' }, state: 'COMMENTED' }] });
-check('only each member\'s latest review counts, dismissals included',
-  { added: r.added, dropped: r.dropped }, { added: ['endorsed:1'], dropped: ['endorsed:0'] });
+r = await run({ pr: { ...base, body: '**Layer:** 4' } });
+check('a gated tier gets its layer label but NO endorsed:/opened: — record-endorsement.yml owns those',
+  { layer: r.added.filter(x => x.startsWith('layer')), endorsed: r.added.filter(x => x.startsWith('endorsed')),
+    opened: r.added.filter(x => x.startsWith('opened:')) },
+  { layer: ['layer-4'], endorsed: [], opened: [] });
 
 r = await run({ pr: { ...base, body: '**Layer:** 2\n**Tier:** B\n**Deliberation period:** 5' } });
 check('Tier B carries its stated period',
@@ -162,34 +161,24 @@ r = await run({ pr: { ...base, body: '**Layer:** <!-- 3 --> \n' } });
 check('a digit inside the comment is not the answer',
   r.added.filter(x => x.startsWith('layer-')), []);
 
-/* ---- gated tiers: opened: is the Nth endorsing review, not leaving draft ----
- * Section 2 starts a Layer 4 clock at two endorsing reviews and a Layer 3 clock at
- * one. The opened: label carries that clock-start, so the label, the dashboard and
- * the vote file all state the same instant. needs is read from data.json. */
-r = await run({ eventName: 'pull_request_review', labels: ['endorsed:1'],
-  pr: { ...base, body: '**Layer:** 4' },
-  reviews: [{ user: { login: 'a' }, state: 'APPROVED', submitted_at: '2026-10-10T00:00:00Z' },
-            { user: { login: 'b' }, state: 'APPROVED', submitted_at: '2026-10-12T00:00:00Z' }] });
-check('Layer 4: the second endorsing review stamps opened: at its own moment',
-  { endorsed: r.added.filter(x => x.startsWith('endorsed')), opened: r.added.filter(x => x.startsWith('opened:')) },
-  { endorsed: ['endorsed:2'], opened: ['opened:2026-10-12T00:00:00Z'] });
-
-r = await run({ eventName: 'pull_request_review', labels: ['endorsed:0'],
-  pr: { ...base, body: '**Layer:** 3' },
-  reviews: [{ user: { login: 'a' }, state: 'APPROVED', submitted_at: '2026-10-09T08:30:00Z' }] });
-check('Layer 3: one endorsing review starts its clock; opened: dated from it',
-  r.added.filter(x => x.startsWith('opened:')), ['opened:2026-10-09T08:30:00Z']);
-
+/* ---- gated tiers: this workflow stamps neither opened: nor endorsed: --------
+ * A gated tier's clock starts at its Nth endorsement, and record-endorsement.yml
+ * writes opened: and endorsed: then. This workflow only labels layer/tier/period
+ * and never touches endorsement, so two writers can never race the same labels. */
 r = await run({ pr: { ...base, body: '**Layer:** 4' }, action: 'ready_for_review',
-  timeline: [{ event: 'ready_for_review', created_at: '2026-10-05T00:00:00Z' }], reviews: [] });
-check('a gated tier marked ready with no endorsements gets NO opened: (clock not started)',
-  r.added.filter(x => x.startsWith('opened:')), []);
+  timeline: [{ event: 'ready_for_review', created_at: '2026-10-05T00:00:00Z' }] });
+check('a gated tier marked ready gets its layer label but NO opened: (clock starts at endorsement)',
+  { layer: r.added.filter(x => x.startsWith('layer')), opened: r.added.filter(x => x.startsWith('opened:')) },
+  { layer: ['layer-4'], opened: [] });
 
-r = await run({ pr: { ...base, body: '**Layer:** 4' }, action: 'edited',
-  reviews: [{ user: { login: 'a' }, state: 'APPROVED', submitted_at: '2026-10-10T00:00:00Z' },
-            { user: { login: 'b' }, state: 'APPROVED', submitted_at: '2026-10-12T00:00:00Z' }] });
-check('a gated tier edited after its endorsements stamps opened: from the second',
-  r.added.filter(x => x.startsWith('opened:')), ['opened:2026-10-12T00:00:00Z']);
+r = await run({ pr: { ...base, body: '**Layer:** 3' }, action: 'ready_for_review',
+  timeline: [{ event: 'ready_for_review', created_at: '2026-10-09T08:30:00Z' }] });
+check('a Layer 3 marked ready gets NO opened: either', r.added.filter(x => x.startsWith('opened:')), []);
+
+r = await run({ pr: { ...base, body: '**Layer:** 4' }, action: 'edited' });
+check('a gated tier edited stamps NO opened: and NO endorsed: (record-endorsement owns them)',
+  { opened: r.added.filter(x => x.startsWith('opened:')), endorsed: r.added.filter(x => x.startsWith('endorsed')) },
+  { opened: [], endorsed: [] });
 
 const passed = results.filter(Boolean).length;
 console.log(`\n${passed}/${results.length} passed`);

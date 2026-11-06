@@ -131,6 +131,10 @@ async function run({
   createdAt = '2026-05-31T09:00:00Z',
   timeline = [],
   reviews = [],
+  endorsements = [],
+  edited = [],
+  eventName = 'pull_request',
+  issue = null,
   putFails = [],
   fileAfterConflict = null,
   user = { login: 'ada', id: 111 },
@@ -140,13 +144,16 @@ async function run({
 
   const github = {
     paginate: async (fn, args) => fn(args),
+    graphql: async (q, vars) => ({ repository: { issue: { lastEditedAt: edited.includes(vars.n) ? '2026-06-01T00:00:00Z' : null } } }),
     rest: {
       issues: {
         createComment: async ({ body }) => { comments.push(body); },
         listEventsForTimeline: async () => timeline,
+        listForRepo: async () => endorsements,
       },
       pulls: {
         listReviews: async () => reviews,
+        get: async () => ({ data: context.payload.pull_request }),
       },
       repos: {
         getContent: async ({ path }) => {
@@ -169,9 +176,11 @@ async function run({
     },
   };
   const context = {
+    eventName,
     repo: { owner: 'o', repo: 'r' },
     payload: {
       repository: { default_branch: 'main' },
+      issue,
       pull_request: {
         number: 18, title, body, state, merged, draft, labels, user, created_at: createdAt,
         head: { ref: headRef, repo: { full_name: headRepo } },
@@ -231,20 +240,24 @@ check('and it says why (names the missing Layer/Tier), without failing the run',
  * the known numbers for 14 members: majority 8, two-thirds 10, Tier C quorum 7. */
 const VOTE = (meta, extra = {}) =>
   run({ body: BODY(SECTION, meta), labels: [{ name: 'opened:2026-05-31T10:00:00Z' }], ...extra });
-// Layer 3 now needs one endorsing review (data.json needsApprovals: 1), so its
-// VOTE cases supply one; the clock then dates from that review, not the label.
-const L3REV = [{ user: { login: 'e' }, state: 'APPROVED', submitted_at: '2026-05-30T00:00:00Z' }];
+// Endorsements are counted from the endorse-ISSUE trail now, not reviews. An
+// endorse issue is authored by a member (id in members.md) and names its PR in
+// the form body. END(i, at) is member gh{i}'s endorsement of PR #18 at time `at`.
+const END = (i, at) => ({ number: 900 + i, user: { login: `gh${i}`, id: 1000 + i },
+  title: 'Endorse: PR #18', labels: [{ name: 'endorse' }],
+  body: '### Pull request number\n\n18\n', created_at: at });
+// Layer 3 needs one endorsement (data.json needsApprovals: 1); its VOTE cases
+// supply one, and the clock dates from it, not the label.
+const L3END = [END(4, '2026-05-30T00:00:00Z')];
 
-r = await VOTE('**Layer:** 4\n', { reviews: [
-  { user: { login: 'a' }, state: 'APPROVED', submitted_at: '2026-05-20T00:00:00Z' },
-  { user: { login: 'b' }, state: 'APPROVED', submitted_at: '2026-05-25T00:00:00Z' }] });
+r = await VOTE('**Layer:** 4\n', { endorsements: [END(0, '2026-05-20T00:00:00Z'), END(1, '2026-05-25T00:00:00Z')] });
 check('a Layer 4 proposal (two endorsements in) builds a vote file, not a §1-only record', r.writes.length, 1);
 check('with the constitutional procedure', has(r.writes[0].text, '**Procedure:** Layer 4 Constitutional'), true);
 check('two-thirds of 14 is written as 10 of 14 (ceil, not floor)',
   /\*\*Carries if:\*\*[^\n]*\*\*10 of 14\*\*/.test(r.writes[0].text), true);
 check('and it carries a full 14-member roll', (r.writes[0].text.match(/^\| .+ \| — \| \|$/gm) || []).length, 14);
 
-r = await VOTE('**Layer:** 3\n', { reviews: L3REV });
+r = await VOTE('**Layer:** 3\n', { endorsements: L3END });
 check('a majority of 14 is 8 of 14 (floor+1, so a 7–7 split fails)',
   /\*\*Carries if:\*\*[^\n]*\*\*8 of 14\*\*/.test(r.writes[0].text), true);
 
@@ -254,7 +267,7 @@ check('Tier C states a quorum of 7 of 14, counted at close, not an affirmative b
 
 /* The built roll must be readable by the same parser record-vote.yml and the
    dashboard use, or a position could never be recorded into it. */
-r = await VOTE('**Layer:** 3\n', { reviews: L3REV });
+r = await VOTE('**Layer:** 3\n', { endorsements: L3END });
 const built = r.writes[0].text;
 const SB = { document: {}, window: {}, localStorage: { getItem: () => null, setItem: () => {} },
   atob: x => Buffer.from(x, 'base64').toString('binary'), TextDecoder };
@@ -296,40 +309,69 @@ check('the opened: label wins over created_at and the timeline when present',
   [has(r.writes[0].text, '2026-05-31'), has(r.writes[0].text, '2026-04-01'), has(r.writes[0].text, '2026-03-03')],
   [true, false, false]);
 
-/* ---- P1: an endorsement-gated tier waits for its reviews -------------------
- * Section 2 starts Layer 4's clock at TWO endorsing reviews, not when the PR is
- * ready. So the roll is not built, and its window not dated, until two standing
- * approvals exist — and the window is dated from the SECOND, read from the reviews
- * directly, never from a label another workflow writes. */
-const APP = (login, at) => ({ user: { login }, state: 'APPROVED', submitted_at: at });
-r = await run({ body: BODY(SECTION, '**Layer:** 4\n'), labels: [{ name: 'opened:2026-05-31T10:00:00Z' }], reviews: [] });
+/* ---- P1: an endorsement-gated tier waits for its endorsements --------------
+ * Section 2 starts Layer 4's clock at TWO endorsements, not when the PR is ready.
+ * The roll is not built, and its window not dated, until two endorsements exist —
+ * counted from the unforgeable endorse-ISSUE trail, never from a label another
+ * workflow writes — and the window is dated from the SECOND. */
+r = await run({ body: BODY(SECTION, '**Layer:** 4\n'), labels: [{ name: 'opened:2026-05-31T10:00:00Z' }], endorsements: [] });
 check('Layer 4 with no endorsements builds no roll yet', r.writes.length, 0);
-check('and says it is waiting on the endorsing reviews', has(r.notices.join(' '), 'endorsing reviews'), true);
+check('and says it is waiting on the endorsements', has(r.notices.join(' '), 'endorsements'), true);
 
-r = await run({ body: BODY(SECTION, '**Layer:** 4\n'), reviews: [APP('a', '2026-05-10T00:00:00Z')] });
+r = await run({ body: BODY(SECTION, '**Layer:** 4\n'), endorsements: [END(0, '2026-05-10T00:00:00Z')] });
 check('Layer 4 with one endorsement still waits', r.writes.length, 0);
 
 r = await run({ body: BODY(SECTION, '**Layer:** 4\n'), labels: [{ name: 'opened:2099-01-01T00:00:00Z' }],
-  reviews: [APP('a', '2026-05-10T00:00:00Z'), APP('b', '2026-05-20T00:00:00Z')] });
+  endorsements: [END(0, '2026-05-10T00:00:00Z'), END(1, '2026-05-20T00:00:00Z')] });
 check('Layer 4 with two endorsements builds the roll', /^\|---/m.test(r.writes[0]?.text || ''), true);
 check('two-thirds of 14 is still 10 of 14', /\*\*Carries if:\*\*[^\n]*\*\*10 of 14\*\*/.test(r.writes[0].text), true);
 check('the clock is dated from the SECOND endorsement, not the opened: label',
   [has(r.writes[0].text, '2026-05-20'), has(r.writes[0].text, '2099')], [true, false]);
 
 r = await run({ body: BODY(SECTION, '**Layer:** 4\n'),
-  reviews: [APP('a', '2026-05-10T00:00:00Z'), APP('a', '2026-05-11T00:00:00Z'),
-            { user: { login: 'b' }, state: 'COMMENTED', submitted_at: '2026-05-12T00:00:00Z' }] });
-check('one approver twice, plus a comment, is one endorsement -> still waits', r.writes.length, 0);
+  endorsements: [END(0, '2026-05-10T00:00:00Z'), END(0, '2026-05-11T00:00:00Z')] });
+check('the same member endorsing twice is one endorsement -> still waits', r.writes.length, 0);
 
-/* Layer 3 is gated too, at one review (data.json needsApprovals: 1): the same
-   mechanism, N=1. No review waits; one review builds and dates the clock from it. */
-r = await run({ body: BODY(SECTION, '**Layer:** 3\n'), labels: [{ name: 'opened:2099-01-01T00:00:00Z' }], reviews: [] });
-check('Layer 3 with no endorsing review waits', r.writes.length, 0);
+/* Integrity: the proposer's own endorse issue and a non-member's never count,
+   so neither can be used to reach the threshold. */
+r = await run({ body: BODY(SECTION, '**Layer:** 4\n'), user: { login: 'gh2', id: 1002 },
+  endorsements: [
+    END(2, '2026-05-10T00:00:00Z'),                                   // the proposer (gh2) — excluded
+    { number: 950, user: { login: 'stranger', id: 777 }, title: 'Endorse: PR #18',
+      labels: [{ name: 'endorse' }], body: '### Pull request number\n\n18\n', created_at: '2026-05-11T00:00:00Z' },
+    END(3, '2026-05-12T00:00:00Z') ] });                              // one real endorsement
+check('the proposer and a non-member do not count -> one real endorsement, still waits', r.writes.length, 0);
+
+/* Integrity: an endorse-issue whose body was edited after it was opened is not
+   counted — the body (which names the PR) is member-writable, so an edit could
+   retarget another member's endorsement onto this proposal. */
+r = await run({ body: BODY(SECTION, '**Layer:** 4\n'),
+  endorsements: [END(0, '2026-05-10T00:00:00Z'), END(1, '2026-05-20T00:00:00Z')], edited: [901] });
+check('an edited endorse-issue is not counted (body-retarget forge blocked)', r.writes.length, 0);
+
+/* Layer 3 is gated too, at one endorsement (needsApprovals: 1): same mechanism, N=1. */
+r = await run({ body: BODY(SECTION, '**Layer:** 3\n'), labels: [{ name: 'opened:2099-01-01T00:00:00Z' }], endorsements: [] });
+check('Layer 3 with no endorsement waits', r.writes.length, 0);
 r = await run({ body: BODY(SECTION, '**Layer:** 3\n'), labels: [{ name: 'opened:2099-01-01T00:00:00Z' }],
-  reviews: [APP('a', '2026-05-15T00:00:00Z')] });
-check('Layer 3 with one endorsing review builds, clock dated from it (not the label)',
+  endorsements: [END(0, '2026-05-15T00:00:00Z')] });
+check('Layer 3 with one endorsement builds, clock dated from it (not the label)',
   [/^\|---/m.test(r.writes[0]?.text || ''), has(r.writes[0].text, '2026-05-15'), has(r.writes[0].text, '2099')],
   [true, true, false]);
+
+/* ---- triggered by an endorse ISSUE, not a pull_request event ---------------
+ * record-amendment also runs when an endorse issue opens; it resolves the PR the
+ * form names and builds the roll if the gate is now met (a GITHUB_TOKEN dispatch
+ * would not re-trigger a workflow, so the human issue event is the trigger). */
+r = await run({ eventName: 'issues',
+  issue: { number: 500, title: 'Endorse: PR #18', labels: [{ name: 'endorse' }], body: '### Pull request number\n\n18\n' },
+  body: BODY(SECTION, '**Layer:** 3\n'), endorsements: [END(0, '2026-05-15T00:00:00Z')] });
+check('an endorse issue resolves its PR and builds the roll once the gate is met',
+  /^\|---/m.test(r.writes[0]?.text || ''), true);
+
+r = await run({ eventName: 'issues',
+  issue: { number: 501, title: 'Something else', labels: [], body: 'not an endorsement' },
+  body: BODY(SECTION, '**Layer:** 3\n') });
+check('a non-endorse issue builds nothing', r.writes.length, 0);
 
 /* ---- P2: a roll-less file for a now-voting proposal is upgraded ------------
  * A proposal filed at a non-voting tier (a §1-only file) then edited to a voting

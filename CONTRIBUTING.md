@@ -116,7 +116,7 @@ Every amendment follows the same arc. The deliberation periods and thresholds di
 | 6 | Branch, commit, open the pull request | You or your agent | GitHub |
 | 7 | Take it out of draft — it is posted to Discord automatically, and **this starts the deliberation clock** | You | GitHub, relayed |
 | 8 | Deliberate | You. An agent may draft your words; it may never post a position | Channel, pull request, meetings |
-| 9 | Endorsements, where the layer needs them — an approving review on the PR | Other members. Never an agent | Pull request |
+| 9 | Endorsements, where the layer needs them — through the **Endorse** form (the dashboard button) | Other members, never the proposer. Never an agent | Endorse form → issue |
 | 10 | Vote, and record it | Members. **Never an agent** | Stating it is the vote, wherever you state it; `amendment-record/pr-{number}.md` is the evidence |
 | 11 | Write the result into `amendment-record/pr-{number}.md`, arithmetic shown | You, or a Record Keeper | The proposal's branch |
 | 11a | Complete `## Amendment record` in the pull request description — a workflow commits it | You, or a Record Keeper | The description; the file follows |
@@ -125,7 +125,7 @@ Every amendment follows the same arc. The deliberation periods and thresholds di
 
 A webhook posts repository events to Discord, so taking a proposal out of draft announces it without you doing anything further — that is the visibility Section 2 asks for. The relay posts a bare GitHub notification though, so saying what tier you are claiming and when the window closes still saves everyone reconstructing it later.
 
-Three things happen on their own as you go. When you fill in the Layer, Tier and Deliberation period, a workflow turns them into **labels**; and when you take the pull request out of draft it adds an **`opened:`** label recording the moment, which is what shows that a deliberation period began. A second, **`endorsed:`**, counts endorsing reviews. A third, **`objection`**, is added to the proposal when someone objects through the form — the dashboard reads it to know there is an objection file to show. Nobody writes any of them by hand.
+Three things happen on their own as you go. When you fill in the Layer, Tier and Deliberation period, a workflow turns them into **labels**; and when you take the pull request out of draft it adds an **`opened:`** label recording the moment, which is what shows that a deliberation period began. A second, **`endorsed:`**, counts endorsements made through the Endorse form. A third, **`objection`**, is added to the proposal when someone objects through the form — the dashboard reads it to know there is an objection file to show. Nobody writes any of them by hand.
 
 And when you fill in `## Amendment record` in the description, a workflow commits it to `amendment-record/pr-{number}.md` on your branch within seconds, and keeps it in step as you edit. It copies your words and composes nothing; the commit is authored by you. It will not overwrite a record somebody wrote into that file by hand, and it says so rather than doing it.
 
@@ -139,10 +139,10 @@ It differs by layer. The Constitution is explicit for two of them; for Layer 3 t
 |---|---|
 | **Tier A** | The 48 hours **is** the period the proposal is visible in the governance channel (Constitution §2) — which the Discord relay does for you when you take it out of draft. |
 | **Tier B and C** | The stated period. **The Constitution does not say what triggers it.** |
-| **Layer 3 Policy** | Seven days, started by **one endorsing (approving) review** on the pull request. §2 says only "at least one other member must endorse" without naming the trigger; the tooling reads that endorsement as the starting gun — the same mechanism as Layer 4, and a reading the Lab can change. This clock runs on GitHub. |
-| **Layer 4** | **"Two endorsing reviews start the 7-day deliberation clock"** — explicit, and those are reviews on the pull request. This clock runs on GitHub. |
+| **Layer 3 Policy** | Seven days, started by **one endorsement** through the Endorse form. §2 says only "at least one other member must endorse" without naming the trigger; the tooling reads that endorsement as the starting gun — the same mechanism as Layer 4, and a reading the Lab can change. This clock runs on GitHub. |
+| **Layer 4** | **"Two endorsing reviews start the 7-day deliberation clock"** — the Laboratory reads an "endorsing review" as an endorsement through the form (§2 names no platform). This clock runs on GitHub. |
 
-For Tier B and C, where the Constitution names no trigger, the safe practice is the same as Tier A: post it to the channel with the link and the tier, and say when the window closes. **But Layer 3 and Layer 4 clocks run on GitHub, not in the channel — a Layer 4 amendment without its two endorsing reviews, or a Layer 3 policy without its one, has not started at all**, however long it has been open or discussed.
+For Tier B and C, where the Constitution names no trigger, the safe practice is the same as Tier A: post it to the channel with the link and the tier, and say when the window closes. **But Layer 3 and Layer 4 clocks run on GitHub, not in the channel — a Layer 4 amendment without its two endorsements, or a Layer 3 policy without its one, has not started at all**, however long it has been open or discussed.
 
 ### Working with an AI agent
 
@@ -257,7 +257,7 @@ git push -u origin rule-quiet-hours
 gh pr create          # fills in the pull request template
 ```
 
-For constitutional amendments, edit `constitution.md` on a new branch. Two endorsing reviews on the pull request start the seven-day clock.
+For constitutional amendments, edit `constitution.md` on a new branch. Two endorsements through the Endorse form start the seven-day clock.
 
 ### Filling in the pull request template
 
@@ -269,7 +269,7 @@ You don't need everything immediately. The vote evidence is written as the vote 
 
 The pull request is visible to all members and to the public. Discussion happens in the pull request, in the governance channel, and in meetings as needed.
 
-For Tier A the window **is** the proposal's visibility in the governance channel (Constitution §2), which the relay takes care of when you take it out of draft. For Layer 4 the clock starts when two endorsing reviews land on the pull request. See *What starts the clock* above — it is not the same rule for every layer. During it the proposal can be revised — the proposer or any member can push further commits to the branch. **A material change restarts any minimum deliberation period.** A correction that does not change the meaning does not.
+For Tier A the window **is** the proposal's visibility in the governance channel (Constitution §2), which the relay takes care of when you take it out of draft. For Layer 4 the clock starts when two endorsements land through the Endorse form. See *What starts the clock* above — it is not the same rule for every layer. During it the proposal can be revised — the proposer or any member can push further commits to the branch. **A material change restarts any minimum deliberation period.** A correction that does not change the meaning does not.
 
 An objection is never a bare "no": it is stated with its reason and a suggested route forward. A single stated objection moves an Ordinary proposal **up** a tier. It can never move down.
 
@@ -282,13 +282,13 @@ Two layers need an endorsement before anything else happens, and for both the en
 | **Layer 3 Policy** | "At least one other member must endorse" |
 | **Layer 4 Constitutional** | "**Two endorsing reviews start the 7-day deliberation clock**" |
 
-So a constitutional amendment's clock does not run from when it was opened. It runs from the moment the second member reviews it — and a Layer 3 policy's clock, likewise, from its one endorsing review. A proposal nobody reviews has no window running, however long it has been sitting there.
+So a constitutional amendment's clock does not run from when it was opened. It runs from the moment the second member endorses it — and a Layer 3 policy's clock, likewise, from its one endorsement. A proposal nobody endorses has no window running, however long it has been sitting there.
 
 **Endorsing is not supporting.** It says *this deserves to be deliberated*, not *I agree with it*. You can endorse an amendment onto the agenda and then vote against it, and that is a perfectly coherent thing to do.
 
 This matters more than it sounds. If people treat endorsement as agreement, then anyone who opposes an amendment can stop it being deliberated at all simply by declining to review — **a veto the Constitution never granted anyone.** Opposition belongs in the vote, where it is counted and recorded.
 
-In practice an endorsement is an **approving review** on the pull request, for both layers. Layer 4 says "endorsing reviews" explicitly; Layer 3 says only "endorse", and the tooling reads that the same way. It is a reading, not a quotation, and the Laboratory has taken it: the `record-amendment` workflow will not open a vote until the required reviews are in, and dates the clock from the last of them. If the Laboratory means something else, say so and the tooling follows.
+In practice you endorse through the dashboard's **Endorse this proposal** button, which opens the *Endorse a proposal* form — the same issue-form route the Object and Vote buttons use, so it needs only read access and works whether or not you can push. A workflow records your endorsement as you, updates the count the dashboard shows, and once the required number is in it starts the clock and opens the vote. You cannot endorse your own proposal — §2 asks for *another* member — and endorsing twice counts once. Counting from these forms rather than from a GitHub "approving review" is a reading of §2, which says "endorse" / "endorsing reviews" and names no platform; it is the reading the Laboratory has taken. The count is taken from the forms themselves, which carry each endorser's identity unforgeably, never from a label anyone could set by hand. If the Laboratory means something else, say so and the tooling follows.
 
 ### Voting
 
@@ -351,11 +351,11 @@ The Record Keeper announces the result in the governance channel with a link to 
 
 > **Merging will tell you the rules block it, and offer to bypass.** That is expected, and it is not a violation. The ruleset restricts who may update `main`, and organisation administrators are the exception that makes merging possible for the Record Keepers and nobody else — so GitHub presents the permission as an override. Take the bypass. What it does not excuse is skipping the verification the bypass exists for: that the deliberation period actually ran, and that the recorded outcome matches it.
 
-**No approving review is required, deliberately.** A Layer 2 proposal needs no endorsement, so requiring an approval would have forced a procedural click on a rule that passed by nobody objecting — and the dashboard would then have counted that click as an endorsement.
+**No endorsement is required for Layer 2, deliberately.** An Ordinary (Layer 2) proposal needs no endorsement, so requiring one would have forced a procedural act on a rule that passes by nobody objecting — and the dashboard would then have counted it as an endorsement.
 
 Three things it does **not** do, all of which are why a Record Keeper verifies rather than rubber-stamps:
 
-**The branch ruleset cannot enforce the endorsements a layer requires.** A Layer 4 amendment needs two endorsing reviews and a Layer 3 Policy one; GitHub cannot vary a required review count by file, so no *merge-button* setting expresses it. What enforces them upstream is the `record-amendment` workflow — it will not open the vote (build the roll, start the clock) until the required reviews are in. The merge itself is still the Record Keeper's verification, which is what their office is for.
+**The branch ruleset cannot enforce the endorsements a layer requires.** A Layer 4 amendment needs two endorsements and a Layer 3 Policy one; endorsements are recorded as issues through the Endorse form, which no *merge-button* setting can see or count. What enforces them upstream is the `record-amendment` workflow — it will not open the vote (build the roll, start the clock) until the required endorsements are in, counted from the issue trail. The merge itself is still the Record Keeper's verification, which is what their office is for.
 
 **It cannot see the governance channel**, where most deliberation actually runs. Absence of objection on a pull request is not proof of lazy consensus.
 
@@ -424,6 +424,6 @@ Section 1 provides that GitHub branch protection enforces approval requirements 
 
 `.github/ruleset-main.json` records the live configuration so a change to who can merge is something members can read and object to, rather than a setting two administrators can alter silently. If the file and the live settings disagree, the settings are what is in force and the file is wrong.
 
-**What is still carried by people, not by the branch ruleset.** The ruleset does not check that a Layer 4 amendment has its two endorsing reviews, or a Layer 3 Policy its one, before the merge button works — though the `record-amendment` workflow will not open the vote without them, so the clock never starts unenforced. The merge is the Record Keeper's verification. And pushing a rule straight to `main` would not make it a rule in any case: validity comes from the procedure, and Section 1 is explicit that a repository edit or commit does not itself create authority.
+**What is still carried by people, not by the branch ruleset.** The ruleset does not check that a Layer 4 amendment has its two endorsements, or a Layer 3 Policy its one, before the merge button works — though the `record-amendment` workflow will not open the vote without them, so the clock never starts unenforced. The merge is the Record Keeper's verification. And pushing a rule straight to `main` would not make it a rule in any case: validity comes from the procedure, and Section 1 is explicit that a repository edit or commit does not itself create authority.
 
 > **Merge rights and the office can come apart.** Merge rights are tied to organisation administrators, because that is how the Record Keeper office is implemented. The interim terms end at the date `roles.md` records. If they lapse without an election, the office is vacant while the access stays with whoever happens to hold it — and Section 3's fallback, that the Convener covers unfilled roles, does not help, because the Convener's term ends at the same moment. Whoever fills these offices should make sure merge rights follow the office rather than the other way round.
