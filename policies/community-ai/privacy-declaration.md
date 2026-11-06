@@ -26,8 +26,9 @@
 ## Where your data is processed
 
 - Emys is run by two administrators, @emergentvibe and @anchitsom. Neither acts alone, and neither reads your private workspace, messages, or memory **except to investigate a specific bug or incident**.
-- Emys runs on the Laboratory's **own compute**, in the house, with **open-weights models** and **no external logging** of your content — from the day it is deployed. No member content is sent to an external model service.
+- Your content is stored and processed on the Laboratory's **own infrastructure**, in the house. The **open-weights models** that answer you run on GPUs belonging to the **East London GPU Coop**, which **keeps no logs** of what you send and uses it for nothing else — from the day Emys is deployed. Your content goes to **no commercial AI provider** and to no other outside service.
 - Processing is the **minimum** each function needs, and nothing more.
+- The software that runs Emys is built on **open-source components** plus **@emergentvibe's own additions**. The additions are licensed to the Laboratory to run Emys for this experiment and are **not published**. Emys's prompts and configuration — what it is told to do and what it is allowed to read — **are** public in the Laboratory's repository, and so is this declaration.
 - Emys records **how often and how much it is used** — counts of queries and of who uses it, not the content of what you ask — to measure the experiment. Any deeper look at *how you personally* use Emys, to improve it, happens **only if you opt in** when an administrator asks, and you can withdraw at any time.
 
 ## What this does not change

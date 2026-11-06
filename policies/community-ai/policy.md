@@ -5,7 +5,7 @@
 
 ## 1. Purpose and scope
 
-1.1 This policy authorises **Emys**, a shared community-AI operated by the Laboratory, and governs what it may read, keep, and do. Emys gives each member a private AI workspace, maintains a searchable memory of the Laboratory's own shared channels, and connects read-only to the Laboratory's instruments.
+1.1 This policy authorises **Emys**, a shared community-AI run for the Laboratory by the administrators named in clause 3.1, and governs what it may read, keep, and do. Emys gives each member a private AI workspace, maintains a searchable memory of the Laboratory's own shared channels, and connects read-only to the Laboratory's instruments. The software that runs Emys is not the Laboratory's; section 9 governs it.
 
 1.2 Emys operates only within the Laboratory's own Discord server, and serves Laboratory members and the Faculty who have joined that server. It is not deployed to, and processes no data of, anyone else.
 
@@ -21,7 +21,7 @@
 
 3.1 Emys has two administrators, @emergentvibe and @anchitsom. No individual administers it alone. The administrators operate Emys within this policy; if one ceases to serve, the Laboratory appoints another so that two always serve.
 
-3.2 Emys's prompts and configuration are public in the Laboratory's repository and change by ordinary (Layer 2) procedure. Emys is identified as AI in every interaction and takes no position the Laboratory has not adopted.
+3.2 Emys's prompts and configuration are public in the Laboratory's repository and change by ordinary (Layer 2) procedure. This clause reaches the prompts and configuration, and not the engine, which section 9 governs. Emys is identified as AI in every interaction and takes no position the Laboratory has not adopted.
 
 ## 4. The private workspace
 
@@ -49,7 +49,7 @@
 
 7.1 Emys processes only what the functions in this policy require, and for no other purpose.
 
-7.2 Emys shall process and store members' content on the Laboratory's own infrastructure, and run model inference on open-weights models on the Laboratory's own compute, with no external logging of members' content. This holds from the day Emys is deployed; no member content is sent to an external model service.
+7.2 Emys shall process and store members' content on the Laboratory's own infrastructure. Model inference runs on open-weights models hosted by the **East London GPU Coop**, which keeps no logs of members' content and uses it for no other purpose. Members' content is sent to no other external service, and to no commercial model provider. This holds from the day Emys is deployed.
 
 7.3 A member's personal memory may be corrected or deleted on request. The administrators do not access a member's workspace, messages, or personal memory except to investigate a specific bug or incident.
 
@@ -65,8 +65,18 @@
 
 8.3 **End and fallback.** The experiment ends at 23:59 on 29 January 2027, unless renewed by a further proposal. This Constitution expires on 30 November 2026 unless re-ratified or replaced (§5); if it is not, Emys's authorisation under this policy ends with it, and any continuation is a matter for the successor. Emys reads only and adds only, so its ending removes nothing in use: on expiry Emys ceases to read and to answer; the shared community memory is retained in frozen form unless the Laboratory directs its deletion; and members' private workspaces and memory are deleted on request as in clause 4.
 
-## 9. Review
+## 9. The engine
 
-9.1 This policy is reviewed when renewal is proposed, and whenever the Constitution is re-ratified or replaced.
+9.1 The software that orchestrates Emys — the **engine** — is built from third-party open-source components, which remain under their own licences, together with additions written by @emergentvibe. Those additions remain that member's, and nothing in this policy transfers them to the Laboratory or to any other member. This policy alters no third-party licence.
 
-**Observed by:** Emys's prompts and configuration are public, and it is identified as AI in every interaction, so those duties are visible; channel exclusions and the privacy declaration are public. The administrators' undertaking in clause 7.3 is a commitment by the two named members and is not externally observable.
+9.2 @emergentvibe's additions are licensed to the Laboratory to run Emys under this policy, for as long as this policy is in force and no longer. That licence confers no right to copy, modify, redistribute, or use those additions for any other purpose. Rights in the third-party components are unaffected and continue under their own terms. The licence terms for both accompany the source on the machine on which it runs.
+
+9.3 The engine runs on the Laboratory's own compute (clause 7.2), so an administrator who operates that machine can read its source. That access exists to operate Emys and is not a grant under clause 9.2.
+
+9.4 Clause 3.2 publishes Emys's prompts and configuration, and the privacy declaration states what Emys reads, keeps, and discards. Neither requires @emergentvibe's additions to be published, and the third-party components are publicly available under their own licences in any case.
+
+## 10. Review
+
+10.1 This policy is reviewed when renewal is proposed, and whenever the Constitution is re-ratified or replaced.
+
+**Observed by:** Emys's prompts and configuration are public, and it is identified as AI in every interaction, so those duties are visible; channel exclusions and the privacy declaration are public. Which model endpoint Emys calls is visible in that public configuration, so clause 7.2's choice of provider can be checked. The licence in clause 9.2 accompanies the source on the machine, so any administrator can read the terms on which they hold it. Three things are commitments rather than observable facts: the administrators' undertaking in clause 7.3, the restraint in clause 9.2 on an administrator who can read the engine, and the East London GPU Coop's undertaking in clause 7.2 to keep no logs — which is a third party's word, and which the Laboratory cannot verify from outside.
