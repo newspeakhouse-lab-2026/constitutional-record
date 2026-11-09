@@ -10,6 +10,16 @@ Elected under §3.2 on 1 November 2026. Every office was uncontested, and its so
 
 | Role | Holder | Term ends |
 |---|---|---|
+| Agent | Noam Herberg | 23:59, 2 November 2026 |
+| Deputy Agent | *vacant* | — |
+| Convener | Clara Yeo | 23:59, 2 November 2026 |
+| Convener, deputy | *vacant* | — |
+| Treasurer | Disha Shanbhag | 23:59, 2 November 2026 |
+| Treasurer, deputy | *vacant* | — |
+| Record Keeper | Anchit Som | 23:59, 2 November 2026 |
+| Record Keeper | Yiannis Ravanis | 23:59, 2 November 2026 |
+| Safety Lead | *vacant* |  |
+| Deputy Safety Lead | *vacant* |  |
 | Agent | Yiannis Ravanis | 23:59, 1 January 2027 |
 | Deputy Agent | Noam Herberg | 23:59, 1 January 2027 |
 | Convener | Noam Herberg | 23:59, 1 January 2027 |
