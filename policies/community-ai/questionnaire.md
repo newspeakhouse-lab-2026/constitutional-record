@@ -1,6 +1,6 @@
 # Emys — before/after questionnaire
 
-*A companion to the Community AI policy, not operative. It is the self-report half of the experiment's evidence (clause 8.2), alongside Emys's usage record and the complaint signal.*
+*A companion to the Community AI policy, not operative. It is the self-report half of the experiment's evidence (clause 9.2), alongside Emys's usage record and the complaint signal.*
 
 **How it is run.** Anonymous, in the governance channel or a form. The first six items run **unchanged before Emys ships** (the baseline — it cannot be reconstructed later) and **again near the end** (around 20 January 2027). The three post-only items run at the end alone. Keep the scales, labels, order, and wording identical between the two rounds.
 

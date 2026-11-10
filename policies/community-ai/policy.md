@@ -71,7 +71,7 @@
 
 ## 8. Processing and compute
 
-8.1 Members' content is stored and processed on a server rented and controlled by the operator, in the United Kingdom. Model inference runs on open-weights models hosted by the **East London GPU Coop**, which keeps no logs of members' content and uses it for no other purpose. Members' content is sent to no other external service, and to no commercial model provider. This holds from the day Emys is deployed.
+8.1 Members' content is stored and processed on a server rented and controlled by the operator, in the United Kingdom. Model inference runs on open-weights models hosted by the **East London GPU Coop**, which keeps no logs of members' content and uses it for no other purpose. Members' content is sent to no other external service, and to no commercial model provider. This holds from the day Emys is deployed. Emys is reached through the Laboratory's Discord server and its web interface (clause 1.3), and delivering a member's answer to them through either is not a disclosure within this clause — but what passes through Discord is held by Discord on its own terms, which this policy cannot alter.
 
 8.2 A member's personal memory may be corrected or deleted on request.
 
@@ -89,11 +89,7 @@
 
 9.4 **Rollout.** Emys is rolled out in phases, each wider than the last. Before a phase begins, the operator states in the governance channel what it covers.
 
-9.5 **Upgrades.** Clause 1.2 states what Emys does. A new capability beyond it — a shared task system, an agent forum, agent-to-agent messaging, or anything else that changes what Emys does with members' content — is not authorised by this policy, and is added by Ordinary resolution and not before. Write access to a Laboratory instrument is not available by that route: clause 7.2 puts it outside this experiment altogether.
-
-9.6 A change in how Emys does what clause 1.2 already describes is not an upgrade within clause 9.5 and needs no resolution. Fixes, performance changes, a change of model within clause 8.1, and prompt changes under clause 3.4 are such changes.
-
-9.7 A **register of live capabilities** is kept with Emys's published prompts and configuration, naming each capability, the date it went live, and the resolution that authorised it. A capability that Emys has and the register does not name is not authorised.
+9.5 **Upgrades.** Changing and extending Emys during the experiment is the operator's to do, and clause 1.2 describes what Emys does rather than limiting it. A substantial change — one that alters what Emys does with members' content — is put to the Laboratory before it ships, and the operator judges what is substantial. Two things are not available by this route at all: write access to a Laboratory instrument, which clause 7.2 puts outside the experiment, and private material entering the shared community memory, which clause 5.2 reserves to a further proposal.
 
 ## 10. The terms on which the operator runs Emys
 
@@ -105,7 +101,7 @@
 - **(d)** not use members' content in, or for the benefit of, any other deployment of Emys or of the engine, or of any other community, client or organisation;
 - **(e)** run Emys as its published prompts and configuration describe, and apply a change the Laboratory adopts under clause 3.4;
 - **(f)** hold members' content on infrastructure in the United Kingdom, and send it to no service outside that infrastructure other than the model host named in clause 8.1;
-- **(g)** not grant any other person access to members' content, except as clause 3.2 provides for an Emys administrator; and
+- **(g)** not grant any other person access to members' content; and
 - **(h)** tell the Laboratory without delay of any unauthorised access to, or loss of, members' content.
 
 10.2 These undertakings restrict what may be done with members' content. They do not restrict the operator's use of the engine itself (clause 4.4), or of anything that is not members' content, and they do not displace what clauses 8.3 and 8.4 permit.
@@ -134,4 +130,4 @@
 
 **Observed by:** Checkable in the ordinary course: the published prompts and configuration, against which clause 3.4's directions and clause 8.1's model endpoint can be compared; Emys's self-identification, which any member sees in every interaction; a request under clause 6.3 or 10.4, observed by the member who made it; the community memory's presence in the Laboratory's own store under clause 10.6, whose absence any member can see; the confirmation clause 10.7 requires, posted in the governance channel; and the spending, on Open Collective and in the Treasurer's statement. Stopping Emys needs no cooperation from the operator, who controls neither the Discord server nor the URL.
 
-Not checkable, and the Laboratory should adopt this knowing it: the GPU Coop's no-logging undertaking is a third party's word, and the operator administers Emys alone — one member holds access to the machine and everything on it, and no other member can verify that clause 10.1 is kept. No drafting changes that. What the Laboratory holds instead is a remedy: clauses 10.4, 10.5 and 7.3. **The protection here is the remedy, not detection.**
+Not checkable, and the Laboratory should adopt this knowing it: the GPU Coop's no-logging undertaking is a third party's word; whether an upgrade is substantial enough to put to the Laboratory under clause 9.5 is the operator's judgement and no one else's; and the operator administers Emys alone — one member holds access to the machine and everything on it, and no other member can verify that clause 10.1 is kept. No drafting changes that. What the Laboratory holds instead is a remedy: clauses 10.4, 10.5 and 7.3. **The protection here is the remedy, not detection.**

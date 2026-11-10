@@ -12,6 +12,8 @@
 
 **Where it goes.** Stored and processed in the United Kingdom. The open-weights models that answer you run on the **East London GPU Coop's** GPUs, which keeps no logs — the coop's word, which the Laboratory cannot verify from outside. Nothing goes to a commercial AI provider; nothing is used to train or evaluate a model, sold, published, or used for any other community or client (8.1, 10.1(c), 10.1(d)).
 
+**One thing that is not covered by any of that.** You reach Emys through Discord, so **your messages to Emys and its replies pass through Discord**, which is a US company that can read them and holds them on its own terms. That is true of everything you already do on the server, and no clause of this policy can change it. If you would rather something not sit with Discord, the web interface at `2026.newspeak.house/emys` does not go through it.
+
 **What you can do.**
 
 - Have any channel excluded, and whatever was already taken from it removed (6.3).
