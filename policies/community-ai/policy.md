@@ -79,6 +79,8 @@
 
 8.4 Any analysis of an individual member's use beyond clause 8.3 is done only with that member's prior and freely given agreement, which may be withdrawn at any time.
 
+8.5 The compute bought under clause 11.3 is capacity on the coop's hardware, and members may use it for their own work as well as through Emys. They do so on the operator's account and under the coop's own terms, and the Laboratory pays nothing beyond clause 11.3 for it.
+
 ## 9. The experiment
 
 9.1 **Hypothesis.** Given a private AI workspace and a searchable memory of the Laboratory's own channels, members find what is already there — and learn who knows and is working on what — at lower cost than they can today.
