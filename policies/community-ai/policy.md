@@ -17,12 +17,6 @@
 
 2.1 Constitution §1 (*Computational tools*) permits any member to run an AI agent, provided it is documented and communicated to the rest of the membership, and makes its actions that member's responsibility. Emys is such an agent, and this policy is that documentation.
 
-2.2 Charter §3 devolves to the Laboratory "the channels, systems, and tools of its own creation" and "the URL 2026.newspeak.house and whatever it serves". This policy is the Laboratory's grant of access to those channels, instruments and URL, on the terms it sets.
-
-2.3 Charter §8 reserves to the College its legal, financial and safety obligations, including data protection. This policy alters none of them, and where the College requires its own arrangements for the processing described here, those prevail.
-
-2.4 This policy is not a resolution by which the Laboratory assumes administrative access to a shared platform. It confers none on the Laboratory or on any member (clause 3.1).
-
 ## 3. Who runs Emys
 
 3.1 Emys is run and administered by **@emergentvibe** ("the operator"), alone, on infrastructure the operator rents and controls. The Laboratory does not hold, and does not by this policy assume, administrative access to Emys or to the machine on which it runs.
@@ -31,7 +25,7 @@
 
 3.3 Emys is identified in every interaction as an AI agent run by @emergentvibe, as Constitution §1 requires of an AI agent operating on Laboratory infrastructure. Emys takes no position the Laboratory has not adopted.
 
-3.4 Emys's prompts and configuration are published in the Laboratory's repository and change by ordinary (Layer 2) procedure. Because the Laboratory holds no administrative access, a change it adopts is a direction to the operator, who undertakes under clause 10.1(e) to apply it and to run Emys as published. This clause reaches the prompts and configuration and not the engine, which section 4 governs.
+3.4 Emys's prompts and configuration are published in the Laboratory's Github Organisation and change by ordinary (Layer 2) procedure. Because the Laboratory holds no administrative access, a change it adopts is a direction to the operator, who undertakes under clause 10.1(e) to apply it and to run Emys as published. This clause reaches the prompts and configuration and not the engine, which section 4 governs.
 
 ## 4. The engine
 
@@ -49,11 +43,11 @@
 
 5.2 In this experiment, nothing from them enters the shared community memory. It may do so only by a further proposal, and only where each contribution — including a member's own work shared with their own instance — is shown to, and approved by, that member before it is shared. Connecting members to one another on that basis is outside this experiment.
 
-5.3 The shared community memory may be seeded with information a member has themselves published on the Laboratory's or the programme's own platforms. Such an entry names its source, and is removed from the shared memory at that member's request.
+5.3 The shared community memory may be seeded with information a member has themselves published on the Laboratory's Discord or the constitutional-record repository. Such an entry names its source, and is removed from the shared memory at that member's request to the operator.
 
 ## 6. The shared community memory
 
-6.1 Emys reads the server's shared channels by default, and stores in a searchable community memory only factual community knowledge — events, schedules, logistics, resources, and decisions — with the source attributed.
+6.1 Emys reads the server's shared Discord channels by default, and stores in a searchable community memory only factual community knowledge — events, schedules, logistics, resources, and decisions — with the source attributed.
 
 6.2 It does not store opinions, arguments, complaints about people, third-party claims about anyone, or anyone's health, relationships, or personal circumstances.
 
@@ -65,9 +59,9 @@
 
 7.1 Emys connects to the Laboratory's instruments named in clause 1.2 with read access only, and writes to none.
 
-7.2 Write access to any Laboratory instrument is outside this experiment, and may be proposed only afterwards and only if this experiment has succeeded.
+7.2 Write access to any Laboratory instrument is outside this experiment, and may be proposed as an amendment.
 
-7.3 Emys's access to any Laboratory channel or instrument is the Laboratory's to grant and the Laboratory's to withdraw, at any time and without ending this policy.
+7.3 Emys's access to any Laboratory channel or instrument is the Laboratory's to grant and the Laboratory's to withdraw via majority vote, at any time and without ending this policy.
 
 ## 8. Processing and compute
 
@@ -79,7 +73,7 @@
 
 8.4 Any analysis of an individual member's use beyond clause 8.3 is done only with that member's prior and freely given agreement, which may be withdrawn at any time.
 
-8.5 The compute bought under clause 11.3 is capacity on the coop's hardware, and members may use it for their own work as well as through Emys. They do so on the operator's account and under the coop's own terms, and the Laboratory pays nothing beyond clause 11.3 for it.
+8.5 The compute bought under clause 11.3 is capacity on the coop's hardware, and members may use it for their own work as well as through Emys. They do so on the operator's account and under the coop's own terms, and the Laboratory pays nothing beyond clause 11.3 for it. Access details will be shared with Laboratory Members upon request to the operator.
 
 ## 9. The experiment
 
@@ -89,7 +83,7 @@
 
 9.3 **End and fallback.** The experiment ends at 23:59 on 29 January 2027, unless renewed by a further proposal. This Constitution expires on 30 November 2026 unless re-ratified or replaced (§5); if it is not, the Laboratory's authorisation under this policy ends with it, and any continuation is a matter for the successor. Emys reads only and adds only, so its ending removes nothing in use: the community memory is already in the Laboratory's own store (clause 10.6), and on expiry the operator acts under clause 10.7.
 
-9.4 **Rollout.** Emys is rolled out in phases, each wider than the last. Before a phase begins, the operator states in the governance channel what it covers.
+9.4 **Rollout.** Emys is rolled out in phases. Before a phase begins, the operator states in the governance channel what it covers.
 
 9.5 **Upgrades.** Changing and extending Emys during the experiment is the operator's to do, and clause 1.2 describes what Emys does rather than limiting it. A substantial change — one that alters what Emys does with members' content — is put to the Laboratory before it ships, and the operator judges what is substantial. Two things are not available by this route at all: write access to a Laboratory instrument, which clause 7.2 puts outside the experiment, and private material entering the shared community memory, which clause 5.2 reserves to a further proposal.
 
@@ -112,7 +106,7 @@
 
 10.4 Any member may at any time require that their own content be removed from Emys, and the operator shall remove it. No resolution of the Laboratory is needed, and no reason need be given.
 
-10.5 The Laboratory may end this arrangement at any time by Ordinary resolution, whereupon the operator shall stop processing members' content and act under clause 10.7. This adds to its powers under clause 7.3 and its control of the Discord server and URL.
+10.5 The Laboratory may end this arrangement at any time by Ordinary resolution, whereupon the operator shall stop processing members' content and act under clause 10.7. This adds to its powers under clause 7.3 and its access to the Discord server and Laboratory URL.
 
 10.6 The shared community memory is exported, at least monthly, to a repository or store on the Laboratory's own account, in a form the Laboratory can read without the engine, with each entry's source named. That store, and not Emys, is the Laboratory's copy.
 
@@ -120,7 +114,7 @@
 
 ## 11. Cost
 
-11.1 Emys runs on a server rented by the operator on their own account, and its compute is bought by the operator from the East London GPU Coop. The Laboratory reimburses both: the operator claims the monthly charges on Open Collective with the providers' receipts, under the Financial Policy's approval rules — including that nobody approves an expense they will be paid from.
+11.1 Emys runs on a server rented by the operator on their own account, and its compute is bought by the operator from the East London GPU Coop. The Laboratory reimburses both: the operator claims the monthly charges on Open Collective with the providers' receipts, under the Financial Policy's approval rules.
 
 11.2 **The server.** About **$25 a month** — 4 GB with monthly snapshots. The Laboratory authorises **up to $57.60 a month** for it, so that the server may be resized, and its backup arrangement changed, within the experiment and without a further proposal. The ceiling is in dollars because the provider bills in dollars, and is not breached by the exchange rate moving; roughly £19 and £44 in sterling, as an indication only.
 
@@ -128,8 +122,10 @@
 
 11.4 Taken together, the expected cost is about **£69 a month** and the ceiling is £50 plus $57.60, about **£94**. This policy authorises no other payment to the operator.
 
-11.5 This is a new recurring cost and an addition to the Laboratory's tech infrastructure within the meaning of the Financial Policy, notwithstanding that the server is rented on the operator's own account. That policy's condition — that such an addition is decided as new spending only once the Laboratory's Open Collective account holds one and a half months of recurring costs — is **unaltered by this policy**. Reimbursement begins once the Treasurer confirms it is met, and not before: adoption authorises the spending, it does not bring it forward.
+11.5 This is a new recurring cost and an addition to the Laboratory's tech infrastructure within the meaning of the Financial Policy, notwithstanding that the server is rented on the operator's own account. 
 
-**Observed by:** Checkable in the ordinary course: the published prompts and configuration, against which clause 3.4's directions and clause 8.1's model endpoint can be compared; Emys's self-identification, which any member sees in every interaction; a request under clause 6.3 or 10.4, observed by the member who made it; the community memory's presence in the Laboratory's own store under clause 10.6, whose absence any member can see; the confirmation clause 10.7 requires, posted in the governance channel; and the spending, on Open Collective and in the Treasurer's statement. Stopping Emys needs no cooperation from the operator, who controls neither the Discord server nor the URL.
+
+
+**Observed by:** Checkable in the ordinary course: the published prompts and configuration, against which clause 3.4's directions and clause 8.1's model endpoint can be compared; Emys's self-identification, which any member sees in every interaction; a request under clause 6.3 or 10.4, observed by the member who made it; the community memory's presence in the Laboratory's own store under clause 10.6, whose absence any member can see; the confirmation clause 10.7 requires, posted in the governance channel; and the spending, on Open Collective and in the Treasurer's statement. Stopping Emys from accessing discord data needs no cooperation from the operator, who has no admin controls over the Discord server.
 
 Not checkable, and the Laboratory should adopt this knowing it: the GPU Coop's no-logging undertaking is a third party's word; whether an upgrade is substantial enough to put to the Laboratory under clause 9.5 is the operator's judgement and no one else's; and the operator administers Emys alone — one member holds access to the machine and everything on it, and no other member can verify that clause 10.1 is kept. No drafting changes that. What the Laboratory holds instead is a remedy: clauses 10.4, 10.5 and 7.3. **The protection here is the remedy, not detection.**
