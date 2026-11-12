@@ -7,7 +7,7 @@
 
 1.1 This policy authorises the Laboratory and its members to use **Emys**, a community AI run by @emergentvibe. It is not an authorisation for Emys to exist: Constitution §1 permits a member to run an AI agent on their own responsibility.
 
-1.2 Emys does three things. It gives each member a private AI workspace. It maintains a searchable memory of the Laboratory's own shared channels. And it connects read-only to **the Laboratory's instruments** — the library application, the room booking system at `booking.newspeak.house`, the Laboratory's Google Calendar, its coordination spreadsheets, topic.forum, and this Constitutional Record. Section 7 governs that access.
+1.2 Emys does four things. It gives each member a private AI workspace. It maintains a searchable memory of the Laboratory's own shared channels. It sends a member a personalised digest of what is happening and what has been posted that concerns them, which that member may turn off. And it connects read-only to **the Laboratory's instruments** — the library application, the room booking system at `booking.newspeak.house`, the Laboratory's Google Calendar, its coordination spreadsheets, topic.forum, and this Constitutional Record. Section 7 governs that access.
 
 1.3 Emys serves Laboratory members and the Faculty who have joined the Laboratory's Discord server, and is reached through that server and at the Laboratory's own URL, `2026.newspeak.house/emys`, authenticated against the same membership — the same Emys either way, with the same workspace, memory and limits. It is made available to no other community or organisation, and takes no input from anyone else.
 
