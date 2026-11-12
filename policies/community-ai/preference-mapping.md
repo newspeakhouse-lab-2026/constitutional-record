@@ -83,4 +83,8 @@ Short, single-idea, and deliberately spread across the real tensions — includi
 
 ## Statements members added
 
-*Polis reports 24 comments submitted against 23 seeded, with 2 participants contributing. Member-authored statements are the most valuable output of a Polis and belong in the Record. To be filled in from the conversation.*
+One, and it is worth reading closely:
+
+- **A weekly digest of what I care about would be useful to me.**
+
+A member took the seeded statement about a *daily* digest and wrote the same sentence with **weekly** in place of daily. That is a preference about frequency, offered without being asked for, and it now bears directly on clause 1.2, which authorises a personalised digest without fixing how often it arrives. The clause lets a member turn the digest off; it does not let them slow it down.
