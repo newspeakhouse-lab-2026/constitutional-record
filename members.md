@@ -16,7 +16,7 @@ Captured from the Constitutional Convention record, founded by Edward Saperia at
 | Madison Karas | madisonkaras | 160418945 | |
 | Mario Morvan | mrmvn | 34740576 | Convener, deputy; Record Keeper |
 | Nathaniel Cooke | pendingsurvival | 154325001 | |
-| Your Name | spicyroyalty | 26982144 | |
+| Niba | spicyroyalty | 26982144 | |
 | Noam Herberg | Noam-Herberg | 211015403 | Agent, deputy; Convener |
 | Rhianwen Rowlands | cayocayocayo | 293953596 | |
 | Tess Buckley | tesssbuckley | 106262105 | |
