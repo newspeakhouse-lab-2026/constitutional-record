@@ -6,14 +6,13 @@ In an emergency, call 999. For everything else, these are the people to ask. Thi
 
 | Role | Name | Email |
 | --- | --- | --- |
-| Safety Lead | [see here](https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/roles.md) 
-| Deputy Safety Lead | [see here](https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/roles.md) 
+| Co-Safety Leads | [see here](https://github.com/newspeakhouse-lab-2026/constitutional-record/blob/main/roles.md) | |
 | Dean of Newspeak House | Edward Saperia | ed@newspeak.house |
 
 Two forms, for two different jobs:
 
-- [**Safety** **Concern Form**](https://docs.google.com/forms/d/e/1FAIpQLSfZPXUZOCU3_qRaW08nJXE79pnfL4IWJLOZ2sGXhNpJWPfLUA/viewform?usp=header) asks the Laboratory to act. It goes only to the Safety Lead and Deputy. Alternatively, you can use the form template in Annex A and submit this directly via email. 
-- [**The House form**](newspeak.house/feedback) asks Newspeak House to act. It goes to the Dean and faculty.
+- [**Safety** **Concern Form**](https://docs.google.com/forms/d/e/1FAIpQLSfZPXUZOCU3_qRaW08nJXE79pnfL4IWJLOZ2sGXhNpJWPfLUA/viewform?usp=header) asks the Laboratory to act. It goes only to the Co-Safety Leads. Alternatively, you can use the form template in Appendix A and submit this directly via email. 
+- [**The House form**](https://newspeak.house/feedback) asks Newspeak House to act. It goes to the Dean and faculty.
 
 ### **Find what you need**
 
@@ -36,7 +35,7 @@ This policy says what to do when there is a Safety or Wellbeing concern in our s
 
 It does not cover disagreements about decisions or priorities. Those go through the Laboratory’s ordinary rule process. Guests, keys and quiet hours can be viewed in our [Guest Package](https://docs.google.com/document/d/1oCSIJYU8UvKumsjibwssEA9LkhZfZuRNdGZMserlqLs/edit?usp=sharing).
 
-Not every uncomfortable moment needs a formal process. If something feels off, like a pushed boundary or someone being “*creepy*”, tell the Safety Lead. They will listen and can take light-touch steps. A formal outcome needs conduct that is specific, and patterned, repeated or physical.
+Not every uncomfortable moment needs a formal process. If something feels off, like a pushed boundary or someone being “*creepy*”, tell the Co-Safety Leads. They will listen and can take light-touch steps. A formal outcome needs conduct that is specific, and patterned, repeated or physical.
 
 **1.3 What it does not do.** It does not replace Newspeak House’s own policies, faculty responsibilities or the law. Where they conflict, those win. It also cannot change the rights, procedures or thresholds in the Constitution.
 
@@ -47,7 +46,7 @@ Not every uncomfortable moment needs a formal process. If something feels off, l
 - **The House:** Newspeak House (called the College in the Constitution).
 - **Dean:** the Dean of Newspeak House, Edward Saperia.
 - **Faculty:** the 2026 Newspeak House faculty.
-- **Safety Lead / Deputy:** the first point of contact for safety concerns, and the person who covers when the Safety Lead is away or conflicted.
+- **Co-Safety Leads:** the first point of contact for safety concerns.
 - **Facilitator:** a Member who volunteered to lead the facilitated conversation (section 5).
 - **Concern:** anything you want looked at, from passing discomfort to a formal complaint.
 - **Protective step:** a temporary measure to keep someone safe. It is not a sanction and not a finding of wrongdoing.
@@ -74,21 +73,21 @@ Find your situation. Each one takes a minute to read.
 1. Get yourself and them safe.
 2. Call 999 if anyone’s life or health is at risk.
 3. Do not confront anyone or investigate.
-4. Tell the Safety Lead and the Dean as soon as it is safe.
+4. Tell the Co-Safety Leads and the Dean as soon as it is safe.
 
 **3.2 Someone tells you something**
 
 - Listen. Stay calm and take it seriously.
 - Do not ask detailed or leading questions.
-- Do not promise confidentiality. Say you may need to involve the Safety Lead, and tell them before you do.
+- Do not promise confidentiality. Say you may need to involve the Co-Safety Leads, and tell them before you do.
 - Ask what they want to happen.
-- Offer to go with them to the Safety Lead, or to help them with the form. Pass it on yourself only if someone’s safety is at risk, and tell them you are doing it.
+- Offer to go with them to the Co-Safety Leads, or to help them with the form. Pass it on yourself only if someone’s safety is at risk, and tell them you are doing it.
 - Do not investigate, confront or try to resolve it yourself.
 - Tell them they were right to tell you.
 
 **3.3 You want to raise a concern**
 
-- Go to the Safety Lead, the Deputy or the Dean, or use the Safety Concern Form (Appendix A). If it is about the Safety Lead, go to the Deputy or the Dean.
+- Go to the Co-Safety Leads or the Dean, or use the Safety Concern Form (Appendix A). If it is about the Co-Safety Leads or the Dean.
 - You do not have to confront the person first.
 - You can ask for advice without starting a process. Any Member, guest or person affected by a Laboratory rule or decision can also complain that a rule was broken, authority was exceeded, a procedure was not followed, a rule was applied unfairly, or a protected right was violated.
 - You can raise it anonymously. Anonymous concerns can show patterns, but cannot on their own lead to action against a named person, and the House does not consider anonymous reports.
@@ -97,7 +96,7 @@ Find your situation. Each one takes a minute to read.
 
 - If it is urgent, follow 3.1.
 - If not, raise it yourself under 3.3. You do not need to wait for the affected person. Their wishes still guide what happens next, unless someone’s safety is at risk.
-- Not sure it counts? Ask the Safety Lead. Asking does not start anything.
+- Not sure it counts? Ask the Co-Safety Leads. Asking does not start anything.
 
 ## **4. Safety tools**
 
@@ -109,15 +108,15 @@ Three tools work straight away, and nobody needs permission to use them.
 2. Call 999 if anyone’s life or health is at risk.
 3. Contact professional or external support. You are not expected to give care beyond what you can.
 4. For something that already happened, the affected person decides about police. In immediate danger, do not wait for that.
-5. Tell the Safety Lead and the Dean once it is safe.
+5. Tell the Co-Safety Leads and the Dean once it is safe.
 
-The Safety Lead coordinates our response but does not replace the House’s legal and safety duties. Nothing here stops anyone from contacting the House, the Dean, emergency services, police or any other external authority.
+The Co-Safety Leads coordinate our response but do not replace the House’s legal and safety duties. Nothing here stops anyone from contacting the House, the Dean, emergency services, police or any other external authority.
 
 **4.2 Safety pause.** Any Member can pause an action, event or decision by naming a specific safety risk.
 
-- Immediate risk: the Safety Lead responds as quickly as reasonably possible.
-- Non-immediate risk: the pause is reviewed within **24 hours** with the Safety Lead.
-- A pause lasts **at most 72 hours**, unless the Safety Lead extends it and records why, or it moves into the normal decision process or section 5.
+- Immediate risk: the Co-Safety Leads respond as quickly as reasonably possible.
+- Non-immediate risk: the pause is reviewed within **24 hours** with the Co-Safety Leads.
+- A pause lasts **at most 72 hours**, unless the Co-Safety Leads extend it and record why, or it moves into the normal decision process or section 5.
 - Using a pause in good faith is never sanctioned, even if the risk turns out to be small.
 
 **4.3 Tap out.** Disagreement can become harmful before it becomes a formal safety issue.
@@ -125,7 +124,7 @@ The Safety Lead coordinates our response but does not replace the House’s lega
 - Any Member can tap out when a personal boundary is being approached or crossed, or when carrying on is harmful or unproductive.
 - Everyone stops, without argument.
 - A tap out is not an admission of fault, a finding, a veto over the issue, or a punishment. Do not assume bad intent.
-- The aim is to name a boundary early, so people can reset, get a mediator, change the format or come back later. Ask the Safety Lead or a facilitator to help plan the return.
+- The aim is to name a boundary early, so people can reset, get a mediator, change the format or come back later. Ask the Co-Safety Leads or a facilitator to help plan the return.
 - A tap out never stops anyone raising a concern.
 
 ## **5. How a concern moves**
@@ -135,14 +134,14 @@ A concern follows one of two routes, depending on how serious it is. This sectio
 <img width="816" height="584" alt="Screenshot 2026-10-26 at 13 09 58" src="https://github.com/user-attachments/assets/78e03b18-f1f6-427d-af4d-bdfb3588733d" />
 
 
-Read the left side for conduct matters and the right side for harm matters. The Safety Lead picks the route using 5.2.
+Read the left side for conduct matters and the right side for harm matters. The Co-Safety Leads pick the route using 5.2.
 
 **5.1 Every concern starts here.**
 
-- The Safety Lead or Deputy acknowledges it within 48 hours, asks what you want to happen, explains your options and the limits of confidentiality, and agrees next steps. Your wishes guide the response unless someone’s safety requires otherwise.
+- The Co-Safety Leads acknowledge it within 48 hours, asks what you want to happen, explains your options and the limits of confidentiality, and agrees next steps. Your wishes guide the response unless someone’s safety requires otherwise.
 - The person the concern is about is told what it is and can respond. This is a Constitution requirement.
-- The Safety Lead picks the route using the table below. If the Safety Lead is involved in the concern itself, then the Deputy does this. If both are, the Dean does.
-- Anyone with a conflict steps back from running the case. That means close friendship, a romantic or sexual relationship, shared housing, or a direct work or financial tie with a party. Tell the Safety Lead privately, and only the conflict, not unrelated personal details. At the group decision, Members with a conflict are asked to step back from voting. That is a request, because the Constitution sets the vote rules.
+- The Co-Safety Leads pick the route using the table below. If the Co-Safety Leads are involved in the concern itself, then the Dean does this. 
+- Anyone with a conflict steps back from running the case. That means close friendship, a romantic or sexual relationship, shared housing, or a direct work or financial tie with a party. Tell the Co-Safety Leads privately, and only the conflict, not unrelated personal details. At the group decision, Members with a conflict are asked to step back from voting. That is a request, because the Constitution sets the vote rules.
 
 **5.2 Two routes.**
 
@@ -177,12 +176,12 @@ Consider severity, intent, impact, pattern, and whether the person has acknowled
 **5.4 The harm route.**
 
 1. Safety first (section 4). Protective steps can start straight away.
-2. The Safety Lead tells the Dean (section 7 says when this is required).
+2. The Co-Safety Leads tell the Dean (section 7 says when this is required).
 3. The affected person gets support (section 6).
-4. The affected person chooses what next, and the Safety Lead explains each option honestly: asking the House to act (the House form, section 7); informal resolution, if they want it and it is safe; police, for anything that may be criminal; or asking the Laboratory to decide through a group decision. That is a vote by all Members, so everyone would hear the details. For sexual harassment or assault we advise against it, but the Constitution lets any Member bring a matter. They can choose several options, or none yet.
-5. The Safety Lead does not investigate or hold a hearing on whether harm happened. That sits with the House and the police.
+4. The affected person chooses what next, and the Co-Safety Leads explain each option honestly: asking the House to act (the House form, section 7); informal resolution, if they want it and it is safe; police, for anything that may be criminal; or asking the Laboratory to decide through a group decision. That is a vote by all Members, so everyone would hear the details. For sexual harassment or assault we advise against it, but the Constitution lets any Member bring a matter. They can choose several options, or none yet.
+5. The Co-Safety Leads do not investigate or hold a hearing on whether harm happened. That sits with the House and the police.
 
-**5.5 Protective steps.** These are temporary steps to keep someone safe before anything is decided: a safety pause, asking someone to stay away from a space or event, or the Safety Lead suspending access to Laboratory-controlled spaces for up to 72 hours pending review.
+**5.5 Protective steps.** These are temporary steps to keep someone safe before anything is decided: a safety pause, asking someone to stay away from a space or event, or the Co-Safety Leads suspending access to Laboratory-controlled spaces for up to 72 hours pending review.
 
 - A protective step is not a sanction and not a finding of wrongdoing.
 - It is reviewed promptly, so it does not become punishment by default.
@@ -191,8 +190,8 @@ Consider severity, intent, impact, pattern, and whether the person has acknowled
 
 **5.6 Recording and closing.**
 
-- Decisions are recorded in the disputes/ record, as the Constitution requires. For harm matters the shared record holds the outcome only. Names and details stay in the Safety Lead’s restricted file (section 9).
-- Agreed outcomes from the first two stages are recorded privately by the Safety Lead. Breaking one can be raised as a new matter, and the Laboratory may refer it to the House.
+- Decisions are recorded in the disputes/ record, as the Constitution requires. For harm matters the shared record holds the outcome only. Names and details stay in the Co-Safety Leads’ restricted file (section 9).
+- Agreed outcomes from the first two stages are recorded privately by the Co-Safety Leads. Breaking one can be raised as a new matter, and the Laboratory may refer it to the House.
 - A decision applies to the people involved and does not create a general rule. If a case shows a flawed rule, the Laboratory can recommend an amendment.
 - A decided case is reopened only on genuinely new evidence or a procedural error, raised as a new matter. Disagreeing with an outcome is fine. Relitigating it socially, or pressuring people, is not.
 
@@ -205,7 +204,7 @@ Raising a concern should not leave you on your own, and the person it is about g
 - You are acknowledged within 48 hours, asked what you want, and told your options and the limits of confidentiality before anything moves without you.
 - You are updated at each stage.
 - You can ask for practical adjustments: a different seat or time in shared space, stepping back from a role or meeting, a different mediator, or someone to sit with you in a conversation.
-- The Safety Lead can help you reach the free services in section 10.
+- The Co-Safety Leads can help you reach the free services in section 10.
 - Newspeak House offers counselling and conflict resolution help to everyone involved in its exclusion process.
 - Retaliation for raising a concern in good faith is a harm-route matter. It is never held against you.
 
@@ -226,19 +225,19 @@ The Laboratory handles what it can fairly handle. The rest goes to Newspeak Hous
 
 | Level | Who | Handles | Examples |
 | --- | --- | --- | --- |
-| 1. Laboratory | Members, Safety Lead, Deputy, facilitators | Norms, de-escalation, mediation, group remedies in our own spaces and roles | Quiet hours repeatedly broken; a heated disagreement; a guest ignoring house norms |
+| 1. Laboratory | Members, Co-Safety Leads, facilitators | Norms, de-escalation, mediation, group remedies in our own spaces and roles | Quiet hours repeatedly broken; a heated disagreement; a guest ignoring house norms |
 | 2. Newspeak House | Faculty, the Dean | Exclusion, residence, building access, harm matters, formal duties of care, concerns about faculty or staff | Unresolved conflict after mediation; a pattern of harassment; a serious wellbeing concern |
 | 3. Law and wider society | Police, emergency and health services | Anything that is or may be criminal; medical and mental health emergencies | Assault; credible threats; stalking; a person at immediate risk |
 
-**7.2 Criminal matters.** Anything that is or may be criminal is outside the Laboratory’s authority. We do not investigate or decide it. The Safety Lead tells the Dean and helps the affected person reach external help (police, the House, support services) in line with their wishes, unless someone is in immediate danger.
+**7.2 Criminal matters.** Anything that is or may be criminal is outside the Laboratory’s authority. We do not investigate or decide it. The Co-Safety Leads tell the Dean and help the affected person reach external help (police, the House, support services) in line with their wishes, unless someone is in immediate danger.
 
-**7.3 When the Safety Lead must tell the Dean.** If in doubt, tell the Dean. It is required when:
+**7.3 When the Co-Safety Leads must tell the Dean.** If in doubt, tell the Dean. It is required when:
 
 - the concern involves a possible crime, sexual harassment or assault, or a threat to safety;
 - someone’s physical or mental health is at serious risk;
 - it is a second concern about the same person, or the conduct is patterned, repeated or physical;
 - someone refuses informal resolution or breaks an agreed outcome;
-- the Safety Lead or Deputy has a conflict that cannot be managed internally;
+- the Co-Safety Leads have a conflict that cannot be managed internally;
 - the concern involves faculty or Newspeak House staff.
 
 The person who raised the concern is told when this happens, as soon as it is safe.
@@ -251,23 +250,23 @@ The person who raised the concern is told when this happens, as soon as it is sa
 - **Who it covers:** fellowship candidates, fellows, faculty, members and guests. People directly employed by the House have a separate process.
 - **How to start:** submit the House form at newspeak.house/feedback. It asks for your name, contact details, the time and date of the incident, and what happened.
 - **Anonymous reports are not considered.** Reports are confidential to staff and faculty unless you ask otherwise.
-- **Support with submission:** You may ask someone to submit the form on your behalf. This may be because in the first instance you don’t want your name recorded, or because there is a barrier for you to submit yourself. There must be a named contact on the form, which can be the Safety Lead, Deputy or another person. 
+- **Support with submission:** You may ask someone to submit the form on your behalf. This may be because in the first instance you don’t want your name recorded, or because there is a barrier for you to submit yourself. There must be a named contact on the form, which can be the Co-Safety Leads or another person. 
 - **Who decides:** only a faculty member can propose a sanction, in writing to the Dean. The faculty vote on the evidence in the form, and nothing else is considered. A majority decides, and the Dean has the casting vote on a tie.
 - **What can happen:** a written notice (not a sanction), then a formal warning, then a two-week suspension (residents keep their room and essential common areas), then expulsion (reviewed after a year; for residents, eviction proceedings begin).
 - **Support:** the House offers counselling and conflict resolution help to everyone involved.
 
-Put everything in the House form, because evidence outside it is not considered. Telling the Safety Lead or the Dean is not the same as submitting the form. The Safety Lead can help you fill it in
+Put everything in the House form, because evidence outside it is not considered. Telling the Co-Safety Leads or the Dean is not the same as submitting the form. The Co-Safety Leads can help you fill it in.
 
-**Non-members in our space.** The Laboratory may seek the exclusion of a non-member from its shared space where the House’s rules allow. Where safety requires, the Safety Lead can ask a non-member to leave straight away.
+**Non-members in our space.** The Laboratory may seek the exclusion of a non-member from its shared space where the House’s rules allow. Where safety requires, the Co-Safety Leads can ask a non-member to leave straight away.
 
 **7.6 Which form?**
 
 | I want… | Use |
 | --- | --- |
-| The Laboratory to act: someone to talk to, mediation, a group remedy, support | The Safety Concern Form (Appendix B), or go to the Safety Lead |
+| The Laboratory to act: someone to talk to, mediation, a group remedy, support | The Safety Concern Form (Appendix A), or go to the Co-Safety Leads |
 | The House to consider a sanction | The House form |
-| Help right now | Call 999, or the Safety Lead |
-| Advice before choosing | The Safety Lead or the Dean. Nothing formal starts |
+| Help right now | Call 999, or the Co-Safety Leads |
+| Advice before choosing | The Co-Safety Leads or the Dean. Nothing formal starts |
 
 You can use both forms.
 
@@ -277,15 +276,14 @@ Two named roles and a volunteer facilitator pool run the process. They guide it 
 
 | Role | Does | Does not | Term |
 | --- | --- | --- | --- |
-| Safety Lead | Is the first point of contact; coordinates immediate responses; routes concerns (section 5); decides when to tell the Dean; takes protective steps; keeps confidential records and the crisis list | Investigate crimes; look into therapy or medical care; decide the group’s outcome | [to agree] |
-| Deputy Safety Lead | Covers when the Safety Lead is away or conflicted | The same | [to agree] |
-| Facilitators | Lead the facilitated conversation, drawn at random from volunteers; are skipped if connected to the case | Decide outcomes | The cohort year |
+| Co-Safety Leads | They are the first point of contact; coordinate immediate responses; route concerns (section 5); decide when to tell the Dean; take protective steps; keep confidential records and the crisis list | investigate claims; look into therapy or medical care; decide the group’s outcome | 2 months |
+| Facilitators | Lead the facilitated conversation, drawn at random from volunteers; are skipped if connected to the case | Decide outcomes | The cohort year (ad hoc) |
 
 The Dean and faculty hold the House’s side: formal duties of care, exclusion, building access and residence.
 
-- **Selection.** Roles are filled through the ordinary rule process at the start of each term. The Safety Lead and Deputy cannot be the same person.
-- **Training.** Role holders do basic training (for example mental health first aid and bystander intervention) within their first month, supported by the House where possible.
-- **Support.** Role holders can debrief confidentially with faculty or an external supervisor. They step back from any case that affects them personally, and the Deputy takes over.
+- **Selection.** Roles are filled through the ordinary rule process at the start of each term.
+- **Training.** Role holders do basic training (for example mental health first aid and bystander intervention) within their first month in the appointed role. They will seek free training resources in the first instance. 
+- **Support.** Role holders can debrief confidentially with faculty or an external supervisor. They step back from any case that affects them personally, and the Dean takes over.
 - **Removal.** Through the ordinary rule process, or immediately by faculty if the role holder is the subject of a serious concern.
 
 These roles do not replace the Constitution’s process or the House’s formal responsibilities.
@@ -296,7 +294,7 @@ Information about a concern goes only to the people who need it to act.
 
 **9.1 Confidentiality.**
 
-- The Safety Lead keeps records in a restricted place. Only the Safety Lead, Deputy and faculty can see them.
+- The Co-Safety Leads keep records in a restricted place. Only the Co-Safety Leads and faculty can see them.
 - The shared disputes/ record holds the outcome of a case only. For harm matters it holds no names or details.
 - Records are deleted 12 months after the end of the cohort, unless faculty or the law require otherwise.
 - Confidentiality has limits. It gives way where someone is at serious risk, or where the law or House policy requires disclosure. The person who raised the concern is told when this happens.
@@ -305,19 +303,19 @@ Information about a concern goes only to the people who need it to act.
 **9.2 Rumour.**
 
 - Do not discuss the details of a case, guess who is involved, or share outcomes beyond the people involved.
-- If you hear a rumour, point people to the Safety Lead. Do not pass it on.
+- If you hear a rumour, point people to the Co-Safety Leads. Do not pass it on.
 - Spreading sensitive case information is itself a conduct matter (section 5).
 
 **9.3 Guarding against misuse.** Any process here can be used to target or silence someone.
 
 - Knowingly false or malicious reports are a conduct matter. A report that turns out to be unfounded is not malicious for that reason alone.
 - Both people are heard before any outcome beyond a protective step.
-- The Safety Lead watches for repeated reports about the same person from the same people, and refers patterns to the Dean.
+- The Co-Safety Leads watch for repeated reports about the same person from the same people, and refer patterns to the Dean.
 - Raising a concern in good faith never results in retaliation.
 
 ## **10. Crisis and external resources**
 
-The Safety Lead keeps this list current, pinned in the Laboratory channel and posted in shared spaces. Last checked: October 2026. Check each number before publishing.
+The Co-Safety Leads keep this list current, pinned in the Laboratory channel and posted in shared spaces. Last checked: October 2026. Check each number before publishing.
 
 | Need | Service | Contact |
 | --- | --- | --- |
@@ -329,7 +327,7 @@ The Safety Lead keeps this list current, pinned in the Laboratory channel and po
 | Domestic abuse | National Domestic Abuse Helpline (women) | 0808 2000 247 |
 | LGBT+ abuse and hate crime | Galop | 0800 999 5428 |
 | Victims of crime | Victim Support | 0808 168 9111 |
-| Newspeak House | Dean contact | ed@newspeak.house|
+| Newspeak House | Dean contact | ed@newspeak.house |
 
 ## **11. Review**
 
@@ -337,12 +335,12 @@ The Safety Lead keeps this list current, pinned in the Laboratory channel and po
 
 ## **Appendix A: Safety Concern Form**
 
-Use this form to raise a safety concern with the Laboratory. If someone is in danger right now, call 999 first. Answer only what you want to answer. It goes to the Safety Lead and the Deputy only, or to the Dean if you choose that in question 1.
+Use this form to raise a safety concern with the Laboratory. If someone is in danger right now, call 999 first. Answer only what you want to answer. It goes to the Co-Safety Leads only, or to the Dean if you choose that in question 1.
 
 **1. Who should see this?** (tick one)
 
-- [ ]  The Safety Lead and the Deputy
-- [ ]  The Dean only (choose this if the concern is about the Safety Lead or the Deputy)
+- [ ]  The Co-Safety Leads 
+- [ ]  The Dean only (choose this if the concern is about one or both of the Co-Safety Leads)
 
 **2. Do you want to stay anonymous?** (tick one)
 
@@ -380,4 +378,4 @@ Section 7.3 lists the cases where we must tell the Dean, whatever you tick. If t
 
 **10. Is there anything that would help you feel safer or supported right now?** (free text, optional)
 
-**What happens next.** If you gave contact details, the Safety Lead or Deputy replies within 48 hours, asks what you want to happen, and explains your options and the limits of confidentiality (sections 5 and 9).
+**What happens next.** If you gave contact details, the Co-Safety Leads reply within 48 hours, asks what you want to happen, and explains your options and the limits of confidentiality (sections 5 and 9).
