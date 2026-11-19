@@ -87,7 +87,7 @@ Find your situation. Each one takes a minute to read.
 
 **3.3 You want to raise a concern**
 
-- Go to the Co-Safety Leads or the Dean, or use the Safety Concern Form (Appendix A). If it is about the Co-Safety Leads or the Dean.
+- Go to the Co-Safety Leads or the Dean, or use the Safety Concern Form (Appendix A). If it is about the Co-Safety Leads or the Dean, please reach out to the Agent. 
 - You do not have to confront the person first.
 - You can ask for advice without starting a process. Any Member, guest or person affected by a Laboratory rule or decision can also complain that a rule was broken, authority was exceeded, a procedure was not followed, a rule was applied unfairly, or a protected right was violated.
 - You can raise it anonymously. Anonymous concerns can show patterns, but cannot on their own lead to action against a named person, and the House does not consider anonymous reports.
@@ -272,11 +272,11 @@ You can use both forms.
 
 ## **8. Roles**
 
-Two named roles and a volunteer facilitator pool run the process. They guide it and do not decide outcomes. Names and contacts live in the Quick reference.
+Two named roles (co-safety leads) and a volunteer facilitator pool run the process. They guide it and do not decide outcomes. Names and contacts live in the Quick reference.
 
 | Role | Does | Does not | Term |
 | --- | --- | --- | --- |
-| Co-Safety Leads | They are the first point of contact; coordinate immediate responses; route concerns (section 5); decide when to tell the Dean; take protective steps; keep confidential records and the crisis list | investigate claims; look into therapy or medical care; decide the group’s outcome | 2 months |
+| Co-Safety Leads | They are the first point of contact; coordinate immediate responses; route concerns (section 5); decide when to tell the Dean; take protective steps; keep confidential records and the crisis list | investigate claims; look into potential therapy or medical care; decide the group’s outcome | 2 months |
 | Facilitators | Lead the facilitated conversation, drawn at random from volunteers; are skipped if connected to the case | Decide outcomes | The cohort year (ad hoc) |
 
 The Dean and faculty hold the House’s side: formal duties of care, exclusion, building access and residence.
@@ -315,7 +315,7 @@ Information about a concern goes only to the people who need it to act.
 
 ## **10. Crisis and external resources**
 
-The Co-Safety Leads keep this list current, pinned in the Laboratory channel and posted in shared spaces. Last checked: October 2026. Check each number before publishing.
+The Co-Safety Leads keep this list current, pinned in the Laboratory channel and posted in shared spaces. Last checked: October 2026.
 
 | Need | Service | Contact |
 | --- | --- | --- |
