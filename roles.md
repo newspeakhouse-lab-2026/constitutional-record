@@ -10,16 +10,6 @@ Elected under §3.2 on 1 November 2026. Every office was uncontested, and its so
 
 | Role | Holder | Term ends |
 |---|---|---|
-| Agent | Noam Herberg | 23:59, 2 November 2026 |
-| Deputy Agent | *vacant* | — |
-| Convener | Clara Yeo | 23:59, 2 November 2026 |
-| Convener, deputy | *vacant* | — |
-| Treasurer | Disha Shanbhag | 23:59, 2 November 2026 |
-| Treasurer, deputy | *vacant* | — |
-| Record Keeper | Anchit Som | 23:59, 2 November 2026 |
-| Record Keeper | Yiannis Ravanis | 23:59, 2 November 2026 |
-| Safety Lead | *vacant* |  |
-| Deputy Safety Lead | *vacant* |  |
 | Agent | Yiannis Ravanis | 23:59, 1 January 2027 |
 | Deputy Agent | Noam Herberg | 23:59, 1 January 2027 |
 | Convener | Noam Herberg | 23:59, 1 January 2027 |
@@ -28,6 +18,8 @@ Elected under §3.2 on 1 November 2026. Every office was uncontested, and its so
 | Treasurer, deputy | Fernanda Munhoz | 23:59, 1 January 2027 |
 | Record Keeper | Mario Morvan | 23:59, 1 January 2027 |
 | Record Keeper | Yiannis Ravanis | 23:59, 1 January 2027 |
+| Co-Safety Lead | *vacant* | — |
+| Co-Safety Lead | *vacant* | — |
 
 The §3.2 term runs two months, but this Constitution expires at 23:59 UK time on Monday 30 November 2026 (§5) unless re-ratified or replaced. No office outlasts the Constitution that creates it, so in practice each term ends no later than that date unless the Constitution is re-ratified.
 
@@ -39,3 +31,4 @@ The §3.2 term runs two months, but this Constitution expires at 23:59 UK time o
 | 2026-10-02 | File created, as §3 requires. |
 | 2026-10-04 | Interim terms extended to 2 November 2026 by #2, adopted under §6. |
 | 2026-11-01 | Interim period ended; full holders elected under §3.2, each unopposed. The Deputy Agent, Deputy Convener and Deputy Treasurer offices are filled for the first time. |
+| *date of adoption* | The two Co-Safety Lead offices created by the safeguarding and wellbeing Policy (#21). Both vacant: §8 of that policy fills them through the ordinary rule process, not through this file. |
